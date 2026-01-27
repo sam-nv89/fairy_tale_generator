@@ -7,33 +7,51 @@ import re
 import base64
 
 # --- Функция для создания красивого плеера ---
-def get_custom_player(audio_bytes, autoplay=False):
+def get_custom_player(audio_bytes, autoplay=False, sticky=False):
     audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode()
     
     import uuid
     unique_id = f"player_{uuid.uuid4().hex}" # generate totally unique, safe id
     audio_bytes.seek(0)
-
+    
     autoplay_attr = "autoplay" if autoplay else ""
+
+    # Стили для прилипания к низу
+    if sticky:
+        wrapper_style = """
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999999;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            background: #ffffff; /* Контрастный фон */
+        """
+        container_class = f"audio-player-fixed-{unique_id}"
+    else:
+        # Обычный стиль
+        wrapper_style = "margin-top: 8px; background: #f0f2f6;"
+        container_class = "audio-player-wrapper"
 
     player_html = f"""
     <style>
-        .audio-player-wrapper {{
-            background: #f0f2f6;
+        .{container_class} {{
             border: 1px solid #e0e0e0;
-            border-radius: 8px; /* Более аккуратные углы */
-            padding: 8px 12px;  /* Компактные отступы */
+            border-radius: 12px;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
             width: 100%;
             font-family: 'Source Sans Pro', sans-serif;
             color: #31333F;
-            margin-top: 8px; /* Отступ сверху аккуратный */
             box-sizing: border-box;
+            {wrapper_style}
         }}
         @media (prefers-color-scheme: dark) {{
-            .audio-player-wrapper {{
+            .{container_class} {{
                 background: #262730;
                 border: 1px solid #464b59;
                 color: white;
@@ -41,7 +59,7 @@ def get_custom_player(audio_bytes, autoplay=False):
         }}
 
         .play-btn-circle {{
-            width: 32px; /* Чуть меньше */
+            width: 32px;
             height: 32px;
             background: #ff4b4b;
             border-radius: 50%;
@@ -85,23 +103,24 @@ def get_custom_player(audio_bytes, autoplay=False):
         }}
         
         .time-text {{
-            font-size: 12px; /* Чуть меньше шрифт */
+            font-size: 13px;
             font-variant-numeric: tabular-nums;
-            min-width: 70px;
+            min-width: 75px;
             text-align: right;
-            opacity: 0.8;
+            opacity: 0.9;
             white-space: nowrap;
+            font-weight: 600;
         }}
     </style>
 
-    <div class="audio-player-wrapper" id="wrapper_{unique_id}">
+    <div class="{container_class}" id="wrapper_{unique_id}">
         <div class="play-btn-circle" onclick="toggleAudio_{unique_id}()">
             <svg id="icon_play_{unique_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             <svg id="icon_pause_{unique_id}" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </div>
         
         <div class="slider-container">
-            <input type="range" id="seek_{unique_id}" value="0" min="0" step="0.1" oninput="scrubAudio_{unique_id}(this.value)">
+            <input type="range" id="seek_{unique_id}" value="0" min="0" step="0.1">
         </div>
 
         <div class="time-text" id="time_{unique_id}">0:00 / 0:00</div>
@@ -117,52 +136,63 @@ def get_custom_player(audio_bytes, autoplay=False):
         var timeLabel_{unique_id} = document.getElementById("time_{unique_id}");
         var iconPlay_{unique_id} = document.getElementById("icon_play_{unique_id}");
         var iconPause_{unique_id} = document.getElementById("icon_pause_{unique_id}");
-
-        // Форматирование времени MM:SS
-        function formatTime(seconds) {{
-            var m = Math.floor(seconds / 60);
-            var s = Math.floor(seconds % 60);
-            return m + ":" + (s < 10 ? "0" : "") + s;
-        }}
-
-        // Обновление длительности, когда метаданные загружены
-        audio_{unique_id}.onloadedmetadata = function() {{
-            seekSlider_{unique_id}.max = audio_{unique_id}.duration;
-            updateTimeLabel();
-        }};
-
-        // Обновление ползунка при воспроизведении
-        audio_{unique_id}.ontimeupdate = function() {{
-            seekSlider_{unique_id}.value = audio_{unique_id}.currentTime;
-            updateTimeLabel();
-        }};
         
-        // Автозапуск (защита от зацикливания через флаг)
         var autoplay_triggered = false;
+        var isDragging_{unique_id} = false;
+
+        // --- Event Listeners ---
+        seekSlider_{unique_id}.addEventListener('mousedown', function() {{ isDragging_{unique_id} = true; }});
+        seekSlider_{unique_id}.addEventListener('touchstart', function() {{ isDragging_{unique_id} = true; }});
+        seekSlider_{unique_id}.addEventListener('mouseup', function() {{ isDragging_{unique_id} = false; }});
+        seekSlider_{unique_id}.addEventListener('touchend', function() {{ isDragging_{unique_id} = false; }});
         
+        seekSlider_{unique_id}.addEventListener('input', function() {{
+            isDragging_{unique_id} = true;
+            audio_{unique_id}.currentTime = this.value;
+            updateTimeLabel();
+        }});
+
+        // --- Audio Events ---
         audio_{unique_id}.oncanplay = function() {{
              if ({'true' if autoplay else 'false'} && !autoplay_triggered) {{
                  autoplay_triggered = true;
                  audio_{unique_id}.play().then(function() {{
                      iconPlay_{unique_id}.style.display = "none";
                      iconPause_{unique_id}.style.display = "block";
-                 }}).catch(function(error) {{
-                     console.log("Autoplay failed:", error);
-                 }});
+                 }}).catch(console.error);
              }}
         }};
 
-        // Если доиграло до конца
         audio_{unique_id}.onended = function() {{
-            audio_{unique_id}.pause(); // На всякий случай
-            iconPlay_{unique_id}.style.display = "block";
-            iconPause_{unique_id}.style.display = "none";
-            audio_{unique_id}.currentTime = 0;
-            // Флаг не сбрасываем, чтобы автозапуск не сработал снова при перемотке в начало
+             audio_{unique_id}.pause();
+             iconPlay_{unique_id}.style.display = "block";
+             iconPause_{unique_id}.style.display = "none";
+             audio_{unique_id}.currentTime = 0;
+             seekSlider_{unique_id}.value = 0;
         }};
 
+        audio_{unique_id}.ontimeupdate = function() {{
+            if (!isDragging_{unique_id}) {{
+                seekSlider_{unique_id}.value = audio_{unique_id}.currentTime;
+            }}
+            updateTimeLabel();
+        }};
+        
+        audio_{unique_id}.onloadedmetadata = function() {{
+            seekSlider_{unique_id}.max = audio_{unique_id}.duration;
+            updateTimeLabel();
+        }};
+
+        // --- Helpers ---
+        function formatTime(seconds) {{
+            var m = Math.floor(seconds / 60);
+            var s = Math.floor(seconds % 60);
+            return m + ":" + (s < 10 ? "0" : "") + s;
+        }}
+
         function updateTimeLabel() {{
-            var curr = formatTime(audio_{unique_id}.currentTime);
+            var currentSec = isDragging_{unique_id} ? seekSlider_{unique_id}.value : audio_{unique_id}.currentTime;
+            var curr = formatTime(currentSec);
             var total = formatTime(audio_{unique_id}.duration || 0);
             timeLabel_{unique_id}.innerText = curr + " / " + total;
         }}
@@ -177,10 +207,6 @@ def get_custom_player(audio_bytes, autoplay=False):
                 iconPlay_{unique_id}.style.display = "block";
                 iconPause_{unique_id}.style.display = "none";
             }}
-        }}
-
-        function scrubAudio_{unique_id}(val) {{
-            audio_{unique_id}.currentTime = val;
         }}
     </script>
     """
@@ -235,10 +261,9 @@ if test_voice_btn:
     
     try:
         sample_audio = asyncio.run(play_sample())
-        # Используем кастомный плеер с автозапуском
-        html = get_custom_player(sample_audio, autoplay=True)
-        # Высота 60px идеально подходит под компактный стиль с отступом 8px
-        st.components.v1.html(html, height=60)
+        # Используем кастомный плеер с автозапуском (обычный режим, не липкий)
+        html = get_custom_player(sample_audio, autoplay=True, sticky=False)
+        st.markdown(html, unsafe_allow_html=True)
         
     except Exception as e:
         st.error(f"Ошибка теста: {e}")
@@ -401,7 +426,7 @@ if 'current_story' in st.session_state:
 
     # Показываем плеер, если аудио уже есть
     if st.session_state['current_story']['audio']:
-        st.success("Готово! Можно слушать!")
-        # st.audio(st.session_state['current_story']['audio'], format='audio/mp3')
-        html = get_custom_player(st.session_state['current_story']['audio'])
-        st.components.v1.html(html, height=120)
+        st.success("Готово! Плеер появился внизу экрана ⬇️")
+        # Используем липкий плеер
+        html = get_custom_player(st.session_state['current_story']['audio'], autoplay=True, sticky=True)
+        st.markdown(html, unsafe_allow_html=True)
