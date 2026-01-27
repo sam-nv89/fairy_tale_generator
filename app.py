@@ -8,11 +8,275 @@ import re
 import base64
 
 # --- Функция для создания красивого плеера ---
-def display_audio_player(audio_bytes, label="🎧 Аудио-сказка"):
-    """Отображает нативный Streamlit плеер"""
+def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
+    """Отображает эстетичный плеер (Telegram-style) с геометрически правильной версткой"""
+    import base64
+    import uuid
+    
+    audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode()
+    player_id = uuid.uuid4().hex[:8]
+    autoplay_js = "true" if autoplay else "false"
+    
     st.markdown(f"**{label}**")
-    st.audio(audio_bytes, format='audio/mp3')
-# --- Вспомогательная функция для озвучки (Text-to-Speech) ---
+    
+    html_code = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+        body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }}
+        
+        .player-wrapper {{
+            display: flex;
+            align-items: center;
+            background-color: #f1f3f4;
+            padding: 12px 16px; 
+            border-radius: 16px;
+            gap: 14px;
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            border: 1px solid #e0e0e0;
+            box-sizing: border-box;
+        }}
+        
+        /* Play Button */
+        .play-btn {{
+            width: 42px;
+            height: 42px;
+            background: #3390ec;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            flex-shrink: 0;
+            color: white;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(51, 144, 236, 0.3);
+        }}
+        .play-btn:hover {{ transform: scale(1.05); background: #2885df; }}
+        .play-btn svg {{ width: 18px; height: 18px; fill: white; margin-left: 2px; }}
+        .play-btn svg#pauseIcon_{player_id} {{ margin-left: 0; }}
+        
+        /* Middle Section: Slider + Times */
+        .center-column {{
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            min-width: 0; /* important for flex shrinking */
+        }}
+        
+        .slider-row {{
+            width: 100%;
+            height: 6px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }}
+        
+        .slider {{
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #dce0e5;
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+        }}
+        .slider::-webkit-slider-thumb {{
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3390ec;
+            cursor: pointer;
+            transition: transform 0.1s;
+            margin-top: -4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }}
+        .slider::-webkit-slider-thumb:hover {{ transform: scale(1.3); }}
+        
+        /* Time Labels under slider */
+        .time-row {{
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #888;
+            font-weight: 500;
+            padding: 0 2px;
+            line-height: 1;
+            user-select: none;
+        }}
+        
+        /* Speed Selector */
+        .speed-wrapper {{
+            position: relative;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }}
+        .speed-select {{
+            appearance: none;
+            -webkit-appearance: none;
+            background: rgba(0,0,0,0.03);
+            border: none;
+            padding: 4px 20px 4px 10px; /* space for arrow */
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s;
+            height: 28px;
+        }}
+        .speed-select:hover {{ background: rgba(0,0,0,0.08); color: #3390ec; }}
+        .speed-select:focus {{ outline: none; box-shadow: 0 0 0 2px rgba(51, 144, 236, 0.2); }}
+        
+        .speed-arrow {{
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            fill: #777;
+            pointer-events: none;
+        }}
+        
+        @media (prefers-color-scheme: dark) {{
+            .player-wrapper {{ background-color: #212121; border-color: #333; }}
+            .slider {{ background: #444; }}
+            .time-row {{ color: #aaa; }}
+            .speed-select {{ color: #ccc; background: rgba(255,255,255,0.05); }}
+            .speed-select:hover {{ background: rgba(255,255,255,0.15); color: #fff; }}
+            .speed-arrow {{ fill: #aaa; }}
+        }}
+    </style>
+    </head>
+    <body>
+        <div class="player-wrapper">
+            <button class="play-btn" id="playPauseBtn_{player_id}">
+                <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <div class="center-column">
+                <div class="slider-row">
+                    <input type="range" min="0" max="100" value="0" class="slider" id="seekSlider_{player_id}">
+                </div>
+                <div class="time-row">
+                    <span id="currentTime_{player_id}">0:00</span>
+                    <span id="duration_{player_id}">0:00</span>
+                </div>
+            </div>
+            
+            <div class="speed-wrapper">
+                <select class="speed-select" id="speedSelect_{player_id}" title="Скорость">
+                    <option value="0.5">0.5x</option>
+                    <option value="1.0" selected>1x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2.0">2x</option>
+                </select>
+                <svg class="speed-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+        </div>
+
+        <audio id="audio_{player_id}" preload="metadata">
+            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+        </audio>
+
+        <script>
+            const audio = document.getElementById('audio_{player_id}');
+            const playBtn = document.getElementById('playPauseBtn_{player_id}');
+            const playIcon = document.getElementById('playIcon_{player_id}');
+            const pauseIcon = document.getElementById('pauseIcon_{player_id}');
+            const slider = document.getElementById('seekSlider_{player_id}');
+            const currentTimeEl = document.getElementById('currentTime_{player_id}');
+            const durationEl = document.getElementById('duration_{player_id}');
+            const speedSelect = document.getElementById('speedSelect_{player_id}');
+            
+            let isDragging = false;
+            let autoPlay = {autoplay_js};
+
+            function formatTime(seconds) {{
+                if(isNaN(seconds)) return "0:00";
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                return m + ":" + (s < 10 ? "0" : "") + s;
+            }}
+            
+            function updateSliderBackground(val, max) {{
+                const percent = (val / max) * 100;
+                slider.style.background = `linear-gradient(to right, #3390ec 0%, #3390ec ${{percent}}%, #dce0e5 ${{percent}}%, #dce0e5 100%)`;
+            }}
+
+            playBtn.addEventListener('click', () => {{
+                if (audio.paused) {{
+                    audio.play();
+                }} else {{
+                    audio.pause();
+                }}
+            }});
+
+            audio.addEventListener('play', () => {{
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            }});
+
+            audio.addEventListener('pause', () => {{
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }});
+
+            audio.addEventListener('loadedmetadata', () => {{
+                slider.max = audio.duration;
+                durationEl.textContent = formatTime(audio.duration);
+                if(autoPlay) audio.play().catch(e => console.log("Autoplay blocked", e));
+            }});
+
+            audio.addEventListener('timeupdate', () => {{
+                if (!isDragging) {{
+                    slider.value = audio.currentTime;
+                    updateSliderBackground(audio.currentTime, audio.duration);
+                }}
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }});
+
+            slider.addEventListener('input', () => {{
+                isDragging = true;
+                currentTimeEl.textContent = formatTime(slider.value);
+                updateSliderBackground(slider.value, slider.max);
+            }});
+
+            slider.addEventListener('change', () => {{
+                audio.currentTime = slider.value;
+                isDragging = false;
+            }});
+            
+            audio.addEventListener('ended', () => {{
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+                audio.currentTime = 0;
+                slider.value = 0;
+                slider.style.background = "#dce0e5"; 
+            }});
+
+            speedSelect.addEventListener('change', () => {{
+                audio.playbackRate = parseFloat(speedSelect.value);
+            }});
+        </script>
+    </body>
+    </html>
+    """
+    st.components.v1.html(html_code, height=90) # Немного увеличил высоту для комфорта# Compact height# --- Вспомогательная функция для озвучки (Text-to-Speech) ---
 async def generate_audio_stream(text, voice):
     communicate = edge_tts.Communicate(text, voice)
     audio_data = b""
@@ -62,7 +326,7 @@ if test_voice_btn:
     try:
         sample_audio = asyncio.run(play_sample())
         # Используем кастомный плеер с автозапуском (обычный режим, не липкий)
-        display_audio_player(sample_audio, "🔊 Тест голоса")
+        display_audio_player(sample_audio, "🔊 Тест голоса", autoplay=True)
         
     except Exception as e:
         st.error(f"Ошибка теста: {e}")
