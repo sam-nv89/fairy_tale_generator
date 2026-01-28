@@ -483,7 +483,9 @@ st.set_page_config(
 st.markdown("""
 <style>
     /* Стили для основной кнопки (type="primary") */
-    div.stButton > button[kind="primary"] {
+    div.stButton > button[kind="primary"],
+    div[data-testid="stForm"] button[kind="primary"],
+    div[data-testid="stForm"] button {
         background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
         color: white !important;
         border: none !important;
@@ -497,21 +499,27 @@ st.markdown("""
         letter-spacing: 1px !important;
     }
     
-    div.stButton > button[kind="primary"]:hover {
+    div.stButton > button[kind="primary"]:hover,
+    div[data-testid="stForm"] button[kind="primary"]:hover,
+    div[data-testid="stForm"] button:hover {
         background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
         transform: translateY(-2px) scale(1.03) !important;
         box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
         color: white !important;
     }
     
-    div.stButton > button[kind="primary"]:active {
+    div.stButton > button[kind="primary"]:active,
+    div[data-testid="stForm"] button[kind="primary"]:active,
+    div[data-testid="stForm"] button:active {
         transform: scale(0.95) !important;
         box-shadow: 0 2px 10px rgba(37, 117, 252, 0.2) !important;
         color: white !important;
     }
 
     /* Добавим немного магии при фокусе */
-    div.stButton > button[kind="primary"]:focus {
+    div.stButton > button[kind="primary"]:focus,
+    div[data-testid="stForm"] button[kind="primary"]:focus,
+    div[data-testid="stForm"] button:focus {
         outline: none !important;
         border: none !important;
         box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5) !important;
@@ -582,20 +590,6 @@ with st.form("story_form"):
     submit_btn = st.form_submit_button("✨ Придумать сказку", type="primary")
 
 # Логика обработки
-if submit_btn:
-    # ... (код генерации текста без изменений) ...
-    # Я вставляю только блок плеера внизу, остальное остается как было,
-    # Но так как replace_file_content заменяет блок, мне нужно аккуратно заменить весь нижний кусок или точечно.
-    # Для безопасности лучше заменить секцию плеера внизу файла.
-    
-    pass # Этот блок я не буду менять через этот вызов, сделаю отдельным вызовом для MAIN player.
-
-# ... (пропускаем середину) ...
-
-# Показываем плеер, если аудио уже есть (ВНИЗУ ФАЙЛА)
-# if st.session_state['current_story']['audio']:
-#    st.success("Готово! Можно слушать!")
-#    st.audio(st.session_state['current_story']['audio'], format='audio/mp3')
 
 # Логика обработки
 if submit_btn:
