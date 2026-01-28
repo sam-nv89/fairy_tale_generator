@@ -539,6 +539,12 @@ st.markdown("""
     div[data-testid="stNumberInput"] button:active {
         transform: scale(0.95);
     }
+    
+    /* Стили для фокуса полей ввода (убираем красный, делаем синий) */
+    div[data-testid="stForm"] input:focus {
+        border-color: #2575fc !important;
+        box-shadow: 0 0 0 1px #2575fc !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
