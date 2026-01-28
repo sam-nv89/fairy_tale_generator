@@ -541,7 +541,8 @@ st.markdown("""
     }
     
     /* Стили для фокуса полей ввода (убираем красный, делаем синий) */
-    div[data-testid="stForm"] input:focus {
+    div[data-testid="stTextInput"] > div:focus-within,
+    div[data-testid="stNumberInput"] > div:focus-within {
         border-color: #2575fc !important;
         box-shadow: 0 0 0 1px #2575fc !important;
     }

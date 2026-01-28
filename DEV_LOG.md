@@ -5,9 +5,9 @@
 **Статус**: Внедрено
 
 #### Изменения
-- **CSS**: Добавлены стили для `input:focus`.
-- **Было**: Красная обводка (стандарт Streamlit).
-- **Стало**: Синяя обводка `#2575fc` (в цвет темы).
+- **CSS**: Использован псевдокласс `:focus-within`.
+- **Проблема**: Граница рисуется на контейнере `div`, а не на самом `input`.
+- **Решение**: `div[data-testid="stTextInput"] > div:focus-within` форсирует синий цвет.
 
 #### Коммит
 - `Style: Customize input focus color to match app theme (Blue instead of Red)`
