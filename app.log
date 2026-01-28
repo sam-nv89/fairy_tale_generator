@@ -28,3 +28,4 @@
 2026-01-28 14:24:51,290 - __main__ - INFO - Attempting generation with model: models/gemini-2.5-flash
 2026-01-28 14:26:53,658 - __main__ - INFO - Configuring Gemini API
 2026-01-28 14:26:53,664 - __main__ - INFO - Attempting generation with model: models/gemini-2.0-flash
+2026-01-28 14:26:54,167 - __main__ - INFO - Attempting generation with model: models/gemini-2.5-flash
