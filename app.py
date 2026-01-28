@@ -484,8 +484,7 @@ st.markdown("""
 <style>
     /* Стили для основной кнопки (type="primary") */
     div.stButton > button[kind="primary"],
-    div[data-testid="stForm"] button[kind="primary"],
-    div[data-testid="stForm"] button {
+    div[data-testid="stForm"] button[kind="primary"] {
         background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
         color: white !important;
         border: none !important;
@@ -500,8 +499,7 @@ st.markdown("""
     }
     
     div.stButton > button[kind="primary"]:hover,
-    div[data-testid="stForm"] button[kind="primary"]:hover,
-    div[data-testid="stForm"] button:hover {
+    div[data-testid="stForm"] button[kind="primary"]:hover {
         background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
         transform: translateY(-2px) scale(1.03) !important;
         box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
@@ -509,8 +507,7 @@ st.markdown("""
     }
     
     div.stButton > button[kind="primary"]:active,
-    div[data-testid="stForm"] button[kind="primary"]:active,
-    div[data-testid="stForm"] button:active {
+    div[data-testid="stForm"] button[kind="primary"]:active {
         transform: scale(0.95) !important;
         box-shadow: 0 2px 10px rgba(37, 117, 252, 0.2) !important;
         color: white !important;
@@ -518,8 +515,7 @@ st.markdown("""
 
     /* Добавим немного магии при фокусе */
     div.stButton > button[kind="primary"]:focus,
-    div[data-testid="stForm"] button[kind="primary"]:focus,
-    div[data-testid="stForm"] button:focus {
+    div[data-testid="stForm"] button[kind="primary"]:focus {
         outline: none !important;
         border: none !important;
         box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5) !important;
@@ -583,7 +579,7 @@ with st.form("story_form"):
     with col1:
         name = st.text_input("Имя ребенка", placeholder="Например: Аня")
     with col2:
-        age = st.number_input("Возраст", min_value=2, max_value=12, value=5, step=1)
+        age = st.number_input("Возраст", min_value=1, max_value=12, value=5, step=1)
     
     hobbies = st.text_input("Хобби / Интересы (через запятую)", placeholder="Например: котики, мороженое, космос")
     
