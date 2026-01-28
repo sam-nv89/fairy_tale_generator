@@ -484,7 +484,7 @@ st.markdown("""
 <style>
     /* Стили для основной кнопки (type="primary") */
     div.stButton > button[kind="primary"],
-    div[data-testid="stForm"] button[kind="primary"] {
+    div[data-testid="stFormSubmitButton"] button {
         background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
         color: white !important;
         border: none !important;
@@ -499,7 +499,7 @@ st.markdown("""
     }
     
     div.stButton > button[kind="primary"]:hover,
-    div[data-testid="stForm"] button[kind="primary"]:hover {
+    div[data-testid="stFormSubmitButton"] button:hover {
         background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
         transform: translateY(-2px) scale(1.03) !important;
         box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
@@ -507,7 +507,7 @@ st.markdown("""
     }
     
     div.stButton > button[kind="primary"]:active,
-    div[data-testid="stForm"] button[kind="primary"]:active {
+    div[data-testid="stFormSubmitButton"] button:active {
         transform: scale(0.95) !important;
         box-shadow: 0 2px 10px rgba(37, 117, 252, 0.2) !important;
         color: white !important;
@@ -515,7 +515,7 @@ st.markdown("""
 
     /* Добавим немного магии при фокусе */
     div.stButton > button[kind="primary"]:focus,
-    div[data-testid="stForm"] button[kind="primary"]:focus {
+    div[data-testid="stFormSubmitButton"] button:focus {
         outline: none !important;
         border: none !important;
         box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5) !important;

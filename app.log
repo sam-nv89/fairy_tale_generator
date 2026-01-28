@@ -11,3 +11,4 @@
 2026-01-28 12:37:04,852 - __main__ - INFO - Attempting generation with model: models/gemini-2.0-flash
 2026-01-28 12:37:05,218 - __main__ - INFO - Attempting generation with model: models/gemini-2.5-flash
 2026-01-28 12:38:25,402 - __main__ - INFO - Starting audio generation for voice: ru-RU-DmitryNeural
+2026-01-28 12:38:57,569 - __main__ - INFO - Audio generation successful, size: 775584 bytes
