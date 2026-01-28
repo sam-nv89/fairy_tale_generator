@@ -521,6 +521,24 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5) !important;
         color: white !important;
     }
+
+    /* Стили для кнопок +/- в input number (Возраст) */
+    div[data-testid="stNumberInput"] button {
+        background-color: rgba(37, 117, 252, 0.1) !important;
+        color: #2575fc !important;
+        border: 1px solid rgba(37, 117, 252, 0.2) !important;
+        transition: all 0.2s;
+    }
+
+    div[data-testid="stNumberInput"] button:hover {
+        background-color: #2575fc !important;
+        color: white !important;
+        transform: scale(1.05);
+    }
+    
+    div[data-testid="stNumberInput"] button:active {
+        transform: scale(0.95);
+    }
 </style>
 """, unsafe_allow_html=True)
 
