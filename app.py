@@ -6,10 +6,22 @@ import asyncio
 import io
 import re
 import base64
+import logging
+
+# Конфигурация логирования
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("app.log", encoding='utf-8')
+    ]
+)
+logger = logging.getLogger(__name__)
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
-    """Отображает эстетичный плеер (Telegram-style) с геометрически правильной версткой"""
+    """Профессиональный аудио-плеер с полным набором функций"""
     import base64
     import uuid
     
@@ -24,266 +36,441 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     <html>
     <head>
     <style>
-        body {{ margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }}
-        
-        .player-wrapper {{
-            display: flex;
-            align-items: center;
-            background-color: #f1f3f4;
-            padding: 12px 16px; 
-            border-radius: 16px;
-            gap: 14px;
-            width: 100%;
-            max-width: 650px;
-            margin: 0 auto;
-            border: 1px solid #e0e0e0;
-            box-sizing: border-box;
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: transparent;
         }}
         
-        /* Play Button */
-        .play-btn {{
-            width: 42px;
-            height: 42px;
-            background: #3390ec;
+        .player {{
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 14px;
+            gap: 6px;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            max-width: 100%;
+            margin: 10px auto 0 auto;
+        }}
+        
+        /* Кнопки */
+        .btn {{
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
+            border: none;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            border: none;
+            transition: all 0.15s;
+            background: transparent;
             flex-shrink: 0;
-            color: white;
-            transition: all 0.2s;
-            box-shadow: 0 2px 5px rgba(51, 144, 236, 0.3);
         }}
-        .play-btn:hover {{ transform: scale(1.05); background: #2885df; }}
-        .play-btn svg {{ width: 18px; height: 18px; fill: white; margin-left: 2px; }}
-        .play-btn svg#pauseIcon_{player_id} {{ margin-left: 0; }}
+        .btn svg {{ width: 16px; height: 16px; fill: #666; }}
+        .btn:hover {{ background: rgba(0,0,0,0.06); }}
+        .btn:hover svg {{ fill: #3390ec; }}
         
-        /* Middle Section: Slider + Times */
-        .center-column {{
-            flex-grow: 1;
+        /* Кнопки перемотки - крупнее */
+        .btn-skip {{
+            width: 38px;
+            height: 38px;
+        }}
+        .btn-skip svg {{ width: 20px; height: 20px; fill: #555; }}
+        
+        /* Play */
+        .btn-play {{
+            width: 38px;
+            height: 38px;
+            background: #3390ec;
+            box-shadow: 0 2px 6px rgba(51,144,236,0.35);
+        }}
+        .btn-play svg {{ width: 20px; height: 20px; fill: white; margin-left: 2px; }}
+        .btn-play:hover {{ background: #2080dd; transform: scale(1.05); }}
+        .btn-play:hover svg {{ fill: white; }}
+        
+        .btn-active svg {{ fill: #3390ec; }}
+        
+        /* Повтор - крупнее */
+        .btn-repeat svg {{ width: 20px; height: 20px; stroke-width: 1px; }}
+        
+        /* Прогресс */
+        .center {{
+            flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 6px;
-            min-width: 0; /* important for flex shrinking */
+            gap: 4px;
+            min-width: 0;
         }}
         
-        .slider-row {{
-            width: 100%;
-            height: 6px;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }}
-        
-        .slider {{
+        .progress-bar {{
             -webkit-appearance: none;
             width: 100%;
             height: 4px;
-            background: #dce0e5;
+            background: #e8e8e8;
             border-radius: 2px;
+            cursor: pointer;
             outline: none;
-            cursor: pointer;
-            margin: 0;
-            position: relative;
-            z-index: 2;
         }}
-        .slider::-webkit-slider-thumb {{
+        .progress-bar::-webkit-slider-thumb {{
             -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #3390ec;
-            cursor: pointer;
-            transition: transform 0.1s;
-            margin-top: -4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            width: 0;
+            height: 0;
         }}
-        .slider::-webkit-slider-thumb:hover {{ transform: scale(1.3); }}
         
-        /* Time Labels under slider */
-        .time-row {{
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #888;
+        .time-display {{
+            font-size: 12px;
+            color: #606060;
             font-weight: 500;
-            padding: 0 2px;
-            line-height: 1;
-            user-select: none;
+            white-space: nowrap;
+            margin-left: 8px;
         }}
         
-        /* Speed Selector */
-        .speed-wrapper {{
-            position: relative;
-            flex-shrink: 0;
+        /* Громкость - YouTube style (расширяющийся) */
+        .volume-control {{
             display: flex;
             align-items: center;
+            height: 36px;
+            padding: 0 4px;
+            border-radius: 18px;
+            transition: all 0.2s ease;
         }}
-        .speed-select {{
-            appearance: none;
-            -webkit-appearance: none;
-            background: rgba(0,0,0,0.03);
+        .volume-control:hover {{
+            background: rgba(0,0,0,0.05);
+        }}
+        .volume-btn {{
+            width: 32px;
+            height: 32px;
             border: none;
-            padding: 4px 20px 4px 10px; /* space for arrow */
-            font-size: 12px;
-            font-weight: 700;
-            color: #555;
+            background: transparent;
             cursor: pointer;
-            border-radius: 8px;
-            transition: background 0.2s;
-            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }}
-        .speed-select:hover {{ background: rgba(0,0,0,0.08); color: #3390ec; }}
-        .speed-select:focus {{ outline: none; box-shadow: 0 0 0 2px rgba(51, 144, 236, 0.2); }}
+        .volume-btn svg {{ width: 18px; height: 18px; fill: #606060; }}
+        .volume-btn:hover svg {{ fill: #3390ec; }}
         
-        .speed-arrow {{
-            position: absolute;
-            right: 6px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 8px;
-            height: 8px;
-            fill: #777;
-            pointer-events: none;
+        .volume-slider-wrap {{
+            width: 0;
+            height: 100%; /* Занимаем всю высоту родителя */
+            overflow: hidden;
+            transition: width 0.2s ease;
+            display: flex;
+            align-items: center;
+            /* Убрали padding отсюда, чтобы при width:0 блок исчезал полностью */
+        }}
+        .volume-control:hover .volume-slider-wrap {{
+            width: 76px; /* 52px (slider) + 24px (margins) */
+            margin-left: 4px;
+        }}
+        .volume-slider {{
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            width: 52px !important;
+            height: 20px !important;
+            background: transparent !important;
+            cursor: pointer !important;
+            outline: none !important;
+            border: none !important;
+            margin: 0 12px !important; /* Отступы для thumb слева и справа */
+            padding: 0 !important;
         }}
         
-        @media (prefers-color-scheme: dark) {{
-            .player-wrapper {{ background-color: #212121; border-color: #333; }}
-            .slider {{ background: #444; }}
-            .time-row {{ color: #aaa; }}
-            .speed-select {{ color: #ccc; background: rgba(255,255,255,0.05); }}
-            .speed-select:hover {{ background: rgba(255,255,255,0.15); color: #fff; }}
-            .speed-arrow {{ fill: #aaa; }}
+        /* Webkit Track */
+        .volume-slider::-webkit-slider-runnable-track {{
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #3390ec var(--volume-pct, 100%), #ddd var(--volume-pct, 100%));
+            border-radius: 2px;
+            border: none;
         }}
+        
+        /* Webkit Thumb */
+        .volume-slider::-webkit-slider-thumb {{
+            -webkit-appearance: none !important;
+            appearance: none !important;
+            width: 12px !important;
+            height: 12px !important;
+            border-radius: 50% !important;
+            /* Используем inset shadow для обводки, чтобы избежать проблем с border render */
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e1f0ff 40%, #7ebbf7 100%) !important;
+            box-shadow: inset 0 0 0 1px #3390ec, 0 1px 3px rgba(0,0,0,0.3) !important;
+            cursor: pointer !important;
+            border: none !important;
+            margin-top: -4.5px !important; /* (3px track - 12px thumb) / 2 */
+            transition: transform 0.1s;
+        }}
+        .volume-slider::-webkit-slider-thumb:hover {{
+            transform: scale(1.15);
+        }}
+        
+        /* Firefox Track */
+        .volume-slider::-moz-range-track {{
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #3390ec var(--volume-pct, 100%), #ddd var(--volume-pct, 100%));
+            border-radius: 2px;
+            border: none;
+        }}
+        
+        /* Firefox Thumb */
+        .volume-slider::-moz-range-thumb {{
+            width: 12px !important;
+            height: 12px !important;
+            border-radius: 50% !important;
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e1f0ff 40%, #7ebbf7 100%) !important;
+            box-shadow: inset 0 0 0 1px #3390ec, 0 1px 3px rgba(0,0,0,0.3) !important;
+            cursor: pointer !important;
+            border: none !important;
+            margin-top: -4.5px !important;
+        }}
+        
+        /* Скорость - кнопка */
+        .speed-btn {{
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            background: rgba(0,0,0,0.04);
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            min-width: 36px;
+        }}
+        .speed-btn:hover {{ background: rgba(0,0,0,0.08); color: #3390ec; }}
+        .speed-btn:active {{ transform: scale(0.95); }}
+        
+        /* Скачать */
+        .download-link {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            transition: all 0.15s;
+            text-decoration: none;
+        }}
+        .download-link svg {{ fill: #666; width: 16px; height: 16px; }}
+        .download-link:hover {{ background: rgba(0,0,0,0.06); }}
+        .download-link:hover svg {{ fill: #3390ec; }}
     </style>
     </head>
     <body>
-        <div class="player-wrapper">
-            <button class="play-btn" id="playPauseBtn_{player_id}">
-                <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        <div class="player" id="player_{player_id}">
+            <!-- Перемотка назад -->
+            <button class="btn btn-skip" id="skipBack_{player_id}" title="Назад 10 сек">
+                <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
             </button>
             
-            <div class="center-column">
-                <div class="slider-row">
-                    <input type="range" min="0" max="100" value="0" class="slider" id="seekSlider_{player_id}">
-                </div>
-                <div class="time-row">
-                    <span id="currentTime_{player_id}">0:00</span>
-                    <span id="duration_{player_id}">0:00</span>
+            <!-- Play/Pause -->
+            <button class="btn btn-play" id="playBtn_{player_id}">
+                <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none;margin-left:0"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <!-- Перемотка вперед -->
+            <button class="btn btn-skip" id="skipForward_{player_id}" title="Вперед 10 сек">
+                <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+            </button>
+            
+            <!-- Громкость YouTube-style -->
+            <div class="volume-control">
+                <button class="volume-btn" id="muteBtn_{player_id}" title="Громкость">
+                    <svg id="volumeIcon_{player_id}" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                </button>
+                <div class="volume-slider-wrap">
+                    <input type="range" class="volume-slider" id="volume_{player_id}" min="0" max="1" step="0.05" value="1">
                 </div>
             </div>
             
-            <div class="speed-wrapper">
-                <select class="speed-select" id="speedSelect_{player_id}" title="Скорость">
-                    <option value="0.5">0.5x</option>
-                    <option value="1.0" selected>1x</option>
-                    <option value="1.25">1.25x</option>
-                    <option value="1.5">1.5x</option>
-                    <option value="2.0">2x</option>
-                </select>
-                <svg class="speed-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            <!-- Время YouTube-style -->
+            <span class="time-display" id="timeDisplay_{player_id}">0:00 / 0:00</span>
+            
+            <!-- Прогресс -->
+            <div class="center">
+                <input type="range" class="progress-bar" id="progress_{player_id}" value="0" min="0" step="0.1">
             </div>
+            
+            <!-- Повтор -->
+            <button class="btn btn-repeat" id="repeatBtn_{player_id}" title="Повтор">
+                <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+            </button>
+            
+            <!-- Скорость -->
+            <button class="speed-btn" id="speedBtn_{player_id}" title="Скорость воспроизведения">1x</button>
+            
+            <!-- Скачать -->
+            <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </a>
         </div>
-
+        
         <audio id="audio_{player_id}" preload="metadata">
             <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
         </audio>
-
+        
         <script>
             const audio = document.getElementById('audio_{player_id}');
-            const playBtn = document.getElementById('playPauseBtn_{player_id}');
+            const playBtn = document.getElementById('playBtn_{player_id}');
             const playIcon = document.getElementById('playIcon_{player_id}');
             const pauseIcon = document.getElementById('pauseIcon_{player_id}');
-            const slider = document.getElementById('seekSlider_{player_id}');
-            const currentTimeEl = document.getElementById('currentTime_{player_id}');
-            const durationEl = document.getElementById('duration_{player_id}');
-            const speedSelect = document.getElementById('speedSelect_{player_id}');
+            const progress = document.getElementById('progress_{player_id}');
+            const timeDisplay = document.getElementById('timeDisplay_{player_id}');
+            const volumeSlider = document.getElementById('volume_{player_id}');
+            const muteBtn = document.getElementById('muteBtn_{player_id}');
+            const volumeIcon = document.getElementById('volumeIcon_{player_id}');
+            const repeatBtn = document.getElementById('repeatBtn_{player_id}');
+            const skipBack = document.getElementById('skipBack_{player_id}');
+            const skipForward = document.getElementById('skipForward_{player_id}');
+            const speedBtn = document.getElementById('speedBtn_{player_id}');
             
-            let isDragging = false;
-            let autoPlay = {autoplay_js};
-
-            function formatTime(seconds) {{
-                if(isNaN(seconds)) return "0:00";
-                const m = Math.floor(seconds / 60);
-                const s = Math.floor(seconds % 60);
-                return m + ":" + (s < 10 ? "0" : "") + s;
+            let isRepeat = false;
+            let lastVolume = 1;
+            let totalDuration = 0;
+            
+            const accent = '#3390ec';
+            const track = '#e8e8e8';
+            
+            function formatTime(sec) {{
+                if (isNaN(sec)) return '0:00';
+                const m = Math.floor(sec / 60);
+                const s = Math.floor(sec % 60);
+                return m + ':' + (s < 10 ? '0' : '') + s;
             }}
             
-            function updateSliderBackground(val, max) {{
-                const percent = (val / max) * 100;
-                slider.style.background = `linear-gradient(to right, #3390ec 0%, #3390ec ${{percent}}%, #dce0e5 ${{percent}}%, #dce0e5 100%)`;
+            function updateTimeDisplay() {{
+                timeDisplay.textContent = formatTime(audio.currentTime) + ' / ' + formatTime(totalDuration);
             }}
-
-            playBtn.addEventListener('click', () => {{
-                if (audio.paused) {{
+            
+            function updateProgress(el, val, max) {{
+                const pct = max > 0 ? (val / max) * 100 : 0;
+                el.style.background = `linear-gradient(to right, ${{accent}} ${{pct}}%, ${{track}} ${{pct}}%)`;
+            }}
+            
+            function updateVolumeProgress() {{
+                const pct = audio.volume * 100;
+                volumeSlider.style.setProperty('--volume-pct', pct + '%');
+            }}
+            
+            // Play/Pause
+            playBtn.onclick = () => audio.paused ? audio.play() : audio.pause();
+            audio.onplay = () => {{ playIcon.style.display = 'none'; pauseIcon.style.display = 'block'; }};
+            audio.onpause = () => {{ playIcon.style.display = 'block'; pauseIcon.style.display = 'none'; }};
+            
+            // Metadata
+            audio.onloadedmetadata = () => {{
+                progress.max = audio.duration;
+                totalDuration = audio.duration;
+                updateTimeDisplay();
+                updateProgress(progress, 0, audio.duration);
+                updateVolumeProgress();
+                if ({autoplay_js}) audio.play().catch(e => {{}});
+            }};
+            
+            // Time update
+            audio.ontimeupdate = () => {{
+                progress.value = audio.currentTime;
+                updateTimeDisplay();
+                updateProgress(progress, audio.currentTime, audio.duration);
+            }};
+            
+            // Seek
+            progress.oninput = () => {{
+                audio.currentTime = progress.value;
+                updateProgress(progress, progress.value, audio.duration);
+                updateTimeDisplay();
+            }};
+            
+            // Ended
+            audio.onended = () => {{
+                if (isRepeat) {{
+                    audio.currentTime = 0;
                     audio.play();
                 }} else {{
-                    audio.pause();
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    progress.value = 0;
+                    updateProgress(progress, 0, audio.duration);
                 }}
-            }});
-
-            audio.addEventListener('play', () => {{
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'block';
-            }});
-
-            audio.addEventListener('pause', () => {{
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-            }});
-
-            audio.addEventListener('loadedmetadata', () => {{
-                slider.max = audio.duration;
-                durationEl.textContent = formatTime(audio.duration);
-                if(autoPlay) audio.play().catch(e => console.log("Autoplay blocked", e));
-            }});
-
-            audio.addEventListener('timeupdate', () => {{
-                if (!isDragging) {{
-                    slider.value = audio.currentTime;
-                    updateSliderBackground(audio.currentTime, audio.duration);
-                }}
-                currentTimeEl.textContent = formatTime(audio.currentTime);
-            }});
-
-            slider.addEventListener('input', () => {{
-                isDragging = true;
-                currentTimeEl.textContent = formatTime(slider.value);
-                updateSliderBackground(slider.value, slider.max);
-            }});
-
-            slider.addEventListener('change', () => {{
-                audio.currentTime = slider.value;
-                isDragging = false;
-            }});
+            }};
             
-            audio.addEventListener('ended', () => {{
-                playIcon.style.display = 'block';
-                pauseIcon.style.display = 'none';
-                audio.currentTime = 0;
-                slider.value = 0;
-                slider.style.background = "#dce0e5"; 
-            }});
-
-            speedSelect.addEventListener('change', () => {{
-                audio.playbackRate = parseFloat(speedSelect.value);
-            }});
+            // Skip buttons
+            skipBack.onclick = () => {{ audio.currentTime = Math.max(0, audio.currentTime - 10); }};
+            skipForward.onclick = () => {{ audio.currentTime = Math.min(audio.duration, audio.currentTime + 10); }};
+            
+            // Repeat
+            repeatBtn.onclick = () => {{
+                isRepeat = !isRepeat;
+                repeatBtn.classList.toggle('btn-active', isRepeat);
+            }};
+            
+            // Volume
+            volumeSlider.oninput = () => {{
+                audio.volume = volumeSlider.value;
+                lastVolume = audio.volume > 0 ? audio.volume : lastVolume;
+                updateVolumeProgress();
+                updateVolumeIcon();
+            }};
+            
+            muteBtn.onclick = () => {{
+                if (audio.volume > 0) {{
+                    lastVolume = audio.volume;
+                    audio.volume = 0;
+                    volumeSlider.value = 0;
+                }} else {{
+                    audio.volume = lastVolume;
+                    volumeSlider.value = lastVolume;
+                }}
+                updateVolumeProgress();
+                updateVolumeIcon();
+            }};
+            
+            function updateVolumeIcon() {{
+                if (audio.volume === 0) {{
+                    volumeIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
+                }} else if (audio.volume < 0.5) {{
+                    volumeIcon.innerHTML = '<path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>';
+                }} else {{
+                    volumeIcon.innerHTML = '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+                }}
+            }}
+            
+            // Speed - циклическое переключение
+            const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+            let speedIndex = 2; // 1x
+            speedBtn.onclick = () => {{
+                speedIndex = (speedIndex + 1) % speeds.length;
+                audio.playbackRate = speeds[speedIndex];
+                speedBtn.textContent = speeds[speedIndex] + 'x';
+            }};
         </script>
     </body>
     </html>
     """
-    st.components.v1.html(html_code, height=90) # Немного увеличил высоту для комфорта# Compact height# --- Вспомогательная функция для озвучки (Text-to-Speech) ---
+    st.components.v1.html(html_code, height=80)
+
+# --- Вспомогательная функция для озвучки (Text-to-Speech) ---
 async def generate_audio_stream(text, voice):
-    communicate = edge_tts.Communicate(text, voice)
-    audio_data = b""
-    async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
-            audio_data += chunk["data"]
-    return io.BytesIO(audio_data)
+    logger.info(f"Starting audio generation for voice: {voice}")
+    try:
+        communicate = edge_tts.Communicate(text, voice)
+        audio_data = b""
+        async for chunk in communicate.stream():
+            if chunk["type"] == "audio":
+                audio_data += chunk["data"]
+        logger.info(f"Audio generation successful, size: {len(audio_data)} bytes")
+        return io.BytesIO(audio_data)
+    except Exception as e:
+        logger.error(f"Audio generation failed: {e}")
+        raise e
 
 # Настройка страницы
 st.set_page_config(
@@ -382,6 +569,7 @@ if submit_btn:
 
     try:
         # 2. Настройка модели (используем REST для стабильности)
+        logger.info("Configuring Gemini API")
         genai.configure(api_key=api_key, transport='rest')
         
         # 3. Генерация текста
@@ -403,6 +591,7 @@ if submit_btn:
             for model_name in model_candidates:
                 try:
                     # Попытка создания модели
+                    logger.info(f"Attempting generation with model: {model_name}")
                     model = genai.GenerativeModel(model_name)
                     
                     prompt = f"""

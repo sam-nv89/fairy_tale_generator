@@ -1,51 +1,72 @@
-# Архитектура проекта - Генератор Аудио-Сказок
+# Architecture Documentation - Fairy Tale Generator
 
-## Обзор
-Это одностраничное веб-приложение (SPA), созданное на Streamlit, представляющее собой MVP генератора сказок с использованием ИИ. Приложение принимает параметры от пользователя (имя ребенка, возраст, хобби), генерирует историю через Google Gemini и озвучивает её с помощью Microsoft Edge TTS.
+## System Overview
+The **Fairy Tale Generator** is a web-based application designed to create personalized bedtime stories for children. It leverages Generative AI (Google Gemini) to author unique content based on user inputs (name, age, hobbies) and converts the text into natural-sounding speech using Neural TTS (Edge TTS).
 
-## Ключевые архитектурные решения
+## Technology Stack
+- **Frontend/Backend Framework**: [Streamlit](https://streamlit.io/) (Python)
+- **AI Core**: [Google Gemini Pro/Flash](https://ai.google.dev/) (Text Generation)
+- **Text-to-Speech**: [Edge TTS](https://github.com/rany2/edge-tts) (Neural Audio Synthesis)
+- **Audio Player**: Custom HTML5/CSS3/JS Component (Embedded in Streamlit)
+- **Deployment**: Local Python Environment (Expandable to Streamlit Cloud/Docker)
 
-### 1. Фронтенд и Управление состоянием
-- **Фреймворк**: Streamlit (Python-UI).
-- **Обоснование**: Возможность быстрого прототипирования, встроенная обработка состояния виджетов.
-- **Компоненты**:
-    - **Боковая панель**: Информация о проекте (скрыта/минималистична в финальной версии).
-    - **Хедер**: Выбор голоса (Дмитрий/Светлана) и кнопка проверки.
-    - **Основная область**: Форма ввода, отображение текста сказки и кастомный аудиоплеер.
-- **Управление состоянием**: Используется `st.session_state` для сохранения:
-    - `current_story`: Заголовок, текст и аудио-файл текущей сказки.
-    - Это предотвращает потерю данных при перезагрузке страницы (rerun) после нажатия кнопок.
+## Project Structure
+```
+Project Root
+├── app.py                # Main Application Logic (UI + Backend)
+├── requirements.txt      # Python Dependencies
+├── .streamlit/           # Streamlit Configuration
+│   └── secrets.toml      # API Keys (Local development)
+├── app.log               # Application Runtime Logs
+└── ARCHITECTURE.md       # This Document
+```
 
-### 2. ИИ и Генерация текста
-- **Провайдер**: Google Gemini API (модель: `gemini-1.5-flash` или `gemini-2.0-flash-exp`).
-- **Аутентификация**: Через `st.secrets` для публичного использования без показа ключа, либо ручной ввод (как запасной вариант).
-- **Промпт-инжиниринг**:
-    - Строгая структура: "Заголовок" + перенос строки + "Текст".
-    - Ролевая модель: "Добрый сказочник", "Короткие абзацы", "Простой язык".
-    - Язык: Строго русский.
+## Data Flow
+The application follows a linear, stateless data flow:
 
-### 3. Аудио и Синтез речи (TTS)
-- **Движок**: `edge-tts` (Python-обертка для Microsoft Edge Online TTS).
-- **Почему Edge-TTS?**:
-    - Бесплатно (не требует API ключа).
-    - Высокое качество нейронных голосов (`ru-RU-DmitryNeural`, `ru-RU-SvetlanaNeural`).
-    - Меньшая задержка по сравнению с gTTS.
-- **Асинхронность**: Streamlit работает синхронно, а `edge-tts` — асинхронно. Используется мост `asyncio.run()` внутри вспомогательных функций.
-- **Поток данных**: Текст -> поток `edge-tts` -> буфер `BytesIO` -> кодирование в Base64 -> HTML5 Аудио Плеер.
+```mermaid
+sequenceDiagram
+    participant User
+    participant StreamlitUI as Streamlit App
+    participant GeminiAPI as Google Gemini
+    participant TTS as Edge TTS
+    participant AudioPlayer as Custom Player
 
-### 4. Кастомные UI компоненты
-- **Аудио Плеер**:
-    - **Проблема**: Стандартный `st.audio` выглядит устаревшим и плохо кастомизируется.
-    - **Решение**: Свой HTML/CSS/JS плеер, внедряемый через `st.components.v1.html`.
-    - **Функции**: Base64 эмбеддинг, градиентный фон, поддержка перемотки (seek slider), формат времени `MM:SS`.
-    - **Безопасность**: Аудио передается как байт-строка, временные файлы на диске не создаются.
+    User->>StreamlitUI: Enters Name, Age, Hobbies
+    User->>StreamlitUI: Clicks "Generate Story"
+    
+    rect rgb(240, 248, 255)
+        note right of StreamlitUI: Text Generation Phase
+        StreamlitUI->>GeminiAPI: Send Prompt (Context + Inputs)
+        GeminiAPI-->>StreamlitUI: Returns Generated Story (Text)
+    end
+    
+    StreamlitUI->>User: Display Story Text
+    
+    User->>StreamlitUI: Clicks "Generate Audio"
+    
+    rect rgb(255, 240, 245)
+        note right of StreamlitUI: Audio Synthesis Phase
+        StreamlitUI->>TTS: Send Text + Voice Selection
+        TTS-->>StreamlitUI: Returns Audio Stream (MP3 Bytes)
+    end
+    
+    StreamlitUI->>AudioPlayer: Embed Audio Data (Base64)
+    AudioPlayer-->>User: Visual Player Interface (Play/Pause/Seek)
+```
 
-## Структура файлов
-- `app.py`: Монолитный входной файл, содержащий UI, логику и асинхронные функции.
-- `.streamlit/secrets.toml`: Локальная конфигурация с ключами (игнорируется Git).
-- `requirements.txt`: Список зависимостей Python.
+## Key Components
 
-## Масштабируемость
-- **База данных**: Сейчас состояние хранится в RAM. В будущем: Supabase/PostgreSQL для сохранения любимых сказок.
-- **Модели**: Легкое переключение на OpenAI/Claude через конфиг при необходимости.
-- **Голоса**: Расширение до клонирования голосов (например, голоса родителей) через ElevenLabs в Pro-версии.
+### 1. `app.py` (The Monolith)
+The entire application logic is contained within a single file for simplicity and portability.
+- **UI Render**: Uses standard Streamlit widgets (`st.text_input`, `st.button`).
+- **State Management**: Uses `st.session_state` to persist the generated story and audio between interacting re-runs.
+- **Custom Player**: A `display_audio_player` function injects a modern, responsive HTML audio player using `st.components.v1.html`. This bypasses Streamlit's native player limitations.
+
+### 2. Logging
+Built-in Python `logging` tracks critical events:
+- Application startup.
+- API Configuration status.
+- Generation start/success/failure.
+- TTS performance metrics.
+Logs are output to both `console` and `app.log`.
