@@ -479,6 +479,45 @@ st.set_page_config(
     layout="centered"
 )
 
+# --- Магия для кнопки ---
+st.markdown("""
+<style>
+    /* Стили для основной кнопки (type="primary") */
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 2rem;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    div.stButton > button[kind="primary"]:hover {
+        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5);
+    }
+    
+    div.stButton > button[kind="primary"]:active {
+        transform: scale(0.95);
+        box-shadow: 0 2px 10px rgba(37, 117, 252, 0.2);
+    }
+
+    /* Добавим немного магии при фокусе */
+    div.stButton > button[kind="primary"]:focus {
+        outline: none;
+        border: none;
+        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5);
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # --- Хедер с настройками (Заголовок слева, Выбор голоса справа) ---
 col_header_left, col_header_right = st.columns([7, 3])
 
