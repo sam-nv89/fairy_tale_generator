@@ -1,28 +1,28 @@
-# Architecture Documentation - Fairy Tale Generator
+# Документация Архитектуры - Генератор Сказок
 
-## System Overview
-The **Fairy Tale Generator** is a web-based application designed to create personalized bedtime stories for children. It leverages Generative AI (Google Gemini) to author unique content based on user inputs (name, age, hobbies) and converts the text into natural-sounding speech using Neural TTS (Edge TTS).
+## Обзор Системы
+**Генератор Сказок** — это веб-приложение, созданное для генерации персонализированных сказок на ночь для детей. Оно использует Generative AI (Google Gemini) для создания уникального контента на основе данных пользователя (имя, возраст, хобби) и преобразует текст в естественную речь с помощью Neural TTS (Edge TTS).
 
-## Technology Stack
-- **Frontend/Backend Framework**: [Streamlit](https://streamlit.io/) (Python)
-- **AI Core**: [Google Gemini Pro/Flash](https://ai.google.dev/) (Text Generation)
-- **Text-to-Speech**: [Edge TTS](https://github.com/rany2/edge-tts) (Neural Audio Synthesis)
-- **Audio Player**: Custom HTML5/CSS3/JS Component (Embedded in Streamlit)
-- **Deployment**: Local Python Environment (Expandable to Streamlit Cloud/Docker)
+## Технологический Стек
+- **Frontend/Backend Фреймворк**: [Streamlit](https://streamlit.io/) (Python)
+- **ИИ Ядро**: [Google Gemini Pro/Flash](https://ai.google.dev/) (Генерация текста)
+- **Синтез Речи**: [Edge TTS](https://github.com/rany2/edge-tts) (Нейронный синтез аудио)
+- **Аудио Плеер**: Кастомный HTML5/CSS3/JS Компонент (Встроен в Streamlit)
+- **Развертывание**: Локальное Python окружение (Масштабируемо до Streamlit Cloud/Docker)
 
-## Project Structure
+## Структура Проекта
 ```
-Project Root
-├── app.py                # Main Application Logic (UI + Backend)
-├── requirements.txt      # Python Dependencies
-├── .streamlit/           # Streamlit Configuration
-│   └── secrets.toml      # API Keys (Local development)
-├── app.log               # Application Runtime Logs
-└── ARCHITECTURE.md       # This Document
+Корень Проекта
+├── app.py                # Основная логика приложения (UI + Backend)
+├── requirements.txt      # Зависимости Python
+├── .streamlit/           # Конфигурация Streamlit
+│   └── secrets.toml      # API ключи (Локальная разработка)
+├── app.log               # Логи работы приложения
+└── ARCHITECTURE.md       # Этот документ
 ```
 
-## Data Flow
-The application follows a linear, stateless data flow:
+## Поток Данных (Data Flow)
+Приложение следует линейному, stateless потоку данных:
 
 ```mermaid
 sequenceDiagram
@@ -30,43 +30,43 @@ sequenceDiagram
     participant StreamlitUI as Streamlit App
     participant GeminiAPI as Google Gemini
     participant TTS as Edge TTS
-    participant AudioPlayer as Custom Player
+    participant AudioPlayer as Кастомный Плеер
 
-    User->>StreamlitUI: Enters Name, Age, Hobbies
-    User->>StreamlitUI: Clicks "Generate Story"
+    User->>StreamlitUI: Вводит Имя, Возраст, Хобби
+    User->>StreamlitUI: Нажимает "Придумать сказку"
     
     rect rgb(240, 248, 255)
-        note right of StreamlitUI: Text Generation Phase
-        StreamlitUI->>GeminiAPI: Send Prompt (Context + Inputs)
-        GeminiAPI-->>StreamlitUI: Returns Generated Story (Text)
+        note right of StreamlitUI: Фаза Генерации Текста
+        StreamlitUI->>GeminiAPI: Отправляет Промпт (Контекст + Вводные)
+        GeminiAPI-->>StreamlitUI: Возвращает Текст Сказки
     end
     
-    StreamlitUI->>User: Display Story Text
+    StreamlitUI->>User: Отображает Текст Сказки
     
-    User->>StreamlitUI: Clicks "Generate Audio"
+    User->>StreamlitUI: Нажимает "Озвучить сказку"
     
     rect rgb(255, 240, 245)
-        note right of StreamlitUI: Audio Synthesis Phase
-        StreamlitUI->>TTS: Send Text + Voice Selection
-        TTS-->>StreamlitUI: Returns Audio Stream (MP3 Bytes)
+        note right of StreamlitUI: Фаза Синтеза Аудио
+        StreamlitUI->>TTS: Отправляет Текст + Выбранный Голос
+        TTS-->>StreamlitUI: Возвращает Аудио Поток (MP3 Bytes)
     end
     
-    StreamlitUI->>AudioPlayer: Embed Audio Data (Base64)
-    AudioPlayer-->>User: Visual Player Interface (Play/Pause/Seek)
+    StreamlitUI->>AudioPlayer: Встраивает Аудио Данные (Base64)
+    AudioPlayer-->>User: Визуальный Интерфейс Плеера (Play/Pause/Seek)
 ```
 
-## Key Components
+## Ключевые Компоненты
 
-### 1. `app.py` (The Monolith)
-The entire application logic is contained within a single file for simplicity and portability.
-- **UI Render**: Uses standard Streamlit widgets (`st.text_input`, `st.button`).
-- **State Management**: Uses `st.session_state` to persist the generated story and audio between interacting re-runs.
-- **Custom Player**: A `display_audio_player` function injects a modern, responsive HTML audio player using `st.components.v1.html`. This bypasses Streamlit's native player limitations.
+### 1. `app.py` (Монолит)
+Вся логика приложения содержится в одном файле для простоты и переносимости.
+- **Отрисовка UI**: Использует стандартные виджеты Streamlit (`st.text_input`, `st.button`).
+- **Управление Состоянием**: Использует `st.session_state` для сохранения сгенерированной сказки и аудио между перезагрузками страницы.
+- **Кастомный Плеер**: Функция `display_audio_player` внедряет современный, адаптивный HTML аудио плеер через `st.components.v1.html`. Это позволяет обойти ограничения стандартного плеера Streamlit.
 
-### 2. Logging
-Built-in Python `logging` tracks critical events:
-- Application startup.
-- API Configuration status.
-- Generation start/success/failure.
-- TTS performance metrics.
-Logs are output to both `console` and `app.log`.
+### 2. Логирование
+Встроенный Python `logging` отслеживает критические события:
+- Запуск приложения.
+- Статус конфигурации API.
+- Старт/успех/ошибка генерации.
+- Метрики производительности TTS.
+Логи выводятся в `console` и файл `app.log`.
