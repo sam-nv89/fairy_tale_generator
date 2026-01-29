@@ -1,3 +1,8 @@
+"""
+Точка входа приложения Fairy Tale Generator.
+Этот файл управляет маршрутизацией (Лендинг vs Генератор), состоянием сессии
+и основной бизнес-логикой (интеграция с LLM и TTS).
+"""
 import streamlit as st
 import streamlit.components.v1 as components
 import google.generativeai as genai
@@ -18,6 +23,13 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Импорт модулей авторизации и лендинга
+from auth import init_auth_state, is_authenticated, sign_out, get_current_user
+from landing import render_full_landing_page, render_landing_header
+
+# Инициализация состояния авторизации
+init_auth_state()
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
@@ -549,6 +561,82 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# =====================================
+# РОУТИНГ: Лендинг vs Генератор
+# =====================================
+
+# Инициализируем страницу в сессии
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'landing' if not is_authenticated() else 'generator'
+
+# Sidebar для навигации
+with st.sidebar:
+    # Стили для сайдбара - темный текст на светлом фоне
+    st.markdown("""
+    <style>
+    [data-testid="stSidebar"] {
+        background: #f8f9fa !important;
+    }
+    [data-testid="stSidebar"] * {
+        color: #1a1a2e !important;
+    }
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: #1a1a2e !important;
+    }
+    [data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+    }
+    [data-testid="stSidebar"] hr {
+        border-color: rgba(0, 0, 0, 0.1) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("### 🧚 Сказочник")
+    
+    if is_authenticated():
+        user = get_current_user()
+        user_email = st.session_state.get('user_email', 'Пользователь')
+        plan = st.session_state.get('user_plan', 'free')
+        plan_badge = "🆓 Free" if plan == 'free' else "⭐ Pro"
+        
+        st.markdown(f"**{user_email}**")
+        st.markdown(f"Тариф: {plan_badge}")
+        st.markdown("---")
+        
+        # Навигация для авторизованных
+        if st.button("✨ Генератор", use_container_width=True):
+            st.session_state.current_page = 'generator'
+            st.rerun()
+        
+        if st.button("📚 Библиотека", use_container_width=True, disabled=True):
+            st.info("Скоро!")
+        
+        st.markdown("---")
+        if st.button("🚪 Выйти", use_container_width=True):
+            sign_out()
+            st.session_state.current_page = 'landing'
+            st.rerun()
+    else:
+        st.markdown("Добро пожаловать!")
+        st.markdown("---")
+        if st.button("🏠 На главную", use_container_width=True):
+            st.session_state.current_page = 'landing'
+            st.rerun()
+
+# =====================================
+# РЕНДЕРИНГ СТРАНИЦ
+# =====================================
+
+# Если пользователь не авторизован и на лендинге — показываем лендинг
+if st.session_state.current_page == 'landing' and not is_authenticated():
+    render_full_landing_page()
+    st.stop()  # Останавливаем выполнение, чтобы не показывать генератор
+
+# Если пользователь авторизован, показываем генератор
 # --- Хедер с настройками (Заголовок слева, Выбор голоса справа) ---
 col_header_left, col_header_right = st.columns([7, 3])
 

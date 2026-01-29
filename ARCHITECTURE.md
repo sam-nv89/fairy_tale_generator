@@ -13,60 +13,83 @@
 ## Структура Проекта
 ```
 Корень Проекта
-├── app.py                # Основная логика приложения (UI + Backend)
+├── app.py                # Точка входа: Роутинг, UI Генератора, Плеер
+├── auth.py               # Модуль авторизации (Supabase Integration)
+├── landing.py            # UI Лендинга и маркетинговые компоненты
+├── styles.py             # Централизованные CSS стили и темы
 ├── requirements.txt      # Зависимости Python
 ├── .streamlit/           # Конфигурация Streamlit
-│   └── secrets.toml      # API ключи (Локальная разработка)
+│   └── secrets.toml      # API ключи (Gemini + Supabase)
 ├── app.log               # Логи работы приложения
 └── ARCHITECTURE.md       # Этот документ
 ```
 
 ## Поток Данных (Data Flow)
-Приложение следует линейному, stateless потоку данных:
+Приложение следует линейному, stateless потоку данных с проверкой сессии:
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant StreamlitUI as Streamlit App
-    participant GeminiAPI as Google Gemini
-    participant TTS as Edge TTS
-    participant AudioPlayer as Кастомный Плеер
+    participant App as app.py (Router)
+    participant Auth as auth.py
+    participant Landing as landing.py
+    participant Generator as Logic (Gemini/TTS)
 
-    User->>StreamlitUI: Вводит Имя, Возраст, Хобби
-    User->>StreamlitUI: Нажимает "Придумать сказку"
+    User->>App: Открывает приложение
+    App->>Auth: Проверка is_authenticated()
+    
+    alt Не авторизован
+        Auth-->>App: False
+        App->>Landing: Рендер Лендинга
+        Landing->>User: Показ преимуществ и Формы Входа
+        User->>Auth: Вход / Регистрация
+    else Авторизован
+        Auth-->>App: True
+        App->>Generator: Рендер Интерфейса Генератора
+    end
     
     rect rgb(240, 248, 255)
-        note right of StreamlitUI: Фаза Генерации Текста
-        StreamlitUI->>GeminiAPI: Отправляет Промпт (Контекст + Вводные)
-        GeminiAPI-->>StreamlitUI: Возвращает Текст Сказки
+        note right of Generator: Фаза Генерации
+        User->>Generator: Ввод данных -> "Придумать сказку"
+        Generator->>GeminiAPI: Запрос текста
+        GeminiAPI-->>Generator: Текст сказки
     end
-    
-    StreamlitUI->>User: Отображает Текст Сказки
-    
-    User->>StreamlitUI: Нажимает "Озвучить сказку"
     
     rect rgb(255, 240, 245)
-        note right of StreamlitUI: Фаза Синтеза Аудио
-        StreamlitUI->>TTS: Отправляет Текст + Выбранный Голос
-        TTS-->>StreamlitUI: Возвращает Аудио Поток (MP3 Bytes)
+        note right of Generator: Фаза Озвучки
+        User->>Generator: "Озвучить"
+        Generator->>TTS: Синтез речи
+        TTS-->>Generator: Аудио поток
     end
-    
-    StreamlitUI->>AudioPlayer: Встраивает Аудио Данные (Base64)
-    AudioPlayer-->>User: Визуальный Интерфейс Плеера (Play/Pause/Seek)
 ```
 
 ## Ключевые Компоненты
 
-### 1. `app.py` (Монолит)
-Вся логика приложения содержится в одном файле для простоты и переносимости.
-- **Отрисовка UI**: Использует стандартные виджеты Streamlit (`st.text_input`, `st.button`).
-- **Управление Состоянием**: Использует `st.session_state` для сохранения сгенерированной сказки и аудио между перезагрузками страницы.
-- **Кастомный Плеер**: Функция `display_audio_player` внедряет современный, адаптивный HTML аудио плеер через `st.components.v1.html`. Это позволяет обойти ограничения стандартного плеера Streamlit.
+### 1. `app.py` (Оркестратор)
+Главный файл, управляющий состоянием сессии (`st.session_state`) и маршрутизацией.
+- **Роутинг**: Переключает отображение между `landing.py` и внутренним интерфейсом генератора.
+- **Плеер**: Содержит функцию `display_audio_player` для рендеринга кастомного HTML5 плеера.
+- **Логика генерации**: Взаимодействует с `google.generativeai` и `edge_tts`.
 
-### 2. Логирование
+### 2. `auth.py` (Безопасность)
+Обертка над Supabase Client.
+- Реализует функции `sign_up`, `sign_in`, `sign_out`.
+- Управляет сохранением пользователя в `st.session_state`.
+- Изолирует работу с секретными ключами базы данных.
+
+### 3. `landing.py` (Маркетинг)
+Отвечает за "лицо" приложения.
+- Содержит функции для рендера секций: Hero, Benefits, Pricing.
+- Инкапсулирует верстку, специфичную для неавторизованных пользователей.
+
+### 4. `styles.py` (Дизайн)
+Хранилище CSS-стилей и тем.
+- Определяет глобальные переменные цветов (`THEME_COLORS`).
+- Содержит CSS для glassmorphism эффектов и анимаций (например, звездный фон).
+
+### 5. Логирование
 Встроенный Python `logging` отслеживает критические события:
-- Запуск приложения.
 - Статус конфигурации API.
-- Старт/успех/ошибка генерации.
-- Метрики производительности TTS.
+- Успех/ошибка генерации текста и аудио.
+- Проблемы с авторизацией.
 Логи выводятся в `console` и файл `app.log`.
