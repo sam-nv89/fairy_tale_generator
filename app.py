@@ -488,8 +488,18 @@ async def generate_audio_stream(text, voice):
 st.set_page_config(
     page_title="Сказки для детей",
     page_icon="🧚",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
+
+# Скрываем сайдбар полностью через CSS
+st.markdown("""
+<style>
+    section[data-testid="stSidebar"][aria-expanded="true"] {
+        display: none;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # --- Магия для кнопки ---
 st.markdown("""
@@ -561,6 +571,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 # =====================================
 # РОУТИНГ: Лендинг vs Генератор
 # =====================================
@@ -569,63 +580,6 @@ st.markdown("""
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'landing' if not is_authenticated() else 'generator'
 
-# Sidebar для навигации
-with st.sidebar:
-    # Стили для сайдбара - темный текст на светлом фоне
-    st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        background: #f8f9fa !important;
-    }
-    [data-testid="stSidebar"] * {
-        color: #1a1a2e !important;
-    }
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3 {
-        color: #1a1a2e !important;
-    }
-    [data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-    }
-    [data-testid="stSidebar"] hr {
-        border-color: rgba(0, 0, 0, 0.1) !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("### 🧚 Сказочник")
-    
-    if is_authenticated():
-        user = get_current_user()
-        user_email = st.session_state.get('user_email', 'Пользователь')
-        plan = st.session_state.get('user_plan', 'free')
-        plan_badge = "🆓 Free" if plan == 'free' else "⭐ Pro"
-        
-        st.markdown(f"**{user_email}**")
-        st.markdown(f"Тариф: {plan_badge}")
-        st.markdown("---")
-        
-        # Навигация для авторизованных
-        if st.button("✨ Генератор", use_container_width=True):
-            st.session_state.current_page = 'generator'
-            st.rerun()
-        
-        if st.button("📚 Библиотека", use_container_width=True, disabled=True):
-            st.info("Скоро!")
-        
-        st.markdown("---")
-        if st.button("🚪 Выйти", use_container_width=True):
-            sign_out()
-            st.session_state.current_page = 'landing'
-            st.rerun()
-    else:
-        st.markdown("Добро пожаловать!")
-        st.markdown("---")
-        if st.button("🏠 На главную", use_container_width=True):
-            st.session_state.current_page = 'landing'
-            st.rerun()
 
 # =====================================
 # РЕНДЕРИНГ СТРАНИЦ
@@ -637,6 +591,22 @@ if st.session_state.current_page == 'landing' and not is_authenticated():
     st.stop()  # Останавливаем выполнение, чтобы не показывать генератор
 
 # Если пользователь авторизован, показываем генератор
+
+# --- Верхняя панель (Навигация) ---
+# Отображаем email и кнопку выхода
+user_email = st.session_state.get('user_email', 'User')
+cols = st.columns([6, 2, 2])
+with cols[0]:
+    pass # Spacer
+with cols[1]:
+    st.markdown(f"<div style='text-align:right; padding-top: 10px; opacity: 0.7'>{user_email}</div>", unsafe_allow_html=True)
+with cols[2]:
+    if st.button("🚪 Выйти", key="logout_btn", use_container_width=True):
+        sign_out()
+        st.rerun()
+
+st.divider()
+
 # --- Хедер с настройками (Заголовок слева, Выбор голоса справа) ---
 col_header_left, col_header_right = st.columns([7, 3])
 
@@ -682,9 +652,9 @@ st.markdown("---")
 if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
 else:
-    # Если ключа нет в секретах, показываем в сайдбаре (минималистично)
-    with st.sidebar:
-        api_key = st.text_input("🔑 API Key", type="password")
+    # Если ключа нет в секретах, показываем предупреждение и инпут в основном поле
+    st.warning("⚠️ API ключ Google не найден в secrets.toml")
+    api_key = st.text_input("🔑 Введите ваш Google API Key", type="password")
 
 # Основная форма
 with st.form("story_form"):
@@ -697,8 +667,6 @@ with st.form("story_form"):
     hobbies = st.text_input("Хобби / Интересы (через запятую)", placeholder="Например: котики, мороженое, космос")
     
     submit_btn = st.form_submit_button("✨ Придумать сказку", type="primary")
-
-# Логика обработки
 
 # Логика обработки
 if submit_btn:

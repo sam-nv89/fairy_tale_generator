@@ -26,6 +26,30 @@ LANDING_BASE_CSS = """
 /* Сброс и базовые стили */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Скрываем якорные ссылки (цепочки) у заголовков - Усиленный вариант */
+.stMarkdown h1 a, .stMarkdown h2 a, .stMarkdown h3 a,
+.stMarkdown h4 a, .stMarkdown h5 a, .stMarkdown h6 a,
+[data-testid="stMarkdownContainer"] h1 > a,
+[data-testid="stMarkdownContainer"] h2 > a,
+[data-testid="stMarkdownContainer"] h3 > a,
+[data-testid="stMarkdownContainer"] h4 > a,
+[data-testid="stMarkdownContainer"] h5 > a,
+[data-testid="stMarkdownContainer"] h6 > a,
+a.anchor-link,
+[data-testid="stHeader"] a {
+    display: none !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    content: none !important;
+}
+
+/* Дополнительно скрываем иконки внутри ссылок, если они есть */
+h1 a svg, h2 a svg, h3 a svg, h4 a svg, h5 a svg, h6 a svg {
+    display: none !important;
+}
+
 .landing-page {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
