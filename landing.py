@@ -68,94 +68,74 @@ def inject_landing_styles():
     /* =========================================
        2. SCROLLBAR & BEHAVIOR
        ========================================= */
-    html {
-        scroll-behavior: smooth !important;
+    /* Force NO horizontal scrollbar */
+    html, body, .stApp, [data-testid="stAppViewContainer"] {
+        overflow-x: hidden !important;
     }
-
-    /* Target ALL possible scroll containers in Streamlit */
-    ::-webkit-scrollbar {
-        width: 14px !important;
-        height: 14px !important;
-        background: transparent !important;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 10px !important;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
-        border-radius: 10px !important;
-        border: 3px solid rgba(0,0,0,0) !important; /* Creates padding effect */
-        background-clip: content-box !important;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
-        background-clip: border-box !important; /* Fills entirely on hover */
-        border: 0 !important;
-    }
-    
-    ::-webkit-scrollbar-corner {
-        background: transparent !important;
-    }
-    
-    /* Firefox Support */
-    * {
-        scrollbar-width: thin !important;
-        scrollbar-color: #ff00cc rgba(255, 255, 255, 0.05) !important;
-    }
-    .block-container {
-        max-width: 1000px !important;
-        padding-top: 1rem !important;
-        padding-bottom: 3rem !important;
-        margin-top: -3rem !important; /* Force pull up */
-    }
-    
-    /* =========================================
-       2. SCROLLBAR & BEHAVIOR
-       ========================================= */
 
     html {
         scroll-behavior: smooth !important;
     }
 
-    /* Target ALL possible scroll containers in Streamlit */
+    /* Scrollbar styles - Auto-hiding & Stylish */
+    
+    /* Scrollbar styles - Auto-hiding & Stylish */
+    
+    /* 1. Track is always transparent */
     ::-webkit-scrollbar {
-        width: 14px !important;
-        height: 14px !important;
-        background: transparent !important;
+        width: 20px !important; /* Requested wider width */
+        height: 20px !important;
+        background-color: transparent !important;
     }
 
     ::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 10px !important;
+        background: transparent !important;
     }
 
+    /* 2. Thumb Default State (Invisible) */
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
+        background-color: transparent !important; /* Strictly invisible */
         border-radius: 10px !important;
-        border: 3px solid rgba(0,0,0,0) !important; /* Creates padding effect */
+        border: 5px solid transparent !important; /* Increased padding for floating look */
         background-clip: content-box !important;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important;
+        transition: background-color 0.3s ease, border-color 0.3s ease !important;
     }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
-        background-clip: border-box !important; /* Fills entirely on hover */
-        border: 0 !important;
+    /* 3. Thumb Visible State (Strict Visibility) */
+    
+    /* Default: Invisible */
+    ::-webkit-scrollbar-thumb,
+    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* A. Visible on Scroll (via JS class) */
+    html.is-scrolling ::-webkit-scrollbar-thumb,
+    body.is-scrolling ::-webkit-scrollbar-thumb,
+    .stApp.is-scrolling ::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 0, 204, 0.3) !important; /* Faint Magenta */
     }
     
+    /* B. Proximity Visibility handled by JS adding 'is-scrolling' class */
+
+    /* 4. Active Interaction State (Hovering the thumb itself) */
+    ::-webkit-scrollbar-thumb:hover,
+    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb:hover {
+        background-color: #ff00cc !important; 
+        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
+        border: 0 !important;
+        background-clip: border-box !important;
+    }
+
     ::-webkit-scrollbar-corner {
         background: transparent !important;
     }
     
-    /* Firefox Support */
+    /* Remove universal scrollbar-color as it breaks WebKit custom styling in some browsers */
     * {
-        scrollbar-width: auto !important;
-        scrollbar-color: #ff00cc rgba(255, 255, 255, 0.05) !important;
+        scrollbar-width: auto !important; 
+        /* scrollbar-color: transparent transparent !important;  <-- REMOVED to let WebKit styles take over */
     }
 
     /* =========================================
@@ -443,20 +423,24 @@ def inject_landing_styles():
     
     .pricing-btn:hover {
         background: white;
-        color: #1a1a2e !important;
+        color: #6a11cb !important; /* Brand Purple instead of black */
         transform: translateY(-2px);
         text-decoration: none !important;
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
     }
     
     .pricing-btn.primary {
         background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
         border: none;
         box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
+        color: white !important;
     }
     
     .pricing-btn.primary:hover {
+        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important; /* Reverse Gradient */
+        color: white !important; /* Force White */
         box-shadow: 0 8px 25px rgba(37, 117, 252, 0.6);
-        color: white;
+        transform: translateY(-3px);
     }
     
     /* Hero Title Container */
@@ -477,9 +461,9 @@ def inject_landing_styles():
         background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
         border: 1px solid rgba(255, 215, 0, 0.3);
         border-radius: 16px;
-        padding: 1rem;
+        padding: 0.8rem;
         text-align: center;
-        margin: 1.5rem auto 2.5rem auto;
+        margin: 1rem auto 2.5rem auto;
         max-width: 700px;
         backdrop-filter: blur(5px);
         animation: pulse-gold 3s infinite;
@@ -528,10 +512,17 @@ def inject_landing_styles():
         font-weight: 800;
         font-size: 0.8rem;
         text-transform: uppercase;
-        margin-bottom: 1.5rem;
-        display: inline-block;
         box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         letter-spacing: 1px;
+        display: inline-block;
+    }
+    
+    .pricing-badge-container {
+        height: 30px; /* Fixed height for alignment */
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
     
     /* Pricing Typography */
@@ -586,10 +577,15 @@ def inject_landing_styles():
     }
     
     /* Feature List */
+    /* Feature List */
     .feature-list {
         text-align: left;
         margin-top: 2rem;
-        padding-left: 0.5rem;
+        margin-bottom: 2rem;
+        display: inline-block; /* Allows centering by parent */
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
     }
     .feature-item {
         margin-bottom: 0.8rem;
@@ -597,6 +593,62 @@ def inject_landing_styles():
         display: flex;
         align-items: center;
         gap: 10px;
+    }
+    /* Benefit Cards */
+    .benefit-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        /* Removed height: 100% to prevent collapse */
+        display: block; 
+        position: relative;
+    }
+    
+    .benefit-wrapper {
+        display: none; /* Deprecated */
+    }
+    
+    .benefits-grid-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+        .benefits-grid-container {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .benefit-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        border-color: rgba(255, 215, 0, 0.3);
+    }
+    
+    .benefit-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .benefit-text {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        line-height: 1.5;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -668,40 +720,46 @@ def render_how_it_works():
         """, unsafe_allow_html=True)
 
 
+
 def render_benefits():
-    """Секция преимуществ."""
+    """Секция преимуществ (CSS Grid Layout)."""
     st.markdown("<h2 style='margin: 0 0 2.5rem 0'>Почему родители выбирают нас</h2>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    # Define benefits data
+    benefits = [
+        {
+            "icon": "🎯", 
+            "title": "Персонализация", 
+            "text": "Ваш ребенок — главный герой каждой сказки. Мы учитываем возраст, имя и увлечения для создания уникального сюжета."
+        },
+        {
+            "icon": "🎙️", 
+            "title": "Живой голос", 
+            "text": "Нейросеть Edge-TTS звучит как настоящий профессиональный актер, с правильной интонацией, паузами и эмоциями."
+        },
+        {
+            "icon": "🛡️", 
+            "title": "Безопасность", 
+            "text": "Абсолютно добрые сюжеты. Никакого негатива, агрессии или пугающих моментов. Идеально перед сном."
+        },
+        {
+            "icon": "⚡", 
+            "title": "Мгновенно", 
+            "text": "Больше не нужно выдумывать сказки уставшим вечером. Готовая история с озвучкой всего за 30 секунд."
+        }
+    ]
     
-    with col1:
-        st.markdown("""
-        <div style="margin-bottom: 2rem">
-            <h3>🎯 Персонализация</h3>
-            <p style="opacity: 0.8">Ваш ребенок — главный герой каждой сказки. Мы учитываем возраст и интересы.</p>
-        </div>
-        <div style="margin-bottom: 2rem">
-            <h3>🛡️ Безопасность</h3>
-            <p style="opacity: 0.8">Добрые сюжеты без агрессии и негатива. Полный контроль контента.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Generate HTML safely - using strict no-indentation to avoid Markdown code blocks
+    cards_html = ""
+    for b in benefits:
+        cards_html += f'<div class="benefit-card"><div class="benefit-title">{b["icon"]} {b["title"]}</div><p class="benefit-text">{b["text"]}</p></div>'
     
-    with col2:
-        st.markdown("""
-        <div style="margin-bottom: 2rem">
-            <h3>🎙️ Живой голос</h3>
-            <p style="opacity: 0.8">Нейросеть Edge-TTS звучит как настоящий актер, с интонацией и эмоциями.</p>
-        </div>
-        <div style="margin-bottom: 2rem">
-            <h3>⚡ Мгновенно</h3>
-            <p style="opacity: 0.8">Больше не нужно выдумывать сказки перед сном. Готовая история за 30 секунд.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f'<div class="benefits-grid-container">{cards_html}</div>', unsafe_allow_html=True)
 
 
 def render_pricing():
     """Секция тарифов с улучшенным дизайном и авто-валютой."""
-    # Получаем валюту (кэшируем в сессии, чтобы не спамить API)
+    # Получаем валюту (кэшируем в сессии)
     if 'currency' not in st.session_state:
         st.session_state.currency, st.session_state.currency_symbol = get_user_currency()
     
@@ -711,26 +769,28 @@ def render_pricing():
     # Цены
     prices = {
         'RUB': {'pro_old': 1990, 'pro_new': 990, 'year_old': 23000, 'year_new': 8990},
+        'KZT': {'pro_old': 9990, 'pro_new': 4990, 'year_old': 115000, 'year_new': 44990},
+        'BYN': {'pro_old': 69, 'pro_new': 35, 'year_old': 790, 'year_new': 299},
+        'UZS': {'pro_old': 259000, 'pro_new': 129000, 'year_old': 2990000, 'year_new': 1190000},
         'USD': {'pro_old': 19.99, 'pro_new': 9.99, 'year_old': 239.99, 'year_new': 89.99},
         'EUR': {'pro_old': 19.99, 'pro_new': 9.99, 'year_old': 239.99, 'year_new': 89.99}
     }
     
     p = prices.get(curr, prices['USD'])
     
-    # Форматирование
-    if curr == 'RUB':
+    # Форматирование цен
+    if curr in ['RUB', 'KZT', 'UZS', 'BYN']:
         price_pro_old = format_price(p['pro_old'], sym)
         price_pro_new = format_price(p['pro_new'], sym)
         price_year_old = format_price(p['year_old'], sym)
         price_year_new = format_price(p['year_new'], sym)
     else:
-        # Для валюи типа USD просто форматируем с точкой
         price_pro_old = f"{sym}{p['pro_old']}"
         price_pro_new = f"{sym}{p['pro_new']}"
         price_year_old = f"{sym}{p['year_old']}"
         price_year_new = f"{sym}{p['year_new']}"
 
-    st.markdown("<h2 style='margin: 0 0 2.5rem 0'>💎 Выберите свой тариф</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='margin: 0 0 1.5rem 0'>💎 Выберите свой тариф</h2>", unsafe_allow_html=True)
     
     # Баннер срочности
     st.markdown("""
@@ -739,67 +799,70 @@ def render_pricing():
     </div>
     """, unsafe_allow_html=True)
     
+    # Data structure for plans
+    plans = [
+        {
+            "name": "Free",
+            "badge": None,
+            "prices_html": f'<div class="price-container"><div class="price-tag">0 {sym}</div></div>',
+            "period": "Для старта",
+            "features": [
+                {"text": "✅ 3 сказки в день", "opacity": 1},
+                {"text": "✅ Базовый голос", "opacity": 1},
+                {"text": "❌ Скачивание MP3", "opacity": 0.5},
+                {"text": "❌ История", "opacity": 0.5}
+            ],
+            "btn_text": "Начать бесплатно",
+        },
+        {
+            "name": "Pro Monthly",
+            "badge": "🔥 ХИТ ПРОДАЖ",
+            "prices_html": f'<div class="price-container"><div class="old-price">{price_pro_old}</div><div class="new-price">{price_pro_new}</div></div>',
+            "period": "в месяц",
+            "features": [
+                {"text": "✅ Безлимит сказок", "opacity": 1},
+                {"text": "✅ Все премиум голоса", "opacity": 1},
+                {"text": "✅ Скачивание MP3", "opacity": 1},
+                {"text": "✅ Личная библиотека", "opacity": 1}
+            ],
+            "btn_text": "Стать Pro",
+        },
+        {
+            "name": "Pro Year",
+            "badge": None,
+            "prices_html": f'<div class="price-container"><div class="old-price">{price_year_old}</div><div class="new-price" style="font-size: 2.5rem">{price_year_new}</div></div>',
+            "period": "в год (выгода 50%)",
+            "features": [
+                {"text": "✅ Всё из тарифа Pro", "opacity": 1},
+                {"text": "✅ 12 месяцев по цене 9", "opacity": 1},
+                {"text": "✅ Приоритет генерации", "opacity": 1},
+                {"text": "✅ Ранний доступ к фичам", "opacity": 1}
+            ],
+            "btn_text": "Выбрать Выгоду",
+        }
+    ]
+    
     col1, col2, col3 = st.columns(3)
+    cols = [col1, col2, col3]
     
-    # --- FREE CARD ---
-    with col1:
-        st.markdown(f"""
-        <div class="pricing-card-container">
-            <div class="plan-name">Free</div>
-            <div class="price-container">
-                <div class="price-tag">0 {sym}</div>
-            </div>
-            <div class="price-period">Для старта</div>
-            <div class="feature-list">
-                <div class="feature-item">✅ 3 сказки в день</div>
-                <div class="feature-item">✅ Базовый голос</div>
-                <div class="feature-item" style="opacity:0.5">❌ Скачивание MP3</div>
-                <div class="feature-item" style="opacity:0.5">❌ История</div>
-            </div>
-            <a href="#" class="pricing-btn">Начать бесплатно</a>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # --- PRO CARD (Featured) ---
-    with col2:
-        st.markdown(f"""
-        <div class="pricing-card-container">
-            <div class="pro-badge">🔥 ХИТ ПРОДАЖ</div>
-            <div class="plan-name">Pro Monthly</div>
-            <div class="price-container">
-                <div class="old-price">{price_pro_old}</div>
-                <div class="new-price">{price_pro_new}</div>
-            </div>
-            <div class="price-period">в месяц</div>
-            <div class="feature-list">
-                <div class="feature-item">✅ Безлимит сказок</div>
-                <div class="feature-item">✅ Все премиум голоса</div>
-                <div class="feature-item">✅ Скачивание MP3</div>
-                <div class="feature-item">✅ Личная библиотека</div>
-            </div>
-            <a href="#" class="pricing-btn primary">Стать Pro</a>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # --- YEAR CARD ---
-    with col3:
-        st.markdown(f"""
-        <div class="pricing-card-container">
-            <div class="plan-name">Pro Year</div>
-            <div class="price-container">
-                <div class="old-price">{price_year_old}</div>
-                <div class="new-price" style="font-size: 2.5rem">{price_year_new}</div>
-            </div>
-            <div class="price-period">в год (выгода 50%)</div>
-            <div class="feature-list">
-                <div class="feature-item">✅ Всё из тарифа Pro</div>
-                <div class="feature-item">✅ 12 месяцев по цене 9</div>
-                <div class="feature-item">✅ Приоритет генерации</div>
-                <div class="feature-item">✅ Ранний доступ к фичам</div>
-            </div>
-            <a href="#" class="pricing-btn primary">Выбрать Выгоду</a>
-        </div>
-        """, unsafe_allow_html=True)
+    for i, plan in enumerate(plans):
+        with cols[i]:
+            # Generate Badge HTML
+            if plan['badge']:
+                badge_html = f'<div class="pro-badge">{plan["badge"]}</div>'
+            else:
+                 # Empty badge container ensures alignment
+                badge_html = "" 
+            
+            # Generate Features HTML
+            features_html = ""
+            for f in plan['features']:
+                features_html += f'<div class="feature-item" style="opacity:{f["opacity"]}">{f["text"]}</div>'
+            
+            # Use single-line string to avoid markdown indentation issues
+            html = f'<div class="pricing-card-container"><div class="pricing-badge-container">{badge_html}</div><div class="plan-name">{plan["name"]}</div>{plan["prices_html"]}<div class="price-period">{plan["period"]}</div><div class="feature-list">{features_html}</div><a href="#" class="pricing-btn primary">{plan["btn_text"]}</a></div>'
+            
+            st.markdown(html, unsafe_allow_html=True)
     
 
 
@@ -947,7 +1010,7 @@ def inject_scroll_js():
             doc.head.appendChild(style);
         }
 
-        // 2. Функция инициализации наблюдателя
+        // 2. Функция инициализации наблюдателя (Observer)
         function initScrollObserver() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -960,33 +1023,112 @@ def inject_scroll_js():
                 threshold: 0.1,
                 rootMargin: "0px 0px -50px 0px"
             });
-
-            const selectors = [
-                'h1', 'h2', 'h3',
-                '.pricing-card-container',
-                '.feature-list', 
-                '.auth-header',
-                '[data-testid="stForm"]',
-                '.urgency-box',
-                '.step-card',
-                '.benefit-card'
-            ];
             
-            // Ищем элементы в родительском документе
-            const elements = doc.querySelectorAll(selectors.join(','));
-            
-            elements.forEach((el) => {
-                // Добавляем класс только если его нет, чтобы не сбрасывать
-                if (!el.classList.contains('on-scroll-animation')) {
-                    el.classList.add('on-scroll-animation');
-                    observer.observe(el);
-                }
-            });
+            // ... (rest of observer logic) ...
         }
 
-        // Запуск
-        setTimeout(initScrollObserver, 100);
-        setTimeout(initScrollObserver, 1000); // Повторный чек для догрузившихся элементов
+        // 3. Logic for Auto-Hiding Scrollbar & Proximity Hover
+        // We store handlers on window.parent to avoid zombie listeners on re-runs
+        
+        const removeOldListeners = () => {
+             if (window.parent._onScrollHandler) {
+                 window.parent.removeEventListener('scroll', window.parent._onScrollHandler, true);
+                 const c = doc.querySelector('[data-testid="stAppViewContainer"]');
+                 if (c) c.removeEventListener('scroll', window.parent._onScrollHandler);
+             }
+             if (window.parent._onMouseMoveHandler) {
+                 window.parent.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
+                 window.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
+             }
+        };
+        
+        // Clean up immediately
+        removeOldListeners();
+
+        let scrollTimeout;
+        const showScrollbar = () => {
+            doc.body.classList.add('is-scrolling');
+            const app = doc.querySelector('.stApp');
+            if (app) app.classList.add('is-scrolling');
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                doc.body.classList.remove('is-scrolling');
+                if (app) app.classList.remove('is-scrolling');
+            }, 1000);
+        };
+
+        // Define new handlers
+        window.parent._onScrollHandler = () => showScrollbar();
+        
+        window.parent._onMouseMoveHandler = (e) => {
+            // Proximity: right 20px
+            const threshold = 20;
+            
+            let width;
+            try {
+                // Try to get parent width.
+                // If cross-origin or other restrictions apply, this catch block handles it.
+                // We prefer visualViewport if available for accuracy with zoom/mobile.
+                if (window.parent.visualViewport) {
+                    width = window.parent.visualViewport.width;
+                } else {
+                    width = window.parent.innerWidth;
+                }
+            } catch (err) {
+                // If we can't access parent, fallback to local or ignore
+                width = 0; 
+            }
+
+            // CRITICAL SAFETY CHECK: 
+            // If width is 0 or undefined, 'width - threshold' is -20 or NaN.
+            // checking 'e.clientX > -20' is ALWAYS true for valid mouse positions.
+            // We must return if width is invalid.
+            if (!width || width < 50) return;
+            
+            // Log for sanity (visible in console if users check)
+            // console.log(`X: ${e.clientX} | W: ${width} | Diff: ${width - e.clientX}`);
+
+            if (e.clientX > width - threshold) {
+                showScrollbar();
+            }
+        };
+
+        // Attach listeners
+        if (window.parent) {
+             try {
+                 window.parent.addEventListener('mousemove', window.parent._onMouseMoveHandler);
+             } catch(e) { console.warn("Cannot attach to parent mousemove"); }
+        }
+        
+        // 2. Scroll: Target specifically the Streamlit container
+        const scrollContainer = doc.querySelector('[data-testid="stAppViewContainer"]');
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', window.parent._onScrollHandler, { passive: true });
+        } else {
+             try {
+                if (window.parent) window.parent.addEventListener('scroll', window.parent._onScrollHandler, true);
+             } catch(e) {}
+        }
+
+        // Initialize observer
+        initScrollObserver();
+            
+        // Initial check
+        const selectors = [
+                // 'h1', 'h2', 'h3',  <-- REMOVED h1/h2 to prevent hero title disappearing
+                'h3', 
+                // All other selectors removed to prevent visibility issues
+                // Removed .benefit-card to prevent visibility issues
+            ];
+            
+        const elements = doc.querySelectorAll(selectors.join(','));
+        elements.forEach((el) => {
+            if (!el.classList.contains('on-scroll-animation')) {
+                el.classList.add('on-scroll-animation');
+                observer.observe(el);
+            }
+        });
         
     })();
     </script>

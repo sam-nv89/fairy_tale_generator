@@ -18,11 +18,19 @@ def get_user_currency():
         
         logger.info(f"User country detected: {country}")
         
-        if country in ['RU', 'BY', 'KZ', 'KG', 'UZ', 'AM']:
+        if country == 'RU':
+            return 'RUB', '₽'
+        elif country == 'KZ':
+            return 'KZT', '₸'
+        elif country == 'BY':
+            return 'BYN', 'Br'
+        elif country == 'UZ':
+            return 'UZS', 'сўм'
+        elif country in ['KG', 'AM', 'TJ']: # Other CIS fallback to RUB or specialized if needed
             return 'RUB', '₽'
         elif country in ['US', 'CA', 'GB', 'AU']:
             return 'USD', '$'
-        elif country in ['DE', 'FR', 'IT', 'ES', 'NL', 'EU']: # Simplified EU check
+        elif country in ['DE', 'FR', 'IT', 'ES', 'NL', 'EU']:
             return 'EUR', '€'
         else:
             return 'USD', '$' # Default to Dollar

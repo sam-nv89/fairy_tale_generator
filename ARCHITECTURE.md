@@ -17,6 +17,7 @@
 ├── auth.py               # Модуль авторизации (Supabase Integration)
 ├── landing.py            # UI Лендинга и маркетинговые компоненты
 ├── styles.py             # Централизованные CSS стили и темы
+├── utils.py              # Утилиты (определение валюты, форматирование)
 ├── requirements.txt      # Зависимости Python
 ├── .streamlit/           # Конфигурация Streamlit
 │   └── secrets.toml      # API ключи (Gemini + Supabase)
