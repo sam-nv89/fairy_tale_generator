@@ -1,5 +1,23 @@
 # Журнал разработки (Dev Log)
 
+## 30.01.2026 (День)
+### 🔐 Refactor Password & UI Polish
+**Статус**: Внедрено
+
+#### Изменения
+- **Рефакторинг поля пароля**:
+    - **Проблема**: Курсор был невидим, иконка "глаза" выпадала, ширина полей не совпадала.
+    - **Решение**: Перенос стилизации с тега `<input>` на родительский контейнер. 
+    - **Результат**: Иконка внутри, курсор виден, ширина идентична Email.
+- **UI Улучшения**: 
+    - **Иконка глаза**: Затемнена (`#1a1a2e`) для лучшей видимости.
+    - **Вкладки**: Увеличен шрифт "Войти"/"Регистрация" до `1.25rem` и высота кнопок.
+- **Чистка**: Убран текст подсказки "Press Enter...".
+
+#### Коммит
+- `UI: Refactor password input CSS for correct alignment and visibility`
+- `Style: Enlarge auth tabs and darken visibility icon`
+
 ## 29.01.2026 (вечер)
 ### 🎨 Редизайн Лендинга и Интеграция Авторизации
 **Статус**: Внедрено
@@ -290,22 +308,3 @@
 - Создан `ARCHITECTURE.md` (описание стека и решений).
 - Создан `ROADMAP.md` (план развития).
 - Вся документация переведена на русский язык.
-
-## 30.01.2026 (Day)
-### ?? Auth Logic & UI Polish
-**Status**: Implemented
-
-#### Changes
-- **Password Input Refactor**:
-    - **Issue**: Input cursor (caret) was invisible; 'Eye' icon was outside the input field; Width mismatch between Email and Password fields.
-    - **Solution**: Shifted CSS styling from the <input> element to the parent div[data-baseweb='input'] container.
-    - **Result**: The 'Eye' icon is now naturally enclosed within the white input box. The caret is visible violet. The password field width perfectly matches other inputs.
-- **UI Accessibility**: 
-    - **Eye Icon**: Darkened to #1a1a2e for better visibility against the white background.
-    - **Tab Fonts**: Increased 'Login'/'Register' tab font size to 1.25rem and height to 55px for better readability and touch targets.
-- **Clean Up**: Removed 'Press Enter to submit' tooltip text.
-
-#### Commit
-- UI: Refactor password input CSS for correct alignment and visibility
-- Style: Enlarge auth tabs and darken visibility icon
-
