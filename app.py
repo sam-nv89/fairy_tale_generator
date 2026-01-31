@@ -25,11 +25,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Импорт модулей авторизации и лендинга
-from auth import init_auth_state, is_authenticated, sign_out, get_current_user
-from landing import render_full_landing_page, render_landing_header
+from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
+from landing import render_full_landing_page
 
 # Инициализация состояния авторизации
 init_auth_state()
+
+# Предупреждение для разработчиков/локальной среды, если Supabase недоступен
+if not _SUPABASE_AVAILABLE:
+    st.warning("⚠️ Supabase library is not installed. Auth features are disabled. To enable them, install Microsoft C++ Build Tools (or use Python 3.11/3.10) and re-run `pip install -r requirements.txt`.")
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
@@ -44,17 +48,12 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     st.markdown(f"**{label}**")
     
     html_code = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
+    <div id="player_{player_id}">
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: transparent;
-        }}
-        
-        .player {{
+        /* Scoped to #player_{player_id} to avoid leaking styles */
+        #player_{player_id} * {{ box-sizing: border-box; }}
+        #player_{player_id} {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
+        #player_{player_id} .player {{
             display: flex;
             align-items: center;
             background: #ffffff;
@@ -66,9 +65,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             max-width: 100%;
             margin: 10px auto 0 auto;
         }}
-        
-        /* Кнопки */
-        .btn {{
+        #player_{player_id} .btn {{
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -81,275 +78,84 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             background: transparent;
             flex-shrink: 0;
         }}
-        .btn svg {{ width: 16px; height: 16px; fill: #666; }}
-        .btn:hover {{ background: rgba(0,0,0,0.06); }}
-        .btn:hover svg {{ fill: #3390ec; }}
-        
-        /* Кнопки перемотки - крупнее */
-        .btn-skip {{
-            width: 38px;
-            height: 38px;
-        }}
-        .btn-skip svg {{ width: 20px; height: 20px; fill: #555; }}
-        
-        /* Play */
-        .btn-play {{
+        #player_{player_id} .btn svg {{ width: 16px; height: 16px; fill: #666; }}
+        #player_{player_id} .btn:hover {{ background: rgba(0,0,0,0.06); }}
+        #player_{player_id} .btn:hover svg {{ fill: #3390ec; }}
+        #player_{player_id} .btn-skip {{ width: 38px; height: 38px; }}
+        #player_{player_id} .btn-skip svg {{ width: 20px; height: 20px; fill: #555; }}
+        #player_{player_id} .btn-play {{
             width: 38px;
             height: 38px;
             background: #3390ec;
             box-shadow: 0 2px 6px rgba(51,144,236,0.35);
         }}
-        .btn-play svg {{ width: 20px; height: 20px; fill: white; margin-left: 2px; }}
-        .btn-play:hover {{ background: #2080dd; transform: scale(1.05); }}
-        .btn-play:hover svg {{ fill: white; }}
-        
-        .btn-active svg {{ fill: #3390ec; }}
-        
-        /* Повтор - крупнее */
-        .btn-repeat svg {{ width: 20px; height: 20px; stroke-width: 1px; }}
-        
-        /* Прогресс */
-        .center {{
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-        }}
-        
-        .progress-bar {{
-            -webkit-appearance: none;
-            width: 100%;
-            height: 4px;
-            background: #e8e8e8;
-            border-radius: 2px;
-            cursor: pointer;
-            outline: none;
-        }}
-        .progress-bar::-webkit-slider-thumb {{
-            -webkit-appearance: none;
-            width: 0;
-            height: 0;
-        }}
-        
-        .time-display {{
-            font-size: 12px;
-            color: #606060;
-            font-weight: 500;
-            white-space: nowrap;
-            margin-left: 8px;
-        }}
-        
-        /* Громкость - YouTube style (расширяющийся) */
-        .volume-control {{
-            display: flex;
-            align-items: center;
-            height: 36px;
-            padding: 0 4px;
-            border-radius: 18px;
-            transition: all 0.2s ease;
-        }}
-        .volume-control:hover {{
-            background: rgba(0,0,0,0.05);
-        }}
-        .volume-btn {{
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }}
-        .volume-btn svg {{ width: 18px; height: 18px; fill: #606060; }}
-        .volume-btn:hover svg {{ fill: #3390ec; }}
-        
-        .volume-slider-wrap {{
-            width: 0;
-            height: 100%; /* Занимаем всю высоту родителя */
-            overflow: hidden;
-            transition: width 0.2s ease;
-            display: flex;
-            align-items: center;
-            /* Убрали padding отсюда, чтобы при width:0 блок исчезал полностью */
-        }}
-        .volume-control:hover .volume-slider-wrap {{
-            width: 76px; /* 52px (slider) + 24px (margins) */
-            margin-left: 4px;
-        }}
-        .volume-slider {{
-            -webkit-appearance: none !important;
-            -moz-appearance: none !important;
-            appearance: none !important;
-            width: 52px !important;
-            height: 20px !important;
-            background: transparent !important;
-            cursor: pointer !important;
-            outline: none !important;
-            border: none !important;
-            margin: 0 12px !important; /* Отступы для thumb слева и справа */
-            padding: 0 !important;
-        }}
-        
-        /* Webkit Track */
-        .volume-slider::-webkit-slider-runnable-track {{
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, #3390ec var(--volume-pct, 100%), #ddd var(--volume-pct, 100%));
-            border-radius: 2px;
-            border: none;
-        }}
-        
-        /* Webkit Thumb */
-        .volume-slider::-webkit-slider-thumb {{
-            -webkit-appearance: none !important;
-            appearance: none !important;
-            width: 12px !important;
-            height: 12px !important;
-            border-radius: 50% !important;
-            /* Используем inset shadow для обводки, чтобы избежать проблем с border render */
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e1f0ff 40%, #7ebbf7 100%) !important;
-            box-shadow: inset 0 0 0 1px #3390ec, 0 1px 3px rgba(0,0,0,0.3) !important;
-            cursor: pointer !important;
-            border: none !important;
-            margin-top: -4.5px !important; /* (3px track - 12px thumb) / 2 */
-            transition: transform 0.1s;
-        }}
-        .volume-slider::-webkit-slider-thumb:hover {{
-            transform: scale(1.15);
-        }}
-        
-        /* Firefox Track */
-        .volume-slider::-moz-range-track {{
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, #3390ec var(--volume-pct, 100%), #ddd var(--volume-pct, 100%));
-            border-radius: 2px;
-            border: none;
-        }}
-        
-        /* Firefox Thumb */
-        .volume-slider::-moz-range-thumb {{
-            width: 12px !important;
-            height: 12px !important;
-            border-radius: 50% !important;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e1f0ff 40%, #7ebbf7 100%) !important;
-            box-shadow: inset 0 0 0 1px #3390ec, 0 1px 3px rgba(0,0,0,0.3) !important;
-            cursor: pointer !important;
-            border: none !important;
-            margin-top: -4.5px !important;
-        }}
-        
-        /* Скорость - кнопка */
-        .speed-btn {{
-            font-size: 11px;
-            font-weight: 700;
-            color: #666;
-            background: rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.15s;
-            white-space: nowrap;
-            min-width: 36px;
-        }}
-        .speed-btn:hover {{ background: rgba(0,0,0,0.08); color: #3390ec; }}
-        .speed-btn:active {{ transform: scale(0.95); }}
-        
-        /* Скачать */
-        .download-link {{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            transition: all 0.15s;
-            text-decoration: none;
-        }}
-        .download-link svg {{ fill: #666; width: 16px; height: 16px; }}
-        .download-link:hover {{ background: rgba(0,0,0,0.06); }}
-        .download-link:hover svg {{ fill: #3390ec; }}
+        #player_{player_id} .btn-play svg {{ width: 20px; height: 20px; fill: white; margin-left: 2px; }}
+        #player_{player_id} .btn-play:hover {{ background: #2080dd; transform: scale(1.05); }}
+        #player_{player_id} .btn-play:hover svg {{ fill: white; }}
+        #player_{player_id} .btn-active svg {{ fill: #3390ec; }}
+        #player_{player_id} .btn-repeat svg {{ width: 20px; height: 20px; stroke-width: 1px; }}
+        #player_{player_id} .center {{ flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }}
+        #player_{player_id} .progress-bar {{ -webkit-appearance: none; width: 100%; height: 4px; background: #e8e8e8; border-radius: 2px; cursor: pointer; outline: none; }}
+        #player_{player_id} .time-display {{ font-size: 12px; color: #606060; font-weight: 500; white-space: nowrap; margin-left: 8px; }}
+        #player_{player_id} .volume-control {{ display: flex; align-items: center; height: 36px; padding: 0 4px; border-radius: 18px; transition: all 0.2s ease; }}
+        #player_{player_id} .volume-btn {{ width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }}
+        #player_{player_id} .volume-btn svg {{ width: 18px; height: 18px; fill: #606060; }}
+        #player_{player_id} .volume-slider-wrap {{ width: 0; height: 100%; overflow: hidden; transition: width 0.2s ease; display: flex; align-items: center; }}
+        #player_{player_id} .volume-control:hover .volume-slider-wrap {{ width: 76px; margin-left: 4px; }}
+        #player_{player_id} .volume-slider {{ -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 52px !important; height: 20px !important; background: transparent !important; cursor: pointer !important; outline: none !important; border: none !important; margin: 0 12px !important; padding: 0 !important; }}
+        #player_{player_id} .download-link {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: all 0.15s; text-decoration: none; }}
+        #player_{player_id} .download-link svg {{ fill: #666; width: 16px; height: 16px; }}
+        #player_{player_id} .download-link:hover {{ background: rgba(0,0,0,0.06); }}
+        #player_{player_id} .download-link:hover svg {{ fill: #3390ec; }}
     </style>
-    </head>
-    <body>
-        <div class="player" id="player_{player_id}">
-            <!-- Перемотка назад -->
-            <button class="btn btn-skip" id="skipBack_{player_id}" title="Назад 10 сек">
-                <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+
+    <div class="player" id="player_{player_id}">
+        <!-- Перемотка назад -->
+        <button class="btn btn-skip" id="skipBack_{player_id}" title="Назад 10 сек">
+            <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+        </button>
+        
+        <!-- Play/Pause -->
+        <button class="btn btn-play" id="playBtn_{player_id}">
+            <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none;margin-left:0"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        
+        <!-- Перемотка вперед -->
+        <button class="btn btn-skip" id="skipForward_{player_id}" title="Вперед 10 сек">
+            <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+        </button>
+        
+        <!-- Громкость YouTube-style -->
+        <div class="volume-control">
+            <button class="volume-btn" id="muteBtn_{player_id}" title="Громкость">
+                <svg id="volumeIcon_{player_id}" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
             </button>
-            
-            <!-- Play/Pause -->
-            <button class="btn btn-play" id="playBtn_{player_id}">
-                <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none;margin-left:0"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-            </button>
-            
-            <!-- Перемотка вперед -->
-            <button class="btn btn-skip" id="skipForward_{player_id}" title="Вперед 10 сек">
-                <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
-            </button>
-            
-            <!-- Громкость YouTube-style -->
-            <div class="volume-control">
-                <button class="volume-btn" id="muteBtn_{player_id}" title="Громкость">
-                    <svg id="volumeIcon_{player_id}" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-                </button>
-                <div class="volume-slider-wrap">
-                    <input type="range" class="volume-slider" id="volume_{player_id}" min="0" max="1" step="0.05" value="1">
-                </div>
+            <div class="volume-slider-wrap">
+                <input type="range" class="volume-slider" id="volume_{player_id}" min="0" max="1" step="0.05" value="1">
             </div>
-            
-            <!-- Время YouTube-style -->
-            <span class="time-display" id="timeDisplay_{player_id}">0:00 / 0:00</span>
-            
-            <!-- Прогресс -->
-            <div class="center">
-                <input type="range" class="progress-bar" id="progress_{player_id}" value="0" min="0" step="0.1">
-            </div>
-            
-            <!-- Повтор -->
-            <button class="btn btn-repeat" id="repeatBtn_{player_id}" title="Повтор">
-                <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
-            </button>
-            
-            <!-- Скорость -->
-            <button class="speed-btn" id="speedBtn_{player_id}" title="Скорость воспроизведения">1x</button>
-            
-            <!-- Скачать -->
-            <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать">
-                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
-            </a>
         </div>
         
-        <audio id="audio_{player_id}" preload="metadata">
-            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-        </audio>
+        <!-- Время YouTube-style -->
+        <span class="time-display" id="timeDisplay_{player_id}">0:00 / 0:00</span>
         
-        <script>
-            const audio = document.getElementById('audio_{player_id}');
-            const playBtn = document.getElementById('playBtn_{player_id}');
-            const playIcon = document.getElementById('playIcon_{player_id}');
-            const pauseIcon = document.getElementById('pauseIcon_{player_id}');
-            const progress = document.getElementById('progress_{player_id}');
-            const timeDisplay = document.getElementById('timeDisplay_{player_id}');
-            const volumeSlider = document.getElementById('volume_{player_id}');
-            const muteBtn = document.getElementById('muteBtn_{player_id}');
-            const volumeIcon = document.getElementById('volumeIcon_{player_id}');
-            const repeatBtn = document.getElementById('repeatBtn_{player_id}');
-            const skipBack = document.getElementById('skipBack_{player_id}');
-            const skipForward = document.getElementById('skipForward_{player_id}');
-            const speedBtn = document.getElementById('speedBtn_{player_id}');
-            
-            let isRepeat = false;
-            let lastVolume = 1;
-            let totalDuration = 0;
-            
-            const accent = '#3390ec';
-            const track = '#e8e8e8';
+        <!-- Прогресс -->
+        <div class="center">
+            <input type="range" class="progress-bar" id="progress_{player_id}" value="0" min="0" step="0.1">
+        </div>
+        
+        <!-- Повтор -->
+        <button class="btn btn-repeat" id="repeatBtn_{player_id}" title="Повтор">
+            <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+        </button>
+        
+        <!-- Скорость -->
+        <button class="speed-btn" id="speedBtn_{player_id}" title="Скорость воспроизведения">1x</button>
+        
+        <!-- Скачать -->
+        <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        </a>
             
             function formatTime(sec) {{
                 if (isNaN(sec)) return '0:00';
@@ -467,7 +273,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     </body>
     </html>
     """
-    st.components.v1.html(html_code, height=80)
+    st.components.v1.html(html_code, height=240, scrolling=True)
 
 # --- Вспомогательная функция для озвучки (Text-to-Speech) ---
 async def generate_audio_stream(text, voice):
@@ -488,7 +294,7 @@ async def generate_audio_stream(text, voice):
 st.set_page_config(
     page_title="Сказки для детей",
     page_icon="🧚",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -775,6 +581,7 @@ if submit_btn:
                     used_model_name = model_name
                     break # Если успешно - выходим из цикла
                 except Exception as e:
+                    logger.exception(f"Model {model_name} failed during generation: {e}")
                     last_error = e
                     continue # Пробуем следующую модель
             
@@ -793,15 +600,21 @@ if submit_btn:
                 
                 st.stop()
             
-            # Разделяем заголовок и текст
-            full_text = response.text.strip()
+            # Разделяем заголовок и текст — учитываем разные формы ответа от API
+            if hasattr(response, 'text') and isinstance(response.text, str):
+                full_text = response.text.strip()
+            elif isinstance(response, dict):
+                full_text = (response.get('text') or response.get('content') or response.get('result') or str(response)).strip()
+            else:
+                full_text = str(response).strip()
+
             if '\n' in full_text:
                 title, story_body = full_text.split('\n', 1)
             else:
                 title = f"Сказка для {name}"
                 story_body = full_text
 
-            # Сохраняем в сессию, чтобы не потерять при нажатии кнопок
+            # Сохраняем в сессии, чтобы не потерять при нажатии кнопок
             st.session_state['current_story'] = {
                 'title': title,
                 'body': story_body,

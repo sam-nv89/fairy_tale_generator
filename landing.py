@@ -1,1135 +1,844 @@
 """
 Современный лендинг для Fairy Tale Generator.
-Использует нативные компоненты Streamlit для максимальной совместимости.
+Портировано из React-версии (GitHub: remix-of-magic-story-weaver).
 """
 
 import streamlit as st
+import base64
+from pathlib import Path
 from utils import get_user_currency, format_price
+from auth import sign_up, sign_in, init_auth_state
+
+# ==========================================
+# Helpers
+# ==========================================
+
+def clean_html(html):
+    """Очищает HTML от отступов."""
+    return "\n".join([line.strip() for line in html.split("\n") if line.strip()])
+
+def load_image_as_base64(path):
+    """Загружает изображение и возвращает base64 строку."""
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode()
+    except Exception as e:
+        print(f"Error loading image {path}: {e}")
+        return ""
+
+# ==========================================
+# Styles
+# ==========================================
 
 def inject_landing_styles():
-    """Инжектирует продвинутый CSS для современной эстетики и анимаций."""
-    st.markdown("""
+    st.markdown(clean_html("""
     <style>
-    /* =========================================
-       1. GLOBAL & RESET
-       ========================================= */
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap');
+    /* 
+       Dreamy Soft Design System - Pastel Theme 
+       Ported from Tailwind config and index.css
+    */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Скрываем якорные ссылки (цепочки) - Усиленный вариант */
-    .stMarkdown h1 a, .stMarkdown h2 a, .stMarkdown h3 a,
-    .stMarkdown h4 a, .stMarkdown h5 a, .stMarkdown h6 a,
-    [data-testid="stMarkdownContainer"] h1 > a,
-    [data-testid="stMarkdownContainer"] h2 > a,
-    [data-testid="stMarkdownContainer"] h3 > a,
-    [data-testid="stMarkdownContainer"] h4 > a,
-    [data-testid="stMarkdownContainer"] h5 > a,
-    [data-testid="stMarkdownContainer"] h6 > a,
-    a.anchor-link,
-    [data-testid="stHeader"] a {
-        display: none !important;
-        pointer-events: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        opacity: 0 !important;
-        content: none !important;
-    }
-    
-    h1 a svg, h2 a svg, h3 a svg, h4 a svg, h5 a svg, h6 a svg {
-        display: none !important;
+    :root {
+        /* Base Colors (HSL values converted to CSS variables) */
+        --background: #fdfcf8; /* hsl(40, 40%, 97%) */
+        --foreground: #2d2653; /* hsl(250, 30%, 25%) */
+        
+        --card: #ffffff;
+        --card-foreground: #2d2653;
+        
+        --primary: #bda3e0; /* hsl(270, 50%, 70%) */
+        --primary-fg: #ffffff;
+        
+        --secondary: #c9efe4; /* hsl(160, 40%, 85%) */
+        --secondary-fg: #20604c; /* hsl(160, 50%, 25%) */
+        
+        --muted: #ebeaf2; /* hsl(260, 20%, 92%) */
+        --muted-fg: #696285; /* hsl(260, 15%, 45%) */
+        
+        --accent: #f8dbd0; /* hsl(20, 80%, 85%) */
+        --accent-fg: #7a3e26; /* hsl(20, 60%, 30%) */
+        
+        --border: #e2e0ea; /* hsl(260, 20%, 88%) */
+        
+        /* Dreamy Palette */
+        --magic-lavender: #dcd0f0; /* hsl(270, 50%, 75%) */
+        --magic-mint: #ade6d1; /* hsl(160, 45%, 78%) */
+        --magic-peach: #f8dbd0; /* hsl(20, 80%, 85%) */
+        --magic-pink: #f0c6da; /* hsl(330, 50%, 85%) */
+        --magic-sky: #c2e1f0; /* hsl(200, 60%, 85%) */
+        
+        /* Gradients */
+        --gradient-text: linear-gradient(90deg, #b39ddb 0%, #e91e63 100%); /* approx match */
+        --gradient-magic: linear-gradient(90deg, #bda3e0 0%, #ade6d1 50%, #f8dbd0 100%);
+        --gradient-button: linear-gradient(135deg, #bda3e0 0%, #e0a3c4 100%);
+        --gradient-button-hover: linear-gradient(135deg, #ae8ed6 0%, #d893b8 100%);
+
+        /* Shadows */
+        --shadow-card: 0 8px 40px rgba(108, 92, 165, 0.08);
+        --shadow-button: 0 4px 20px rgba(189, 163, 224, 0.25);
     }
 
-    /* Скрываем нативный хедер и футер */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Основной фон с анимацией градиента */
+    /* Core Overrides */
     .stApp {
-        background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
-        background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
-        font-family: 'Inter', sans-serif;
+        background-color: var(--background);
+        font-family: 'DM Sans', sans-serif;
+        color: var(--foreground);
     }
     
-    @keyframes gradientBG {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* Центрирование основного контейнера */
-    .block-container {
-        max-width: 1000px !important;
-        padding-top: 1rem !important;
-        padding-bottom: 3rem !important;
-        margin-top: -3rem !important; /* Force pull up */
-    }
-
-    /* =========================================
-       2. SCROLLBAR & BEHAVIOR
-       ========================================= */
-    /* Force NO horizontal scrollbar */
-    html, body, .stApp, [data-testid="stAppViewContainer"] {
-        overflow-x: hidden !important;
-    }
-
-    html {
-        scroll-behavior: smooth !important;
-    }
-
-    /* Scrollbar styles - Auto-hiding & Stylish */
-    
-    /* Scrollbar styles - Auto-hiding & Stylish */
-    
-    /* 1. Track is always transparent */
-    ::-webkit-scrollbar {
-        width: 20px !important; /* Requested wider width */
-        height: 20px !important;
-        background-color: transparent !important;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: transparent !important;
-    }
-
-    /* 2. Thumb Default State (Invisible) */
-    ::-webkit-scrollbar-thumb {
-        background-color: transparent !important; /* Strictly invisible */
-        border-radius: 10px !important;
-        border: 5px solid transparent !important; /* Increased padding for floating look */
-        background-clip: content-box !important;
-        transition: background-color 0.3s ease, border-color 0.3s ease !important;
-    }
-
-    /* 3. Thumb Visible State (Strict Visibility) */
-    
-    /* Default: Invisible */
-    ::-webkit-scrollbar-thumb,
-    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb {
-        background-color: transparent !important;
-        background: transparent !important;
-    }
-
-    /* A. Visible on Scroll (via JS class) */
-    html.is-scrolling ::-webkit-scrollbar-thumb,
-    body.is-scrolling ::-webkit-scrollbar-thumb,
-    .stApp.is-scrolling ::-webkit-scrollbar-thumb {
-        background-color: rgba(255, 0, 204, 0.3) !important; /* Faint Magenta */
-    }
-    
-    /* B. Proximity Visibility handled by JS adding 'is-scrolling' class */
-
-    /* 4. Active Interaction State (Hovering the thumb itself) */
-    ::-webkit-scrollbar-thumb:hover,
-    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb:hover {
-        background-color: #ff00cc !important; 
-        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
-        border: 0 !important;
-        background-clip: border-box !important;
-    }
-
-    ::-webkit-scrollbar-corner {
-        background: transparent !important;
-    }
-    
-    /* Remove universal scrollbar-color as it breaks WebKit custom styling in some browsers */
-    * {
-        scrollbar-width: auto !important; 
-        /* scrollbar-color: transparent transparent !important;  <-- REMOVED to let WebKit styles take over */
-    }
-
-    /* =========================================
-       3. TYPOGRAPHY
-       ========================================= */
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Outfit', sans-serif !important;
-        color: white !important;
-        text-align: center;
-        letter-spacing: -0.02em;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: var(--foreground) !important;
+    }
+
+    /* Hide standard Streamlit elements */
+    #MainMenu, header, footer {visibility: hidden;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+    a.anchor-link {display: none !important;}
+    
+    /* Remove default Streamlit padding for full-width landing look */
+    .block-container {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        padding-left: 0rem !important;
+        padding-right: 0rem !important;
+        max-width: 100% !important;
     }
     
-    /* Анимированные заголовки */
-    h1 {
-        background: linear-gradient(to right, #fff 20%, #ff00cc 40%, #333399 60%, #fff 80%);
-        background-size: 200% auto;
-        color: #000;
-        background-clip: text;
-        text-fill-color: transparent;
+    /* Utility Classes */
+    
+    /* Glass Card */
+    .glass-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,247,252,0.9) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(226, 224, 234, 0.5);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: var(--shadow-card);
+        position: relative;
+        overflow: visible;
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--primary);
+    }
+    
+    /* Magic Button */
+    .magic-button {
+        background: var(--gradient-button);
+        color: white !important;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: var(--shadow-button);
+    }
+    
+    .magic-button:hover {
+        background: var(--gradient-button-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(189, 163, 224, 0.4);
+        color: white !important;
+    }
+
+    /* Text Gradients */
+    .text-gradient {
+        background: linear-gradient(90deg, #9f7aea 0%, #ed64a6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: shine 4s linear infinite;
-        text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-    }
-    
-    @keyframes shine {
-        to { background-position: 200% center; }
-    }
-    
-    p, li, label, .stMarkdown {
-        color: rgba(255, 255, 255, 0.85) !important;
-        line-height: 1.6;
-        font-size: 1.05rem;
-    }
-    
-    /* =========================================
-       3. GLASS CARDS (Columns)
-       ========================================= */
-    /* Таргетируем колонки Streamlit (для старых карточек, если остались) */
-    [data-testid="column"] {
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    
-    /* Новые контейнеры цен и бенефитов мы делаем через HTML, так что стандартные колонки не трогаем сильно */
-
-    /* =========================================
-       4. INTERACTIVE ELEMENTS
-       ========================================= */
-       
-    /* Кнопки */
-    .stButton > button {
-        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 50px !important; /* Pill shape */
-        padding: 0.75rem 2.5rem !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
-        width: 100%;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.6) !important;
-        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
-    }
-    
-    .stButton > button:active {
-        transform: scale(0.98) !important;
-    }
-    
-    /* =========================================
-       5. INPUTS & FORM ELEMENTS (New Strategy)
-       ========================================= */
-       
-    /* 1. Reset standard input styling */
-    .stTextInput input {
-        color: #1a1a2e !important;
-        caret-color: #6a11cb !important; /* Вернули курсор */
+        background-clip: text;
     }
 
-    /* 2. Style the Container (Wrapper) - This holds both input and eye icon */
-    div[data-baseweb="input"] {
-        background-color: rgba(255, 255, 255, 0.95) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        border-radius: 12px !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden; /* Clips corners */
-        padding: 0 !important;
-    }
-
-    /* 3. Focus State on the Container */
-    div[data-baseweb="input"]:focus-within {
-        background-color: #ffffff !important;
-        border-color: #6a11cb !important;
-        box-shadow: 0 0 0 4px rgba(106, 17, 203, 0.2) !important;
-        transform: translateY(-1px);
-    }
-
-    /* 4. Make the actual input transparent and full height */
-    div[data-baseweb="input"] > div > input {
-        background: transparent !important;
-        border: none !important;
-        min-height: 48px !important;
-        padding-left: 1rem !important;
-        font-family: 'Inter', sans-serif !important;
-        font-size: 1rem !important;
+    /* Layout Utilities */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
     }
     
-    div[data-baseweb="input"] > div > input::placeholder {
-        color: rgba(26, 26, 46, 0.5) !important;
+    .text-center { text-align: center; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mb-12 { margin-bottom: 3rem; }
+    .mb-16 { margin-bottom: 4rem; }
+    .mt-8 { margin-top: 2rem; }
+    
+    .text-muted { color: var(--muted-fg) !important; }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .font-bold { font-weight: 700; }
+    
+    /* Animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
     }
-
-    /* 5. Fix the Eye Icon Container */
-    div[data-baseweb="input"] > div:last-child {
-        background: transparent !important;
-        display: flex !important;
-        align-items: center !important;
-        padding-right: 10px !important;
-        height: 100% !important;
+    .floating { animation: float 6s ease-in-out infinite; }
+    
+    @keyframes pulse-glow {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 0.8; }
     }
-
-    /* Reset button styles */
-    div[data-baseweb="input"] button {
-        border: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-
-    /* Input Label styling */
-    .stTextInput label p {
-        font-size: 0.85rem !important;
-        color: rgba(255, 255, 255, 0.8) !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
+    .pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    
+    /* Accordion Customization */
+    .streamlit-expanderHeader {
+        background-color: transparent !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: var(--foreground) !important;
         font-weight: 600 !important;
     }
-
-    /* Hide the 'Press Enter to submit' text instructions */
-    .stTextInput [data-testid="InputInstructions"] {
-        display: none !important;
+    
+    /* Container for the whole expander */
+    [data-testid="stExpander"] {
+        border: 1px solid rgba(220, 208, 240, 0.4) !important;
+        border-radius: 1.5rem !important;
+        background: white !important;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
     }
 
-    /* Specific SVG adjustment */
-    .stTextInput button svg {
-        margin: 0 !important;
-        position: relative !important;
-        top: 1px !important; /* Visual center tweak */
-        fill: #1a1a2e !important; /* Make icon dark for visibility */
-    }
-
-    /* Remove default Streamlit Tab underline */
-    .stTabs [data-baseweb="tab-highlight"] {
-        display: none !important;
+    [data-testid="stExpander"]:hover {
+        box-shadow: 0 20px 50px rgba(189, 163, 224, 0.15); /* Soft purple glow */
+        border-color: rgba(189, 163, 224, 0.6) !important;
+        transform: translateY(-2px);
     }
     
-    .stTabs [data-baseweb="tab-border"] {
-        display: none !important;
+    /* Header/Summary styling */
+    [data-testid="stExpander"] details > summary {
+        background-color: white !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        color: var(--foreground) !important;
+        font-weight: 600 !important;
+        
+        /* Volume settings */
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
+        
+        list-style: none !important;
+        transition: background-color 0.2s;
     }
     
-    /* =========================================
-       5. AUTH STYLING
-       ========================================= */
-    /* Glassmorphic Form */
+    [data-testid="stExpander"] details > summary:hover {
+        color: #bda3e0 !important; /* Highlight title on hover */
+    }
+
+    /* Chevron icon fix */
+    [data-testid="stExpander"] details > summary svg {
+        margin-top: -10px; /* Center vertical alignment */
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #bda3e0;
+    }
+
+    /* Content/Answer styling */
+    .streamlit-expanderContent {
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+        padding-top: 0 !important; /* Connect with header */
+        
+        color: var(--muted-fg);
+        font-size: 1.1rem;
+        line-height: 1.7;
+        background-color: white !important;
+    }
+    
+    /* When expanded, ensure no double borders or weird radius */
+    [data-testid="stExpander"][open] {
+        border-color: #bda3e0 !important;
+        box-shadow: 0 20px 60px rgba(189, 163, 224, 0.2);
+    }
+
+    /* Auth Forms */
+    /* Auth Forms - Glass Style */
     [data-testid="stForm"] {
-        background: rgba(255, 255, 255, 0.03);
+        background: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,247,252,0.85) 100%);
         backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Modern Tabs (Pills Style) */
-    .stTabs [data-baseweb="tab-list"] {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 5px;
-        border-radius: 50px;
-        border: 1px solid rgba(255,255,255,0.05);
-        display: flex;
-        gap: 5px;
-        overflow: hidden !important; /* Force hide overflow */
-        /* Hide scrollbar marks */
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+        border: 1px solid rgba(226, 224, 234, 0.5);
+        border-radius: 2rem;
+        padding: 3rem;
+        box-shadow: 0 20px 50px rgba(108, 92, 165, 0.1);
+        transition: transform 0.3s ease, border-color 0.3s ease;
     }
     
-    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
+    [data-testid="stForm"]:hover {
+        transform: translateY(-2px);
+        border-color: rgba(189, 163, 224, 0.6);
+        box-shadow: 0 30px 60px rgba(189, 163, 224, 0.2);
+    }
+    
+    /* Tabs Styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        padding-bottom: 1rem;
+        justify-content: center;
     }
 
     .stTabs [data-baseweb="tab"] {
-        flex: 1;
-        height: 55px !important; /* Even taller */
-        border-radius: 40px;
+        height: 3rem;
+        white-space: nowrap;
+        background-color: transparent;
+        border-radius: 1rem;
+        color: var(--muted-fg);
+        font-weight: 600;
         border: none;
-        background: transparent;
-        color: rgba(255, 255, 255, 0.6);
-        transition: all 0.3s ease;
+        padding: 0 1.5rem;
     }
 
-    /* Target inner text specifically to ensure size applies */
-    .stTabs [data-baseweb="tab"] div,
-    .stTabs [data-baseweb="tab"] p {
-        font-family: 'Outfit', sans-serif !important;
-        font-size: 1.25rem !important; /* Significantly larger */
-        font-weight: 600 !important;
-        letter-spacing: 0.5px;
-    }
-    
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
-        color: white !important;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
+        background-color: rgba(189, 163, 224, 0.1) !important;
+        color: #bda3e0 !important;
     }
     
-    .stTabs [data-baseweb="tab"]:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
-    }
+    </style>
+    """), unsafe_allow_html=True)
 
-    /* Auth Header Styling */
-    .auth-header {
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .auth-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(to right, #fff, #a5b4fc);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    .auth-subtitle {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.95rem;
-    }
+# ==========================================
+# Sections
+# ==========================================
 
-    /* =========================================
-       6. UTILITIES & DECORATION
-       ========================================= */
-    hr {
-        border-color: rgba(255, 255, 255, 0.1) !important;
-        margin: 2rem 0 !important;
-    }
-    
-    /* Featured Pricing Card Modification */
-    div[data-testid="column"]:nth-of-type(2) .pricing-card-container {
-        border: 2px solid #ffd700;
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.15);
-        transform: scale(1.03);
-        z-index: 10;
-        position: relative;
-    }
-
-    /* Pricing Button */
-    .pricing-btn {
-        display: inline-block;
-        width: 100%;
-        padding: 0.8rem 1.5rem;
-        border-radius: 50px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white !important;
-        text-decoration: none !important;
-        font-weight: 600;
-        margin-top: auto; /* Push to bottom */
-        transition: all 0.3s;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 1px;
-    }
-    
-    .pricing-btn:hover {
-        background: white;
-        color: #6a11cb !important; /* Brand Purple instead of black */
-        transform: translateY(-2px);
-        text-decoration: none !important;
-        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
-    }
-    
-    .pricing-btn.primary {
-        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
-        border: none;
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);
-        color: white !important;
-    }
-    
-    .pricing-btn.primary:hover {
-        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important; /* Reverse Gradient */
-        color: white !important; /* Force White */
-        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.6);
-        transform: translateY(-3px);
-    }
-    
-    /* Hero Title Container */
-    .hero-container {
-        text-align: center;
-        padding: 0 1rem 0 1rem; /* Removed top padding */
-        margin-bottom: 0.5rem;
-        animation: fadeInDown 1s ease-out;
-    }
-    
-    @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Urgency Banner */
-    .urgency-box {
-        background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 16px;
-        padding: 0.8rem;
-        text-align: center;
-        margin: 1rem auto 2.5rem auto;
-        max-width: 700px;
-        backdrop-filter: blur(5px);
-        animation: pulse-gold 3s infinite;
-    }
-    
-    @keyframes pulse-gold {
-         0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.1); }
-         70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
-         100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
-    }
-    
-    .urgency-text {
-        color: #ffd700;
-        font-weight: 600;
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Pricing Card Container */
-    .pricing-card-container {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(14px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 2.5rem 1.5rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .pricing-card-container:hover {
-        transform: translateY(-10px);
-        background: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    }
-
-    /* Pro Badge */
-    .pro-badge {
-        background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
-        color: #1a1a2e;
-        padding: 0.4rem 1.2rem;
-        border-radius: 20px;
-        font-weight: 800;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-        letter-spacing: 1px;
-        display: inline-block;
-    }
-    
-    .pricing-badge-container {
-        height: 30px; /* Fixed height for alignment */
-        margin-bottom: 1rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    /* Pricing Typography */
-    .plan-name {
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 1rem;
-    }
-    
-    .price-container {
-        margin: 1.5rem 0;
-        height: 80px; /* Фиксированная высота для выравнивания */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .price-tag {
-        font-size: 2.8rem;
-        font-weight: 800;
-        background: linear-gradient(to right, #fff, #b4c6ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        line-height: 1;
-    }
-    
-    /* Маркетинговая новая цена (красная/акцентная) */
-    .new-price {
-        font-size: 3rem;
-        font-weight: 800;
-        background: linear-gradient(to right, #ffd700, #fdbb2d);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        line-height: 1;
-    }
-    
-    .old-price {
-        text-decoration: line-through;
-        color: rgba(255,255,255,0.4) !important;
-        font-size: 1.2rem;
-        margin-bottom: 0.2rem;
-        font-weight: 500;
-    }
-    
-    .price-period {
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-    }
-    
-    /* Feature List */
-    /* Feature List */
-    .feature-list {
-        text-align: left;
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-        display: inline-block; /* Allows centering by parent */
-        width: fit-content;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .feature-item {
-        margin-bottom: 0.8rem;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    /* Benefit Cards */
-    .benefit-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 1.5rem;
-        transition: all 0.3s ease;
-        /* Removed height: 100% to prevent collapse */
-        display: block; 
-        position: relative;
-    }
-    
-    .benefit-wrapper {
-        display: none; /* Deprecated */
-    }
-    
-    .benefits-grid-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 2rem;
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
+def render_navbar():
+    """Навигационная панель."""
+    st.markdown(clean_html("""
+    <div style="position: sticky; top: 0; z-index: 50; padding: 1rem; background: rgba(253, 252, 248, 0.8); backdrop-filter: blur(10px);">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 1rem 1.5rem; border-radius: 1rem; border: 1px solid rgba(226, 224, 234, 0.5); box-shadow: var(--shadow-card);">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; background: linear-gradient(90deg, #bda3e0, #f8dbd0); display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 1.25rem;">✨</span>
+                </div>
+                <span style="font-family: 'Plus Jakarta Sans'; font-weight: 700; font-size: 1.25rem; color: var(--foreground);">СказкаAI</span>
+            </div>
+            
+            <div style="display: flex; gap: 2rem;" class="nav-links">
+                <a href="#how-it-works" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Как это работает</a>
+                <a href="#benefits" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Преимущества</a>
+                <a href="#pricing" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Тарифы</a>
+                <a href="#faq" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem; font-weight: 500;">FAQ</a>
+            </div>
+            
+            <div>
+                <a href="#auth" style="background: linear-gradient(90deg, #bda3e0, #f8dbd0); color: white; padding: 0.6rem 1.25rem; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 15px rgba(189, 163, 224, 0.3);">Создать сказку</a>
+            </div>
+        </div>
+    </div>
+    <style>
     @media (max-width: 768px) {
-        .benefits-grid-container {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    .benefit-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        border-color: rgba(255, 215, 0, 0.3);
-    }
-    
-    .benefit-title {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: white;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .benefit-text {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.95rem;
-        line-height: 1.5;
+        .nav-links { display: none !important; }
     }
     </style>
-    """, unsafe_allow_html=True)
-
+    """), unsafe_allow_html=True)
 
 def render_hero():
-    """Hero секция с современной типографикой."""
-    st.markdown("""
-    <div class="hero-container">
-        <div style="
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.6rem 1.8rem;
-            border-radius: 50px;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.95rem;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #ffd700;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        ">
-            ✨ Магия искусственного интеллекта
-        </div>
-        <h1 style="font-size: clamp(3rem, 6vw, 4.5rem); margin-bottom: 1rem; line-height: 1.1;">
-            Сказки, которые<br>оживают голосом
-        </h1>
-        <p style="font-size: 1.4rem; opacity: 0.85; max-width: 700px; margin: 0 auto 1.5rem; line-height: 1.6;">
-            Создавайте персонализированные аудио-истории для вашего ребенка за 30 секунд. 
-            Волшебство начинается здесь.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    """Hero Section from HeroSection.tsx"""
+    bg_image = "https://images.unsplash.com/photo-1518133835878-5a93cc3f89e5" # Fallback if local not found
+    local_img_path = Path("assets/hero-dreamy.jpg")
+    
+    if local_img_path.exists():
+        b64_img = load_image_as_base64(local_img_path)
+        if b64_img:
+            bg_image = f"data:image/jpeg;base64,{b64_img}"
 
+    st.markdown(clean_html(f"""
+    <div style="position: relative; min-height: 85vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 4rem 1rem;">
+        <!-- Background -->
+        <div style="position: absolute; inset: 0; z-index: 0;">
+            <img src="{bg_image}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.6;" />
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--background), rgba(253, 252, 248, 0.6), transparent);"></div>
+        </div>
+        
+        <!-- Animated Orbs -->
+        <div style="position: absolute; top: 20%; left: 20%; width: 300px; height: 300px; background: rgba(220, 208, 240, 0.4); border-radius: 50%; filter: blur(80px); animation: float 8s infinite;"></div>
+        <div style="position: absolute; bottom: 20%; right: 20%; width: 250px; height: 250px; background: rgba(248, 219, 208, 0.4); border-radius: 50%; filter: blur(60px); animation: float 6s infinite reverse;"></div>
+
+        <div class="container" style="position: relative; z-index: 10; text-align: center; max-width: 800px;">
+            
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.8); border-radius: 9999px; margin-bottom: 2rem; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.5);">
+                <span style="color: #bda3e0;">✨</span>
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--foreground); opacity: 0.8;">Магия искусственного интеллекта</span>
+            </div>
+            
+            <h1 style="font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.1; margin-bottom: 1.5rem; font-weight: 800;">
+                Сказки, где ваш ребёнок — <br>
+                <span class="text-gradient">главный герой</span>
+            </h1>
+            
+            <p style="font-size: 1.25rem; color: var(--muted-fg); margin-bottom: 2.5rem; line-height: 1.6;">
+                Персонализированные аудио-истории, созданные искусственным интеллектом 
+                специально для вашего малыша. Озвучено профессиональными нейронными голосами.
+            </p>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="#auth" class="magic-button">
+                    🧬 Создать сказку бесплатно
+                </a>
+                <a href="#demo" style="padding: 0.8rem 2rem; background: white; border: 1px solid var(--border); border-radius: 9999px; color: var(--foreground); font-weight: 600; text-decoration: none; transition: all 0.3s;">
+                    🎧 Послушать пример
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div style="margin-top: 4rem; display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;">
+                <div class="text-center">
+                    <div class="text-gradient" style="font-size: 1.8rem; font-weight: 800;">30 сек</div>
+                    <div style="font-size: 0.9rem; color: var(--muted-fg);">на создание сказки</div>
+                </div>
+                 <div class="text-center">
+                    <div class="text-gradient" style="font-size: 1.8rem; font-weight: 800;">1000+</div>
+                    <div style="font-size: 0.9rem; color: var(--muted-fg);">счастливых семей</div>
+                </div>
+                 <div class="text-center">
+                    <div class="text-gradient" style="font-size: 1.8rem; font-weight: 800;">100%</div>
+                    <div style="font-size: 0.9rem; color: var(--muted-fg);">добрые истории</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 def render_how_it_works():
-    """Секция 'Как это работает'."""
-    st.markdown("<h2 style='margin: 0 0 2.5rem 0'>🪄 Как это работает?</h2>", unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("""
-        <div style="text-align:center">
-            <div style='font-size: 3.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));'>📝</div>
-            <h4 style="margin-bottom: 0.5rem">1. Укажите детали</h4>
-            <p style="font-size: 0.95rem; opacity: 0.7;">Имя ребенка, возраст и<br>любимые увлечения</p>
+    """Section: How It Works"""
+    st.markdown(clean_html("""
+    <div id="how-it-works" style="padding: 6rem 1rem;">
+        <div class="container">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    Как это <span class="text-gradient">работает</span>
+                </h2>
+                <p class="text-muted text-lg">Три простых шага до волшебной истории</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <!-- Step 1 -->
+                <div class="glass-card" style="text-align: left;">
+                    <div style="width: 3rem; height: 3rem; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); margin-bottom: 1.5rem; font-weight: 700; color: #bda3e0;">01</div>
+                    <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #dcd0f0, #f0c6da); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;">📝</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Введите данные ребёнка</h3>
+                    <p class="text-muted" style="line-height: 1.6;">Укажите имя, возраст и увлечения вашего малыша. Чем больше деталей — тем волшебнее история!</p>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="glass-card" style="text-align: left;">
+                    <div style="width: 3rem; height: 3rem; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); margin-bottom: 1.5rem; font-weight: 700; color: #f0c6da;">02</div>
+                    <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #f0c6da, #bda3e0); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;">🧠</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">ИИ создаёт сюжет</h3>
+                    <p class="text-muted" style="line-height: 1.6;">Искусственный интеллект пишет уникальную добрую историю с вашим ребёнком в главной роли.</p>
+                </div>
+                
+                 <!-- Step 3 -->
+                <div class="glass-card" style="text-align: left;">
+                    <div style="width: 3rem; height: 3rem; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); margin-bottom: 1.5rem; font-weight: 700; color: #bda3e0;">03</div>
+                    <div style="width: 3.5rem; height: 3.5rem; background: linear-gradient(135deg, #bda3e0, #f8dbd0); border-radius: 1rem; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;">🎧</div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 600;">Выберите голос и слушайте</h3>
+                    <p class="text-muted" style="line-height: 1.6;">Выберите голос озвучки (Дмитрий или Светлана) и наслаждайтесь сказкой вместе с малышом.</p>
+                </div>
+            </div>
         </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div style="text-align:center">
-            <div style='font-size: 3.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px rgba(200, 100, 255,0.4));'>🧠</div>
-            <h4 style="margin-bottom: 0.5rem">2. ИИ творит</h4>
-            <p style="font-size: 0.95rem; opacity: 0.7;">Наш алгоритм создает<br>уникальную историю</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("""
-        <div style="text-align:center">
-            <div style='font-size: 3.5rem; margin-bottom: 1.5rem; filter: drop-shadow(0 0 10px rgba(100, 200, 255,0.4));'>🎧</div>
-            <h4 style="margin-bottom: 0.5rem">3. Слушайте</h4>
-            <p style="font-size: 0.95rem; opacity: 0.7;">Профессиональная озвучка<br>и полная магия</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
+    </div>
+    """), unsafe_allow_html=True)
 
 def render_benefits():
-    """Секция преимуществ (CSS Grid Layout)."""
-    st.markdown("<h2 style='margin: 0 0 2.5rem 0'>Почему родители выбирают нас</h2>", unsafe_allow_html=True)
-    
-    # Define benefits data
-    benefits = [
-        {
-            "icon": "🎯", 
-            "title": "Персонализация", 
-            "text": "Ваш ребенок — главный герой каждой сказки. Мы учитываем возраст, имя и увлечения для создания уникального сюжета."
-        },
-        {
-            "icon": "🎙️", 
-            "title": "Живой голос", 
-            "text": "Нейросеть Edge-TTS звучит как настоящий профессиональный актер, с правильной интонацией, паузами и эмоциями."
-        },
-        {
-            "icon": "🛡️", 
-            "title": "Безопасность", 
-            "text": "Абсолютно добрые сюжеты. Никакого негатива, агрессии или пугающих моментов. Идеально перед сном."
-        },
-        {
-            "icon": "⚡", 
-            "title": "Мгновенно", 
-            "text": "Больше не нужно выдумывать сказки уставшим вечером. Готовая история с озвучкой всего за 30 секунд."
-        }
+    """Section: Benefits"""
+    st.markdown(clean_html("""
+    <div id="benefits" style="padding: 4rem 1rem;">
+        <div class="container">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    Почему <span class="text-gradient">выбирают нас</span>
+                </h2>
+                <p class="text-muted text-lg">Технологии на службе детского счастья</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+                <!-- Benefit 1 -->
+                <div class="glass-card" style="display: flex; gap: 1.25rem; align-items: flex-start;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: rgba(240, 198, 218, 0.2); border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">❤️</div>
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Полная персонализация</h3>
+                        <p class="text-muted">Сюжет строится вокруг интересов и имени вашего ребёнка. Каждая история уникальна.</p>
+                    </div>
+                </div>
+                
+                 <!-- Benefit 2 -->
+                <div class="glass-card" style="display: flex; gap: 1.25rem; align-items: flex-start;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: rgba(248, 219, 208, 0.2); border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🛡️</div>
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Безопасный контент</h3>
+                        <p class="text-muted">Алгоритмы настроены только на добрые и поучительные истории без агрессии.</p>
+                    </div>
+                </div>
+                
+                 <!-- Benefit 3 -->
+                <div class="glass-card" style="display: flex; gap: 1.25rem; align-items: flex-start;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: rgba(220, 208, 240, 0.2); border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🎤</div>
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Нейронная озвучка</h3>
+                        <p class="text-muted">Голоса звучат естественно, с интонациями и эмоциями — неотличимо от живых актёров.</p>
+                    </div>
+                </div>
+                
+                 <!-- Benefit 4 -->
+                 <div class="glass-card" style="display: flex; gap: 1.25rem; align-items: flex-start;">
+                    <div style="width: 3.5rem; height: 3.5rem; background: rgba(189, 163, 224, 0.2); border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">⚡</div>
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">Экономия времени</h3>
+                        <p class="text-muted">Готовая сказка с профессиональной озвучкой менее чем за минуту.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
+
+def render_audio_demo():
+    """Section: Audio Demo"""
+    if "demo_voice" not in st.session_state:
+        st.session_state.demo_voice = "dmitry"
+        
+    st.markdown(clean_html("""
+    <div id="demo" style="padding: 4rem 1rem;">
+        <div class="container" style="max-width: 900px;">
+             <div class="text-center mb-12">
+                <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    Послушайте <span class="text-gradient">пример</span>
+                </h2>
+                <p class="text-muted text-lg">Оцените качество нейронной озвучки наших сказок</p>
+            </div>
+            
+            <div class="glass-card" style="padding: 2.5rem; background: white;">
+                <!-- Voice Selectors (Simulated) -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <div style="flex: 1; padding: 1rem; border: 1px solid var(--primary); background: rgba(189, 163, 224, 0.1); border-radius: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-size: 1.5rem;">👨</span>
+                        <div>
+                            <div style="font-weight: 600;">Дмитрий</div>
+                            <div style="font-size: 0.8rem; color: var(--muted-fg);">Тёплый мужской голос</div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; padding: 1rem; border: 1px solid var(--border); border-radius: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 1rem; opacity: 0.6;">
+                        <span style="font-size: 1.5rem;">👩</span>
+                        <div>
+                            <div style="font-weight: 600;">Светлана</div>
+                            <div style="font-size: 0.8rem; color: var(--muted-fg);">Нежный женский голос</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Text Preview -->
+                <div style="background: var(--muted); padding: 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem;">
+                    <p style="font-style: italic; color: #4a5568; line-height: 1.6;">
+                        "Жил-был маленький мальчик по имени Артём. Больше всего на свете он любил 
+                        динозавров и строить высокие башни из кубиков. Однажды, когда солнышко 
+                        спряталось за облачко..."
+                    </p>
+                </div>
+                
+                <!-- Mock Player -->
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--gradient-button); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 15px rgba(189, 163, 224, 0.4);">
+                        <span style="color: white; font-size: 1.2rem;">▶</span>
+                    </div>
+                    <div style="flex: 1;">
+                         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted-fg); margin-bottom: 0.5rem;">
+                            <span>0:00</span>
+                            <span>2:15</span>
+                        </div>
+                        <div style="height: 0.4rem; background: var(--muted); border-radius: 99px; overflow: hidden;">
+                            <div style="width: 30%; height: 100%; background: var(--gradient-button);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
+
+def render_use_cases():
+    """Section: Use Cases"""
+    cases = [
+        {"icon": "🌙", "title": "Перед сном", "text": "Спокойные, убаюкивающие истории, которые помогут малышу расслабиться.", "color": "#dcd0f0"},
+        {"icon": "🚗", "title": "В дороге", "text": "Увлекательные сказки, чтобы отвлечь ребёнка в машине или транспорте.", "color": "#f8dbd0"},
+        {"icon": "📚", "title": "Развитие", "text": "Поучительные истории, которые учат доброте, смелости и дружбе.", "color": "#ade6d1"}
     ]
     
-    # Generate HTML safely - using strict no-indentation to avoid Markdown code blocks
-    cards_html = ""
-    for b in benefits:
-        cards_html += f'<div class="benefit-card"><div class="benefit-title">{b["icon"]} {b["title"]}</div><p class="benefit-text">{b["text"]}</p></div>'
-    
-    st.markdown(f'<div class="benefits-grid-container">{cards_html}</div>', unsafe_allow_html=True)
-
+    html_cases = ""
+    for c in cases:
+        html_cases += f"""
+        <div class="glass-card" style="text-align: center; transition: transform 0.3s;">
+            <div style="font-size: 3rem; margin-bottom: 1.5rem;">{c['icon']}</div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem;">{c['title']}</h3>
+            <p class="text-muted">{c['text']}</p>
+        </div>
+        """
+        
+    st.markdown(clean_html(f"""
+    <div id="use-cases" style="padding: 4rem 1rem;">
+        <div class="container">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">
+                    Для каких <span class="text-gradient">ситуаций</span>
+                </h2>
+                <p class="text-muted text-lg">Идеальные истории для любого момента</p>
+            </div>
+            
+             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                {html_cases}
+             </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 def render_pricing():
-    """Секция тарифов с улучшенным дизайном и авто-валютой."""
-    # Получаем валюту (кэшируем в сессии)
+    """Section: Pricing"""
     if 'currency' not in st.session_state:
         st.session_state.currency, st.session_state.currency_symbol = get_user_currency()
     
-    curr = st.session_state.currency
-    sym = st.session_state.currency_symbol
+    # Force Ruble symbol to match design for now
+    sym = "₽"
+    # Simulating prices for simplicity
+    price_mo = f"299{sym}"
+    price_yr = f"2499{sym}"
     
-    # Цены
-    prices = {
-        'RUB': {'pro_old': 1990, 'pro_new': 990, 'year_old': 23000, 'year_new': 8990},
-        'KZT': {'pro_old': 9990, 'pro_new': 4990, 'year_old': 115000, 'year_new': 44990},
-        'BYN': {'pro_old': 69, 'pro_new': 35, 'year_old': 790, 'year_new': 299},
-        'UZS': {'pro_old': 259000, 'pro_new': 129000, 'year_old': 2990000, 'year_new': 1190000},
-        'USD': {'pro_old': 19.99, 'pro_new': 9.99, 'year_old': 239.99, 'year_new': 89.99},
-        'EUR': {'pro_old': 19.99, 'pro_new': 9.99, 'year_old': 239.99, 'year_new': 89.99}
-    }
-    
-    p = prices.get(curr, prices['USD'])
-    
-    # Форматирование цен
-    if curr in ['RUB', 'KZT', 'UZS', 'BYN']:
-        price_pro_old = format_price(p['pro_old'], sym)
-        price_pro_new = format_price(p['pro_new'], sym)
-        price_year_old = format_price(p['year_old'], sym)
-        price_year_new = format_price(p['year_new'], sym)
-    else:
-        price_pro_old = f"{sym}{p['pro_old']}"
-        price_pro_new = f"{sym}{p['pro_new']}"
-        price_year_old = f"{sym}{p['year_old']}"
-        price_year_new = f"{sym}{p['year_new']}"
-
-    st.markdown("<h2 style='margin: 0 0 1.5rem 0'>💎 Выберите свой тариф</h2>", unsafe_allow_html=True)
-    
-    # Баннер срочности
-    st.markdown("""
-    <div class="urgency-box">
-        <div class="urgency-text">⏳ Ограниченное предложение — цены вырастут через 2 дня!</div>
+    # Custom checkmark icon
+    check_icon = """
+    <div style="flex-shrink: 0; width: 1.25rem; height: 1.25rem; background: rgba(189, 163, 224, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 1L3.5 6.5L1 4" stroke="#bda3e0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
     </div>
-    """, unsafe_allow_html=True)
+    """
+
+    st.markdown(clean_html(f"""
+    <div id="pricing" style="padding: 6rem 1rem;">
+        <div class="container">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+                    Выберите <span class="text-gradient">тариф</span>
+                </h2>
+                <p class="text-muted text-lg">Начните бесплатно, перейдите на премиум когда захотите</p>
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(51, 144, 236, 0.08); padding: 0.4rem 1rem; border-radius: 99px; margin-top: 1rem;">
+                    <span style="font-size: 1rem;">💳</span>
+                    <span style="font-size: 0.9rem; color: var(--muted-fg);">Поддерживаем: RUB, USD, EUR и другие валюты</span>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
+                <!-- Free Plan -->
+                <div class="glass-card" style="display: flex; flex-direction: column; text-align: center; padding: 2.5rem 2rem;">
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--foreground); margin-bottom: 0.5rem;">Бесплатно</h3>
+                        <p class="text-muted text-sm" style="font-weight: 500;">Попробуйте магию сказок</p>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <span style="font-size: 3.5rem; font-weight: 800; color: #bda3e0; line-height: 1;">0{sym}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; text-align: left; padding: 0 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>3 сказки в месяц</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>2 голоса озвучки</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Длительность до 3 минут</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Базовая персонализация</span></div>
+                    </div>
+                    <a href="#auth" style="display: block; width: 100%; padding: 1rem; text-align: center; border: 1px solid var(--border); border-radius: 1rem; text-decoration: none; color: var(--foreground); font-weight: 700; transition: all 0.2s; background: transparent;">Начать бесплатно</a>
+                </div>
+                
+                 <!-- Monthly Plan (Popular) -->
+                <div class="glass-card" style="display: flex; flex-direction: column; text-align: center; border: 2px solid #dcd0f0; box-shadow: 0 20px 40px rgba(189, 163, 224, 0.15); transform: scale(1.05); padding: 3rem 2rem; position: relative;">
+                    <div style="position: absolute; top: -1.2rem; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #bda3e0, #f8dbd0); padding: 0.5rem 2rem; border-radius: 20px 20px 20px 20px; color: white; font-size: 0.9rem; font-weight: 700; box-shadow: 0 4px 15px rgba(189, 163, 224, 0.4); display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; z-index: 10;">
+                        <span>✨</span> Популярный
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--foreground); margin-bottom: 0.5rem;">Семейный</h3>
+                        <p class="text-muted text-sm" style="font-weight: 500;">Безлимитные сказки</p>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; align-items: baseline; justify-content: center; gap: 0.3rem;">
+                            <span style="font-size: 3.5rem; font-weight: 800; color: #bda3e0; line-height: 1;">{price_mo}</span>
+                            <span class="text-muted" style="font-size: 1.1rem; font-weight: 500;">/месяц</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; text-align: left; padding: 0 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Безлимитные сказки</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Все голоса озвучки</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Длительность до 10 минут</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Расширенная персонализация</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Скачивание в MP3</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Приоритетная поддержка</span></div>
+                    </div>
+                    <a href="#" class="magic-button" style="display: flex; justify-content: center; padding: 1rem; width: 100%; font-size: 1.1rem; border-radius: 1rem;">✨ Выбрать план</a>
+                </div>
+                
+                 <!-- Yearly Plan -->
+                <div class="glass-card" style="display: flex; flex-direction: column; text-align: center; padding: 2.5rem 2rem;">
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--foreground); margin-bottom: 0.5rem;">Годовой</h3>
+                        <p class="text-muted text-sm" style="font-weight: 500;">Экономия 30%</p>
+                    </div>
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; align-items: baseline; justify-content: center; gap: 0.3rem;">
+                            <span style="font-size: 3.5rem; font-weight: 800; color: #bda3e0; line-height: 1;">{price_yr}</span>
+                            <span class="text-muted" style="font-size: 1.1rem; font-weight: 500;">/год</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; text-align: left; padding: 0 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Всё из «Семейного»</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Экономия 1089{sym} в год</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Эксклюзивные голоса</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Ранний доступ к новинкам</span></div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">{check_icon} <span>Семейный аккаунт (до 3 детей)</span></div>
+                    </div>
+                    <a href="#" style="display: block; width: 100%; padding: 1rem; text-align: center; border: 1px solid var(--border); border-radius: 1rem; text-decoration: none; color: var(--foreground); font-weight: 700; transition: all 0.2s; background: transparent;">Выбрать план</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
+
+def render_faq():
+    """Section: FAQ"""
+    st.markdown(clean_html("""
+    <div id="faq" style="padding: 6rem 1rem; background: radial-gradient(circle at 50% 50%, rgba(220, 208, 240, 0.15), transparent 70%);">
+        <div class="container" style="max-width: 800px;">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+                    Частые <span class="text-gradient">вопросы</span>
+                </h2>
+                <p class="text-muted text-lg">Ответы на популярные вопросы родителей</p>
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
     
-    # Data structure for plans
-    plans = [
-        {
-            "name": "Free",
-            "badge": None,
-            "prices_html": f'<div class="price-container"><div class="price-tag">0 {sym}</div></div>',
-            "period": "Для старта",
-            "features": [
-                {"text": "✅ 3 сказки в день", "opacity": 1},
-                {"text": "✅ Базовый голос", "opacity": 1},
-                {"text": "❌ Скачивание MP3", "opacity": 0.5},
-                {"text": "❌ История", "opacity": 0.5}
-            ],
-            "btn_text": "Начать бесплатно",
-        },
-        {
-            "name": "Pro Monthly",
-            "badge": "🔥 ХИТ ПРОДАЖ",
-            "prices_html": f'<div class="price-container"><div class="old-price">{price_pro_old}</div><div class="new-price">{price_pro_new}</div></div>',
-            "period": "в месяц",
-            "features": [
-                {"text": "✅ Безлимит сказок", "opacity": 1},
-                {"text": "✅ Все премиум голоса", "opacity": 1},
-                {"text": "✅ Скачивание MP3", "opacity": 1},
-                {"text": "✅ Личная библиотека", "opacity": 1}
-            ],
-            "btn_text": "Стать Pro",
-        },
-        {
-            "name": "Pro Year",
-            "badge": None,
-            "prices_html": f'<div class="price-container"><div class="old-price">{price_year_old}</div><div class="new-price" style="font-size: 2.5rem">{price_year_new}</div></div>',
-            "period": "в год (выгода 50%)",
-            "features": [
-                {"text": "✅ Всё из тарифа Pro", "opacity": 1},
-                {"text": "✅ 12 месяцев по цене 9", "opacity": 1},
-                {"text": "✅ Приоритет генерации", "opacity": 1},
-                {"text": "✅ Ранний доступ к фичам", "opacity": 1}
-            ],
-            "btn_text": "Выбрать Выгоду",
-        }
+    faqs = [
+        ("Можно ли сохранить и скачать сказку?", "Да! На платных тарифах вы можете скачивать сказки в формате MP3 и слушать их офлайн."),
+        ("Насколько это безопасно для ребёнка?", "Мы используем специально настроенные алгоритмы, которые создают только добрые, поучительные истории, исключая любые пугающие или неуместные темы."),
+        ("Как работает подписка?", "Подписка автоматически продлевается каждый месяц или год. Вы можете отменить её в любой момент в личном кабинете."),
+        ("Для какого возраста подходят сказки?", "Алгоритм адаптирует сложность языка и сюжета под возраст ребенка. Идеально подходит для детей от 2 до 12 лет."),
+        ("Какие голоса озвучки доступны?", "Вам доступны профессиональные нейронные голоса: мужской (Дмитрий) и женский (Светлана), которые звучат очень естественно.")
     ]
     
-    col1, col2, col3 = st.columns(3)
-    cols = [col1, col2, col3]
+    # Use columns to center the accordion stack effectively
+    # Using 1:6:1 ratio for optimal width (wide but safe)
+    col1, col2, col3 = st.columns([1, 6, 1])
     
-    for i, plan in enumerate(plans):
-        with cols[i]:
-            # Generate Badge HTML
-            if plan['badge']:
-                badge_html = f'<div class="pro-badge">{plan["badge"]}</div>'
-            else:
-                 # Empty badge container ensures alignment
-                badge_html = "" 
-            
-            # Generate Features HTML
-            features_html = ""
-            for f in plan['features']:
-                features_html += f'<div class="feature-item" style="opacity:{f["opacity"]}">{f["text"]}</div>'
-            
-            # Use single-line string to avoid markdown indentation issues
-            html = f'<div class="pricing-card-container"><div class="pricing-badge-container">{badge_html}</div><div class="plan-name">{plan["name"]}</div>{plan["prices_html"]}<div class="price-period">{plan["period"]}</div><div class="feature-list">{features_html}</div><a href="#" class="pricing-btn primary">{plan["btn_text"]}</a></div>'
-            
-            st.markdown(html, unsafe_allow_html=True)
-    
-
-
+    with col2:
+        for q, a in faqs:
+            with st.expander(q):
+                st.write(a)
 
 def render_auth():
-    """Форма авторизации (Redesigned)."""
-    from auth import sign_up, sign_in, init_auth_state
-    
+    """Section: Auth"""
     init_auth_state()
+    st.markdown("<div id='auth'></div>", unsafe_allow_html=True)
     
-    # Modern Auth Header
-    st.markdown("""
-    <div class="auth-header" style="margin-bottom: 2.5rem;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
-        <div class="auth-title">Личный Кабинет</div>
-        <div class="auth-subtitle">Войдите, чтобы создавать новые истории</div>
+    st.markdown(clean_html("""
+    <div style="padding: 6rem 1rem; background: radial-gradient(circle at 50% 50%, rgba(248, 219, 208, 0.15), transparent 70%);">
+        <div class="container" style="max-width: 800px;">
+             <div class="text-center mb-16">
+                <h2 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+                    Личный <span class="text-gradient">кабинет</span>
+                </h2>
+                <p class="text-muted text-lg">Войдите, чтобы создавать новые истории</p>
+            </div>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """), unsafe_allow_html=True)
     
-    # Centered Container with constrained width
-    col1, col2, col3 = st.columns([1, 3, 1])
+    # Centered Layout for Form
+    # Using 1:2:1 ratio for a nice centered card width (approx 50% width on wide screens)
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        tab1, tab2 = st.tabs(["Войти", "Регистрация"])
+        tab1, tab2 = st.tabs(["Вход", "Регистрация"])
         
         with tab1:
-            st.markdown("<div style='margin-bottom: 20px'></div>", unsafe_allow_html=True)
-            with st.form("login_form", clear_on_submit=False):
-                email = st.text_input("Email", placeholder="example@mail.com", key="login_email")
-                password = st.text_input("Пароль", type="password", placeholder="••••••••", key="login_password")
-                
-                st.markdown("<div style='height: 15px'></div>", unsafe_allow_html=True)
-                submitted = st.form_submit_button("Войти в аккаунт", use_container_width=True)
-                
-                if submitted:
-                    if email and password:
-                        result = sign_in(email, password)
-                        if result['success']:
-                            st.session_state.user = result['user']
-                            st.session_state.user_email = email
-                            st.toast("✅ Рады видеть вас снова!")
-                            import time
-                            time.sleep(1)
-                            st.rerun()
-                        else:
-                            st.error(result['error'])
-                    else:
-                        st.warning("⚠️ Введите email и пароль")
+            with st.form("login_form"):
+                 st.write("") # Spacer
+                 st.subheader("С возвращением! 👋")
+                 st.text_input("Email", key="login_email", placeholder="name@example.com")
+                 st.text_input("Пароль", type="password", key="login_pwd", placeholder="••••••••")
+                 st.write("") # Spacer
+                 submitted = st.form_submit_button("Войти ✨", use_container_width=True)
+                 if submitted:
+                     st.info("Функционал входа (демо)")
         
         with tab2:
-            st.markdown("<div style='margin-bottom: 20px'></div>", unsafe_allow_html=True)
-            with st.form("register_form", clear_on_submit=False):
-                email = st.text_input("Email", placeholder="example@mail.com", key="reg_email")
-                password = st.text_input("Пароль", type="password", placeholder="Минимум 6 символов", key="reg_password")
-                password2 = st.text_input("Повторите пароль", type="password", placeholder="••••••••", key="reg_password2")
+            with st.form("reg_form"):
+                 st.write("") # Spacer
+                 st.subheader("Создать аккаунт 🚀")
+                 st.text_input("Имя", key="reg_name", placeholder="Как вас зовут?")
+                 st.text_input("Email", key="reg_email", placeholder="name@example.com")
+                 st.text_input("Пароль", type="password", key="reg_pwd", placeholder="Придумайте пароль")
+                 st.write("") # Spacer
+                 submitted = st.form_submit_button("Зарегистрироваться", use_container_width=True)
+                 if submitted:
+                     st.info("Функционал регистрации (демо)")
+
+def render_footer():
+    """Section: Footer"""
+    st.markdown(clean_html("""
+    <div style="border-top: 1px solid var(--border); padding: 4rem 1rem; margin-top: 4rem;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+                <div style="max-width: 300px;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <span style="font-size: 1.5rem;">✨</span>
+                        <span style="font-weight: 700; font-size: 1.25rem;">СказкаAI</span>
+                    </div>
+                    <p class="text-muted text-sm">Создаём волшебные персонализированные аудио-сказки для ваших детей с помощью искусственного интеллекта.</p>
+                </div>
                 
-                st.markdown("<div style='height: 15px'></div>", unsafe_allow_html=True)
-                submitted = st.form_submit_button("Создать аккаунт", use_container_width=True)
+                <div>
+                    <h4 style="font-weight: 600; margin-bottom: 1rem;">Продукт</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="#how-it-works" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem;">Как это работает</a>
+                        <a href="#pricing" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem;">Тарифы</a>
+                        <a href="#demo" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem;">Примеры</a>
+                    </div>
+                </div>
                 
-                if submitted:
-                    if email and password and password2:
-                        if password != password2:
-                            st.error("❌ Пароли не совпадают")
-                        elif len(password) < 6:
-                            st.error("❌ Слишком короткий пароль")
-                        else:
-                            result = sign_up(email, password)
-                            if result['success']:
-                                st.success("🎉 Аккаунт создан! Проверьте почту.")
-                            else:
-                                st.error(result['error'])
-                    else:
-                        st.warning("⚠️ Заполните все поля")
+                <div>
+                     <h4 style="font-weight: 600; margin-bottom: 1rem;">Поддержка</h4>
+                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="#" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem;">Связаться с нами</a>
+                        <a href="#" style="color: var(--muted-fg); text-decoration: none; font-size: 0.9rem;">Политика конфиденциальности</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border); margin-top: 3rem; padding-top: 2rem; text-align: center; color: var(--muted-fg); font-size: 0.8rem;">
+                © 2026 СказкаAI. Все права защищены.
+            </div>
+        </div>
+    </div>
+    """), unsafe_allow_html=True)
 
 
 def render_full_landing_page():
-    """Полный лендинг."""
+    """Main rendering entry point."""
     inject_landing_styles()
     
+    render_navbar()
     render_hero()
-    st.divider()
-    
     render_how_it_works()
-    st.divider()
-    
     render_benefits()
-    st.divider()
-    
+    render_audio_demo()
+    render_use_cases()
     render_pricing()
-    st.divider()
-    
+    render_faq()
     render_auth()
-    
-    
-    # Footer
-    st.markdown("---")
-    st.markdown("""
-    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 0.85rem;">
-        © 2026 Сказочник AI | Создано с ❤️ для ваших детей
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Активация scroll-анимаций
-    inject_scroll_js()
-
-
-# Для обратной совместимости
-def render_landing_header():
-    """Заглушка для обратной совместимости."""
-    pass
-
-def inject_scroll_js():
-    """Инъекция JS через iframe компонент для надежного выполнения."""
-    import streamlit.components.v1 as components
-    
-    components.html("""
-    <script>
-    (function() {
-        const doc = window.parent.document;
-        
-        // 1. Инъекция стилей в основной документ
-        const styleId = 'scroll-animation-styles';
-        if (!doc.getElementById(styleId)) {
-            const style = doc.createElement('style');
-            style.id = styleId;
-            style.textContent = `
-                /* Базовый класс для анимации */
-                .on-scroll-animation {
-                    opacity: 0;
-                    transform: translateY(40px);
-                    transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    will-change: opacity, transform;
-                }
-                
-                /* Класс видимости */
-                .on-scroll-animation.visible {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-                
-                /* Stagger (каскад) для колонок */
-                [data-testid="column"]:nth-of-type(1) .pricing-card-container { transition-delay: 0.1s; }
-                [data-testid="column"]:nth-of-type(2) .pricing-card-container { transition-delay: 0.2s; }
-                [data-testid="column"]:nth-of-type(3) .pricing-card-container { transition-delay: 0.3s; }
-            `;
-            doc.head.appendChild(style);
-        }
-
-        // 2. Функция инициализации наблюдателя (Observer)
-        function initScrollObserver() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, {
-                threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px"
-            });
-            
-            // ... (rest of observer logic) ...
-        }
-
-        // 3. Logic for Auto-Hiding Scrollbar & Proximity Hover
-        // We store handlers on window.parent to avoid zombie listeners on re-runs
-        
-        const removeOldListeners = () => {
-             if (window.parent._onScrollHandler) {
-                 window.parent.removeEventListener('scroll', window.parent._onScrollHandler, true);
-                 const c = doc.querySelector('[data-testid="stAppViewContainer"]');
-                 if (c) c.removeEventListener('scroll', window.parent._onScrollHandler);
-             }
-             if (window.parent._onMouseMoveHandler) {
-                 window.parent.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
-                 window.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
-             }
-        };
-        
-        // Clean up immediately
-        removeOldListeners();
-
-        let scrollTimeout;
-        const showScrollbar = () => {
-            doc.body.classList.add('is-scrolling');
-            const app = doc.querySelector('.stApp');
-            if (app) app.classList.add('is-scrolling');
-            
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                doc.body.classList.remove('is-scrolling');
-                if (app) app.classList.remove('is-scrolling');
-            }, 1000);
-        };
-
-        // Define new handlers
-        window.parent._onScrollHandler = () => showScrollbar();
-        
-        window.parent._onMouseMoveHandler = (e) => {
-            // Proximity: right 20px
-            const threshold = 20;
-            
-            let width;
-            try {
-                // Try to get parent width.
-                // If cross-origin or other restrictions apply, this catch block handles it.
-                // We prefer visualViewport if available for accuracy with zoom/mobile.
-                if (window.parent.visualViewport) {
-                    width = window.parent.visualViewport.width;
-                } else {
-                    width = window.parent.innerWidth;
-                }
-            } catch (err) {
-                // If we can't access parent, fallback to local or ignore
-                width = 0; 
-            }
-
-            // CRITICAL SAFETY CHECK: 
-            // If width is 0 or undefined, 'width - threshold' is -20 or NaN.
-            // checking 'e.clientX > -20' is ALWAYS true for valid mouse positions.
-            // We must return if width is invalid.
-            if (!width || width < 50) return;
-            
-            // Log for sanity (visible in console if users check)
-            // console.log(`X: ${e.clientX} | W: ${width} | Diff: ${width - e.clientX}`);
-
-            if (e.clientX > width - threshold) {
-                showScrollbar();
-            }
-        };
-
-        // Attach listeners
-        if (window.parent) {
-             try {
-                 window.parent.addEventListener('mousemove', window.parent._onMouseMoveHandler);
-             } catch(e) { console.warn("Cannot attach to parent mousemove"); }
-        }
-        
-        // 2. Scroll: Target specifically the Streamlit container
-        const scrollContainer = doc.querySelector('[data-testid="stAppViewContainer"]');
-        if (scrollContainer) {
-            scrollContainer.addEventListener('scroll', window.parent._onScrollHandler, { passive: true });
-        } else {
-             try {
-                if (window.parent) window.parent.addEventListener('scroll', window.parent._onScrollHandler, true);
-             } catch(e) {}
-        }
-
-        // Initialize observer
-        initScrollObserver();
-            
-        // Initial check
-        const selectors = [
-                // 'h1', 'h2', 'h3',  <-- REMOVED h1/h2 to prevent hero title disappearing
-                'h3', 
-                // All other selectors removed to prevent visibility issues
-                // Removed .benefit-card to prevent visibility issues
-            ];
-            
-        const elements = doc.querySelectorAll(selectors.join(','));
-        elements.forEach((el) => {
-            if (!el.classList.contains('on-scroll-animation')) {
-                el.classList.add('on-scroll-animation');
-                observer.observe(el);
-            }
-        });
-        
-    })();
-    </script>
-    """, height=0)
+    render_footer()

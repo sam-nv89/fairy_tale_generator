@@ -4,22 +4,35 @@
 """
 
 import streamlit as st
-from supabase import create_client, Client
 import logging
 
 logger = logging.getLogger(__name__)
 
+# Безопасный импорт supabase — позволит запускаться приложению, если пакет не установлен
+try:
+    from supabase import create_client, Client  # type: ignore
+    _SUPABASE_AVAILABLE = True
+except Exception as e:
+    create_client = None
+    Client = None
+    _SUPABASE_AVAILABLE = False
+    logger.warning(f"Supabase not available: {e}")
+
 
 def get_supabase_client() -> Client:
     """Создает и возвращает клиент Supabase."""
+    if not _SUPABASE_AVAILABLE:
+        logger.warning("Supabase library is not installed. Auth features are disabled.")
+        return None
+
     try:
         url = st.secrets.get("SUPABASE_URL")
         key = st.secrets.get("SUPABASE_KEY")
-        
+
         if not url or not key:
             logger.error("SUPABASE_URL или SUPABASE_KEY не найдены в secrets.toml")
             return None
-            
+
         return create_client(url, key)
     except Exception as e:
         logger.error(f"Ошибка создания Supabase клиента: {e}")
