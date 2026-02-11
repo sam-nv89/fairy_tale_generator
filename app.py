@@ -5,7 +5,8 @@
 """
 import streamlit as st
 import streamlit.components.v1 as components
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import edge_tts
 import asyncio
 import io
@@ -24,16 +25,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Импорт модулей авторизации и лендинга
+# Импорт модулей
 from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
 from landing import render_full_landing_page
+from styles import get_app_styles # Импорт стилей
 
 # Инициализация состояния авторизации
 init_auth_state()
 
-# Предупреждение для разработчиков/локальной среды, если Supabase недоступен
+# Предупреждение если Supabase недоступен
 if not _SUPABASE_AVAILABLE:
-    st.warning("⚠️ Supabase library is not installed. Auth features are disabled. To enable them, install Microsoft C++ Build Tools (or use Python 3.11/3.10) and re-run `pip install -r requirements.txt`.")
+    st.warning("⚠️ Supabase library is not installed. Auth features are disabled.")
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
@@ -109,23 +111,17 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     </style>
 
     <div class="player" id="player_{player_id}">
-        <!-- Перемотка назад -->
+        <!-- Control buttons removed for brevity, kept structure -->
         <button class="btn btn-skip" id="skipBack_{player_id}" title="Назад 10 сек">
             <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
         </button>
-        
-        <!-- Play/Pause -->
         <button class="btn btn-play" id="playBtn_{player_id}">
             <svg id="playIcon_{player_id}" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
             <svg id="pauseIcon_{player_id}" viewBox="0 0 24 24" style="display:none;margin-left:0"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
-        
-        <!-- Перемотка вперед -->
         <button class="btn btn-skip" id="skipForward_{player_id}" title="Вперед 10 сек">
             <svg viewBox="0 0 24 24"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
         </button>
-        
-        <!-- Громкость YouTube-style -->
         <div class="volume-control">
             <button class="volume-btn" id="muteBtn_{player_id}" title="Громкость">
                 <svg id="volumeIcon_{player_id}" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
@@ -134,25 +130,15 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 <input type="range" class="volume-slider" id="volume_{player_id}" min="0" max="1" step="0.05" value="1">
             </div>
         </div>
-        
-        <!-- Время YouTube-style -->
         <span class="time-display" id="timeDisplay_{player_id}">0:00 / 0:00</span>
-        
-        <!-- Прогресс -->
         <div class="center">
             <input type="range" class="progress-bar" id="progress_{player_id}" value="0" min="0" step="0.1">
         </div>
-        
-        <!-- Повтор -->
         <button class="btn btn-repeat" id="repeatBtn_{player_id}" title="Повтор">
             <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
         </button>
-        
-        <!-- Скорость -->
         <button class="speed-btn" id="speedBtn_{player_id}" title="Скорость воспроизведения">1x</button>
-        
-        <!-- Скачать -->
-        <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать">
+        <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать MP3">
             <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
         </a>
     </div>
@@ -202,12 +188,10 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 volumeSlider.style.setProperty('--volume-pct', pct + '%');
             }}
             
-            // Play/Pause
             playBtn.onclick = () => audio.paused ? audio.play() : audio.pause();
             audio.onplay = () => {{ playIcon.style.display = 'none'; pauseIcon.style.display = 'block'; }};
             audio.onpause = () => {{ playIcon.style.display = 'block'; pauseIcon.style.display = 'none'; }};
             
-            // Metadata
             audio.onloadedmetadata = () => {{
                 progress.max = audio.duration;
                 totalDuration = audio.duration;
@@ -217,21 +201,18 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 if ({autoplay_js}) audio.play().catch(e => {{}});
             }};
             
-            // Time update
             audio.ontimeupdate = () => {{
                 progress.value = audio.currentTime;
                 updateTimeDisplay();
                 updateProgress(progress, audio.currentTime, audio.duration);
             }};
             
-            // Seek
             progress.oninput = () => {{
                 audio.currentTime = progress.value;
                 updateProgress(progress, progress.value, audio.duration);
                 updateTimeDisplay();
             }};
             
-            // Ended
             audio.onended = () => {{
                 if (isRepeat) {{
                     audio.currentTime = 0;
@@ -244,17 +225,14 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 }}
             }};
             
-            // Skip buttons
             skipBack.onclick = () => {{ audio.currentTime = Math.max(0, audio.currentTime - 10); }};
             skipForward.onclick = () => {{ audio.currentTime = Math.min(audio.duration, audio.currentTime + 10); }};
             
-            // Repeat
             repeatBtn.onclick = () => {{
                 isRepeat = !isRepeat;
                 repeatBtn.classList.toggle('btn-active', isRepeat);
             }};
             
-            // Volume
             volumeSlider.oninput = () => {{
                 audio.volume = volumeSlider.value;
                 lastVolume = audio.volume > 0 ? audio.volume : lastVolume;
@@ -276,6 +254,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             }};
             
             function updateVolumeIcon() {{
+                // Simplified icon logic for brevity, kept structure
                 if (audio.volume === 0) {{
                     volumeIcon.innerHTML = '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>';
                 }} else if (audio.volume < 0.5) {{
@@ -285,7 +264,6 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 }}
             }}
             
-            // Speed - циклическое переключение
             const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
             let speedIndex = 2; // 1x
             speedBtn.onclick = () => {{
@@ -323,99 +301,47 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Скрываем сайдбар полностью через CSS
-st.markdown("""
-<style>
-    section[data-testid="stSidebar"][aria-expanded="true"] {
-        display: none;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# --- Магия для кнопки ---
-st.markdown("""
-<style>
-    /* Стили для основной кнопки (type="primary") */
-    div.stButton > button[kind="primary"],
-    div[data-testid="stFormSubmitButton"] button {
-        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
-        color: white !important;
-        border: none !important;
-        padding: 0.6rem 2rem !important;
-        border-radius: 30px !important;
-        font-size: 1.1rem !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3) !important;
-        transition: all 0.3s ease !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-    }
+# --- САЙДБАР: НАСТРОЙКИ (Фаза 1 Реализации) ---
+with st.sidebar:
+    st.title("⚙️ Настройки")
     
-    div.stButton > button[kind="primary"]:hover,
-    div[data-testid="stFormSubmitButton"] button:hover {
-        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
-        transform: translateY(-2px) scale(1.03) !important;
-        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
-        color: white !important;
-    }
+    # 1. Dark Mode
+    dark_mode = st.toggle("🌙 Тёмная тема", value=True, help="Переключить тему оформления")
     
-    div.stButton > button[kind="primary"]:active,
-    div[data-testid="stFormSubmitButton"] button:active {
-        transform: scale(0.95) !important;
-        box-shadow: 0 2px 10px rgba(37, 117, 252, 0.2) !important;
-        color: white !important;
-    }
-
-    /* Добавим немного магии при фокусе */
-    div.stButton > button[kind="primary"]:focus,
-    div[data-testid="stFormSubmitButton"] button:focus {
-        outline: none !important;
-        border: none !important;
-        box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.5) !important;
-        color: white !important;
-    }
-
-    /* Стили для кнопок +/- в input number (Возраст) */
-    div[data-testid="stNumberInput"] button {
-        background-color: rgba(37, 117, 252, 0.1) !important;
-        color: #2575fc !important;
-        border: 1px solid rgba(37, 117, 252, 0.2) !important;
-        transition: all 0.2s;
-    }
-
-    div[data-testid="stNumberInput"] button:hover {
-        background-color: #2575fc !important;
-        color: white !important;
-        transform: scale(1.05);
-    }
+    st.divider()
     
-    div[data-testid="stNumberInput"] button:active {
-        transform: scale(0.95);
+    # 2. Длительность (Фаза 1)
+    story_length_map = {
+        "Короткая (~1 мин)": 150,
+        "Средняя (~3 мин)": 300,
+        "Длинная (~5 мин)": 500
     }
+    story_length = st.select_slider(
+        "⏱️ Длительность сказки", 
+        options=list(story_length_map.keys()),
+        value="Средняя (~3 мин)"
+    )
+    if story_length == "Длинная (~5 мин)":
+        st.info("💎 Длинные сказки лучше для детей от 7 лет.")
+        
+    st.divider()
     
-    /* Стили для фокуса полей ввода (убираем красный, делаем синий) */
-    div[data-testid="stTextInput"] > div:focus-within,
-    div[data-testid="stNumberInput"] > div:focus-within {
-        border-color: #2575fc !important;
-        box-shadow: 0 0 0 1px #2575fc !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+    # 3. Донаты (Фаза 1)
+    st.markdown("""
+    ### Поддержать проект ☕
+    Если вам нравятся наши сказки, вы можете угостить разработчика кофе!
+    """)
+    st.link_button("☕ Buy Me a Coffee", "https://www.buymeacoffee.com") # TODO: Реальная ссылка
+    
+    st.divider()
+    st.caption(f"Версия: v3.0 | 2026")
 
+# --- ПРИМЕНЕНИЕ СТИЛЕЙ ---
+st.markdown(get_app_styles(dark_mode), unsafe_allow_html=True)
 
 # =====================================
 # РОУТИНГ: Лендинг vs Генератор
 # =====================================
-
-# TODO: Восстановить лендинг после доработки (см. ROADMAP.md → Фаза 2.5)
-# Лендинг временно отключён — генератор открывается сразу.
-# Оригинальная логика:
-# if 'current_page' not in st.session_state:
-#     st.session_state.current_page = 'landing' if not is_authenticated() else 'generator'
-# if st.session_state.current_page == 'landing' and not is_authenticated():
-#     render_full_landing_page()
-#     st.stop()
-
 st.session_state.current_page = 'generator'
 
 # =====================================
@@ -460,10 +386,10 @@ with col_header_right:
     }
     selected_voice = voice_map[voice_option]
 
-    # Кнопка прослушивания образца (только кнопка, логика ниже для полной ширины)
+    # Кнопка прослушивания образца
     test_voice_btn = st.button("▶️ Проверка голоса", use_container_width=True)
 
-# Логика проверки голоса (вне колонок, чтобы было на всю ширину)
+# Логика проверки голоса
 if test_voice_btn:
     async def play_sample():
         sample_text = "Привет! Я буду читать сказку для вашего малыша."
@@ -471,9 +397,7 @@ if test_voice_btn:
     
     try:
         sample_audio = asyncio.run(play_sample())
-        # Используем кастомный плеер с автозапуском (обычный режим, не липкий)
         display_audio_player(sample_audio, "🔊 Тест голоса", autoplay=True)
-        
     except Exception as e:
         st.error(f"Ошибка теста: {e}")
 
@@ -511,43 +435,40 @@ if submit_btn:
         st.stop()
 
     try:
-        # 2. Настройка модели (используем REST для стабильности)
-        logger.info("Configuring Gemini API")
-        genai.configure(api_key=api_key, transport='rest')
+        # 2. Настройка модели (Версия 2.0 SDK - Миграция Phase 1)
+        logger.info("Initializing GenAI Client v2")
+        client = genai.Client(api_key=api_key)
         
         # 3. Генерация текста
-        response = None
+        response_text = None
         used_model_name = ""
         
-        # Список моделей для перебора (обновлен под доступные ключу модели)
+        # Список моделей для перебора
         model_candidates = [
-            'models/gemini-2.0-flash',
-            'models/gemini-2.5-flash',
-            'models/gemini-2.0-flash-lite',
             'gemini-2.0-flash',
             'gemini-1.5-flash',
             'gemini-pro'
         ]
 
+        # Определение длины из настроек сайдбара
+        target_word_count = story_length_map.get(story_length, 200)
+
         with st.spinner('🪄 Сочиняем волшебную историю...'):
             last_error = None
             for model_name in model_candidates:
                 try:
-                    # Попытка создания модели
                     logger.info(f"Attempting generation with model: {model_name}")
-                    model = genai.GenerativeModel(model_name)
                     
-                    # --- Логика генерации промпта (Prompt Engineering 2.0) ---
                     # --- Логика генерации промпта (Prompt Engineering 2.5 - High Quality) ---
                     if age <= 4:
                         # Малыши (1-4 года)
                         role_instruction = "Ты — чуткий и мудрый рассказчик для самых маленьких."
-                        style_instruction = """
+                        style_instruction = f"""
                         Стиль: Уютный, сенсорный (описывай звуки, цвета, тактильные ощущения).
                         Сюжет: Понятный, но не примитивный. Избегай пустых повторений.
                         Герой познает мир вокруг себя. Каждое действие должно быть логичным.
                         Лексика: Простая, но красивая. Избегай "сюсюканья".
-                        Длина: Около 150-200 слов.
+                        Длина: Около {target_word_count} слов.
                         """
                         structure_instruction = "Структура: Знакомство с чудом -> Маленькое открытие -> Уютный финал."
                         ending_instruction = "Финал должен быть мягким и успокаивающим. Заверши историю на теплой ноте."
@@ -555,12 +476,12 @@ if submit_btn:
                     elif 5 <= age <= 8:
                         # Дошкольники (5-8 лет)
                         role_instruction = "Ты — сценарист лучшего мультфильма Disney/Pixar."
-                        style_instruction = """
+                        style_instruction = f"""
                         Стиль: Динамичный, яркий, эмоциональный.
                         Сюжет: Должен "цеплять" с первых строк. Избегай скучных описаний.
                         Наполни сказку интересными фактами или мудростью (ненавязчиво).
                         Обязательно используй диалоги.
-                        Длина: Около 250-300 слов.
+                        Длина: Около {target_word_count} слов.
                         """
                         structure_instruction = "Структура: Яркая завязка (интрига) -> Путешествие/Испытание -> Умное решение -> Эмоциональный финал."
                         ending_instruction = "Финал должен быть эмоциональным и логически завершать приключение героя."
@@ -568,11 +489,11 @@ if submit_btn:
                     else:
                         # Школьники (9-12+ лет)
                         role_instruction = "Ты — автор бестселлеров для подростков (Adventure/Fantasy)."
-                        style_instruction = """
+                        style_instruction = f"""
                         Стиль: Увлекательный, с качественным юмором и живым языком. Без нравоучений "в лоб".
                         Сюжет: Непредсказуемый, с элементами детектива или научного открытия.
                         Сказка должна быть информационно насыщенной (умной), но легкой для чтения.
-                        Длина: Около 400 слов.
+                        Длина: Около {target_word_count} слов.
                         """
                         structure_instruction = "Структура: Крючок (Hook) -> Нарастание напряжения -> Неожиданный поворот (Twist) -> Развязка."
                         ending_instruction = "Финал должен быть сильным, вдохновляющим или заставляющим задуматься."
@@ -602,36 +523,28 @@ if submit_btn:
                     - Форматирование: просто текст с абзацами (без markdown заголовков).
                     - {ending_instruction}
                     """
-                    response = model.generate_content(prompt)
+                    
+                    # Вызов API v2
+                    response = client.models.generate_content(
+                        model=model_name, 
+                        contents=prompt
+                    )
+                    
+                    response_text = response.text
                     used_model_name = model_name
-                    break # Если успешно - выходим из цикла
+                    break 
                 except Exception as e:
-                    logger.exception(f"Model {model_name} failed during generation: {e}")
+                    logger.exception(f"Model {model_name} failed: {e}")
                     last_error = e
-                    continue # Пробуем следующую модель
+                    continue
             
-            if not response:
+            if not response_text:
                 st.error("❌ Не удалось создать сказку.")
-                st.error(f"Последняя ошибка: {last_error}")
-                
-                # Диагностика: пробуем показать доступные модели
-                try:
-                    st.warning("🔍 Пробую получить список доступных моделей для вашего ключа...")
-                    available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-                    st.code(f"Доступные модели:\n{available}")
-                    st.info("Попробуйте скопировать название модели из списка выше (например 'models/gemini-pro') и сообщите его разработчику.")
-                except Exception as e_list:
-                    st.error(f"Не удалось даже получить список моделей: {e_list}")
-                
+                st.error(f"Ошибка: {last_error}")
                 st.stop()
             
-            # Разделяем заголовок и текст — учитываем разные формы ответа от API
-            if hasattr(response, 'text') and isinstance(response.text, str):
-                full_text = response.text.strip()
-            elif isinstance(response, dict):
-                full_text = (response.get('text') or response.get('content') or response.get('result') or str(response)).strip()
-            else:
-                full_text = str(response).strip()
+            # Обработка ответа
+            full_text = response_text.strip()
 
             if '\n' in full_text:
                 title, story_body = full_text.split('\n', 1)
@@ -639,48 +552,63 @@ if submit_btn:
                 title = f"Сказка для {name}"
                 story_body = full_text
 
-            # Сохраняем в сессии, чтобы не потерять при нажатии кнопок
+            # Сохранение в сессии
             st.session_state['current_story'] = {
                 'title': title,
                 'body': story_body,
-                'audio': None # Сбросить аудио для новой истории
+                'audio': None
             }
 
     except Exception as e:
-        # Обработка лимитов
         if "429" in str(e):
-            st.error("⏳ Ой, сказочник устал! Слишком много запросов.")
-            st.info("Лимит бесплатных генераций исчерпан. Пожалуйста, подождите минутку или приходите завтра.")
+            st.error("⏳ Лимит запросов исчерпан. Попробуйте позже.")
         else:
-            st.error(f"Ой, что-то пошло не так: {e}")
-            st.info("Проверьте настройки и попробуйте снова.")
+            st.error(f"Ошибка: {e}")
 
-# --- Отображение результата (если есть в сессии) ---
+# --- Отображение результата ---
 if 'current_story' in st.session_state:
     story = st.session_state['current_story']
     
     st.divider()
     st.subheader(story['title'])
-    st.write(story['body'])
+    
+    # Контейнер для текста
+    st.markdown(
+        f"""
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; font-size: 1.1em; line-height: 1.6;">
+        {story['body'].replace(chr(10), '<br><br>')}
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     
     st.markdown("---")
     
-    # Кнопка генерации аудио
-    col_audio, col_space = st.columns([1, 2])
-    with col_audio:
-        if st.button("🎧 Озвучить сказку", type="secondary", icon="▶️"):
-            with st.spinner('🎙️ Озвучиваем сказку...'):
-                # Убираем эмодзи и кавычки для озвучки
+    # Кнопки действий
+    col_actions = st.columns([1, 1, 2])
+    
+    with col_actions[0]:
+        # Озвучка
+        if st.button("🎧 Озвучить", type="secondary"):
+            with st.spinner('🎙️ Озвучиваем...'):
                 audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁ0-9]', '', story['body'])
-                
                 try:
                     audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
                     st.session_state['current_story']['audio'] = audio_fp
                 except Exception as e_tts:
                     st.error(f"Ошибка озвучки: {e_tts}")
 
-    # Показываем плеер, если аудио уже есть
+    with col_actions[1]:
+        # Скачивание Текста (Фаза 1 Реализации)
+        story_text_export = f"{story['title']}\n\n{story['body']}\n\n---\nСгенерировано Fairy Tale Generator"
+        st.download_button(
+            label="📄 Скачать Текст",
+            data=story_text_export,
+            file_name=f"skazka_{name}.txt",
+            mime="text/plain"
+        )
+
+    # Показываем плеер
     if st.session_state['current_story']['audio']:
-        st.success("Готово! Плеер появился внизу экрана ⬇️")
-        # Используем липкий плеер
-        display_audio_player(st.session_state['current_story']['audio'], "🎧 Ваша сказка готова!")
+        st.success("Аудио готово! ⬇️")
+        display_audio_player(st.session_state['current_story']['audio'], "🎧 Плеер (MP3 можно скачать в плеере)")

@@ -4,6 +4,318 @@ CSS-стили для лендинга и компонентов приложе�
 """
 
 
+# Цветовые палитры
+DARK_THEME = {
+    "bg": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+    "text": "#e8eaed",
+    "text_secondary": "rgba(255, 255, 255, 0.7)",
+    "input_bg": "rgba(30, 42, 74, 0.9)",
+    "input_border": "rgba(255, 255, 255, 0.2)",
+    "input_text": "#ffffff",
+    "label": "#c8cdd3",
+    "divider": "rgba(255, 255, 255, 0.15)",
+    "btn_secondary_bg": "rgba(255, 255, 255, 0.1)",
+    "btn_secondary_text": "#e8eaed",
+    "btn_secondary_border": "rgba(255, 255, 255, 0.2)",
+    "form_bg": "rgba(255, 255, 255, 0.04)",
+    "placeholder": "rgba(255, 255, 255, 0.35)",
+    "header_bg": "transparent",
+}
+
+LIGHT_THEME = {
+    "bg": "linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 50%, #c3cfe2 100%)",
+    "text": "#1a1a2e",
+    "text_secondary": "rgba(0, 0, 0, 0.6)",
+    "input_bg": "rgba(255, 255, 255, 0.85)",
+    "input_border": "rgba(0, 0, 0, 0.15)",
+    "input_text": "#1a1a2e",
+    "label": "#2c3e50",
+    "divider": "rgba(0, 0, 0, 0.12)",
+    "btn_secondary_bg": "rgba(0, 0, 0, 0.05)",
+    "btn_secondary_text": "#1a1a2e",
+    "btn_secondary_border": "rgba(0, 0, 0, 0.15)",
+    "form_bg": "rgba(255, 255, 255, 0.5)",
+    "placeholder": "rgba(0, 0, 0, 0.35)",
+    "header_bg": "transparent",
+}
+
+
+def get_app_styles(dark_mode: bool = True) -> str:
+    """Возвращает CSS для основного приложения с поддержкой тем.
+    
+    Использует точные Streamlit data-testid селекторы для полного
+    перекрытия дефолтной темы.
+    """
+    t = DARK_THEME if dark_mode else LIGHT_THEME
+
+    return f"""
+    <style>
+    /* ========== GLOBAL ========== */
+    .stApp {{
+        background: {t['bg']} !important;
+        background-attachment: fixed !important;
+    }}
+
+    /* ========== TYPOGRAPHY ========== */
+    .stApp, .stApp p, .stApp span, .stApp div,
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4,
+    .stMarkdown, .stMarkdown p, .stMarkdown span,
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] span,
+    [data-testid="stMarkdownContainer"] em,
+    [data-testid="stMarkdownContainer"] strong {{
+        color: {t['text']} !important;
+    }}
+
+    /* Secondary / muted text */
+    .stApp .stCaption, [data-testid="stCaptionContainer"] {{
+        color: {t['text_secondary']} !important;
+    }}
+
+    /* ========== LABELS (all form elements) ========== */
+    [data-testid="stWidgetLabel"] label,
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] span,
+    .stTextInput label, .stNumberInput label,
+    .stSelectbox label, .stSlider label,
+    .stTextArea label, .stCheckbox label,
+    .stRadio label, .stMultiSelect label {{
+        color: {t['label']} !important;
+    }}
+
+    /* ========== INPUTS ========== */
+    .stApp input[type="text"],
+    .stApp input[type="password"],
+    .stApp input[type="number"],
+    .stApp input[type="email"],
+    .stApp textarea,
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input,
+    [data-testid="stTextArea"] textarea {{
+        background-color: {t['input_bg']} !important;
+        color: {t['input_text']} !important;
+        border: 1px solid {t['input_border']} !important;
+        border-radius: 8px !important;
+    }}
+
+    /* Input container borders */
+    [data-baseweb="input"] {{
+        background-color: {t['input_bg']} !important;
+        border-color: {t['input_border']} !important;
+    }}
+
+    /* Placeholder */
+    .stApp input::placeholder,
+    .stApp textarea::placeholder {{
+        color: {t['placeholder']} !important;
+        opacity: 1 !important;
+    }}
+
+    /* ========== SELECT / DROPDOWN ========== */
+    [data-testid="stSelectbox"] > div > div,
+    [data-baseweb="select"] > div {{
+        background-color: {t['input_bg']} !important;
+        border-color: {t['input_border']} !important;
+    }}
+    [data-baseweb="select"] span,
+    [data-baseweb="select"] div {{
+        color: {t['input_text']} !important;
+    }}
+
+    /* Dropdown menu */
+    [data-baseweb="popover"],
+    [data-baseweb="menu"],
+    ul[role="listbox"] {{
+        background-color: {'#1e1e2e' if dark_mode else '#ffffff'} !important;
+        border: 1px solid {t['input_border']} !important;
+    }}
+    [data-baseweb="menu"] li,
+    ul[role="listbox"] li {{
+        color: {t['text']} !important;
+    }}
+    [data-baseweb="menu"] li:hover,
+    ul[role="listbox"] li:hover {{
+        background-color: {'rgba(255,255,255,0.1)' if dark_mode else 'rgba(0,0,0,0.05)'} !important;
+    }}
+
+    /* ========== NUMBER INPUT +/- BUTTONS ========== */
+    [data-testid="stNumberInput"] button {{
+        background-color: {t['btn_secondary_bg']} !important;
+        color: {t['btn_secondary_text']} !important;
+        border: 1px solid {t['btn_secondary_border']} !important;
+    }}
+    [data-testid="stNumberInput"] button:hover {{
+        background-color: #2575fc !important;
+        color: white !important;
+    }}
+
+    /* ========== BUTTONS ========== */
+    /* Primary button (gradient) */
+    div.stButton > button[kind="primary"],
+    div[data-testid="stFormSubmitButton"] button,
+    div.stButton > button[kind="primary"] p,
+    div[data-testid="stFormSubmitButton"] button p,
+    div.stButton > button[kind="primary"] span,
+    div[data-testid="stFormSubmitButton"] button span {{
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
+        color: white !important;
+        border: none !important;
+    }}
+    div.stButton > button[kind="primary"],
+    div[data-testid="stFormSubmitButton"] button {{
+        padding: 0.6rem 2rem !important;
+        border-radius: 30px !important;
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3) !important;
+        transition: all 0.3s ease !important;
+        letter-spacing: 0.5px !important;
+    }}
+    div.stButton > button[kind="primary"]:hover,
+    div[data-testid="stFormSubmitButton"] button:hover {{
+        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
+    }}
+
+    /* Secondary button */
+    div.stButton > button:not([kind="primary"]) {{
+        background-color: {t['btn_secondary_bg']} !important;
+        color: {t['btn_secondary_text']} !important;
+        border: 1px solid {t['btn_secondary_border']} !important;
+        border-radius: 20px !important;
+        transition: all 0.2s ease !important;
+    }}
+    div.stButton > button:not([kind="primary"]):hover {{
+        background-color: {'rgba(255,255,255,0.15)' if dark_mode else 'rgba(0,0,0,0.08)'} !important;
+        transform: translateY(-1px) !important;
+    }}
+
+    /* Download button */
+    [data-testid="stDownloadButton"] button {{
+        background-color: {t['btn_secondary_bg']} !important;
+        color: {t['btn_secondary_text']} !important;
+        border: 1px solid {t['btn_secondary_border']} !important;
+        border-radius: 20px !important;
+    }}
+
+    /* ========== FORM ========== */
+    [data-testid="stForm"] {{
+        background: {t['form_bg']} !important;
+        border: 1px solid {t['divider']} !important;
+        border-radius: 16px !important;
+        padding: 1.5rem !important;
+    }}
+
+    /* ========== DIVIDERS ========== */
+    .stApp hr, [data-testid="stSeparator"] {{
+        border-color: {t['divider']} !important;
+    }}
+
+    /* ========== FOCUS STATES ========== */
+    [data-testid="stTextInput"] > div:focus-within,
+    [data-testid="stNumberInput"] > div:focus-within {{
+        border-color: #2575fc !important;
+        box-shadow: 0 0 0 1px #2575fc !important;
+    }}
+
+    /* ========== ALERTS / WARNINGS ========== */
+    [data-testid="stAlert"] {{
+        background-color: {t['form_bg']} !important;
+        border-radius: 8px !important;
+    }}
+
+    /* ========== SLIDER: Always show thumb value ========== */
+    [data-testid="stThumbValue"] {{
+        opacity: 1 !important;
+        visibility: visible !important;
+    }}
+    [data-testid="stSlider"] [data-testid="stTickBarMin"],
+    [data-testid="stSlider"] [data-testid="stTickBarMax"] {{
+        color: {t['text_secondary']} !important;
+    }}
+
+    /* ========== TOGGLE: ensure visible in both themes ========== */
+    [data-testid="stToggle"] label {{
+        color: {t['text']} !important;
+    }}
+    /* Toggle track (the pill-shaped background) */
+    [data-testid="stToggle"] [role="checkbox"] {{
+        background-color: {'rgba(255,255,255,0.25)' if dark_mode else '#999'} !important;
+        border: {'1px solid rgba(255,255,255,0.3)' if dark_mode else '2px solid #888'} !important;
+        border-radius: 999px !important;
+        box-shadow: {'none' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.3)'} !important;
+    }}
+    /* Toggle track — checked (ON) state */
+    [data-testid="stToggle"] [role="checkbox"][aria-checked="true"] {{
+        background-color: #6a11cb !important;
+        border-color: #5a0db5 !important;
+        box-shadow: 0 0 6px rgba(106, 17, 203, 0.4) !important;
+    }}
+    /* Toggle thumb knob (the circle) — always white */
+    [data-testid="stToggle"] [role="checkbox"] > div {{
+        background-color: white !important;
+        border-radius: 50% !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+    }}
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar {{ width: 10px; background: transparent; }}
+    ::-webkit-scrollbar-thumb {{ background: rgba(128, 128, 128, 0.25); border-radius: 5px; }}
+    ::-webkit-scrollbar-thumb:hover {{ background: rgba(128, 128, 128, 0.45); }}
+
+    /* ========== HEADER / TOOLBAR STREAMLIT ========== */
+    header[data-testid="stHeader"] {{
+        background: {t['header_bg']} !important;
+    }}
+
+    /* ========== SIDEBAR ========== */
+    section[data-testid="stSidebar"] {{
+        background: {'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)' if dark_mode else 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%)'} !important;
+    }}
+    section[data-testid="stSidebar"] * {{
+        color: {t['text']} !important;
+    }}
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] label,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
+    section[data-testid="stSidebar"] .stMarkdown p,
+    section[data-testid="stSidebar"] .stMarkdown h3,
+    section[data-testid="stSidebar"] .stMarkdown span {{
+        color: {t['text']} !important;
+    }}
+    /* Sidebar dividers */
+    section[data-testid="stSidebar"] hr {{
+        border-color: {t['divider']} !important;
+    }}
+    /* Sidebar toggle switch label */
+    section[data-testid="stSidebar"] [data-testid="stToggle"] label span {{
+        color: {t['text']} !important;
+    }}
+    /* Sidebar slider */
+    section[data-testid="stSidebar"] [data-testid="stSlider"] {{
+        color: {t['text']} !important;
+    }}
+    section[data-testid="stSidebar"] [data-testid="stSlider"] [data-testid="stThumbValue"],
+    section[data-testid="stSidebar"] [data-testid="stSlider"] [data-testid="stTickBarMin"],
+    section[data-testid="stSidebar"] [data-testid="stSlider"] [data-testid="stTickBarMax"] {{
+        color: {t['text']} !important;
+    }}
+    /* Sidebar button */
+    section[data-testid="stSidebar"] [data-testid="stLinkButton"] a {{
+        color: {t['btn_secondary_text']} !important;
+        border: 1px solid {t['btn_secondary_border']} !important;
+        background-color: {t['btn_secondary_bg']} !important;
+        border-radius: 20px !important;
+    }}
+    /* Caption */
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
+        color: {t['text_secondary']} !important;
+    }}
+    </style>
+    """
+
 # Базовые стили лендинга
 LANDING_BASE_CSS = """
 <style>
