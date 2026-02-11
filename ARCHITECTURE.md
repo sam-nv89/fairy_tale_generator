@@ -1,106 +1,106 @@
-# Документация Архитектуры - Генератор Сказок
+# Документация Архитектуры — Генератор Сказок
 
 ## Обзор Системы
-**Генератор Сказок** — это веб-приложение, созданное для генерации персонализированных сказок на ночь для детей. Оно использует Generative AI (Google Gemini) для создания уникального контента на основе данных пользователя (имя, возраст, хобби) и преобразует текст в естественную речь с помощью Neural TTS (Edge TTS).
+**Генератор Сказок** — веб-приложение для генерации персонализированных сказок для детей. Использует Google Gemini для создания текста и Edge TTS для озвучки нейронными голосами.
 
 ## Технологический Стек
-- **Frontend/Backend Фреймворк**: [Streamlit](https://streamlit.io/) (Python)
-- **ИИ Ядро**: [Google Gemini Pro/Flash](https://ai.google.dev/) (Генерация текста)
-- **Синтез Речи**: [Edge TTS](https://github.com/rany2/edge-tts) (Нейронный синтез аудио)
-- **Аудио Плеер**: Кастомный HTML5/CSS3/JS Компонент (Встроен в Streamlit)
-- **Развертывание**: Локальное Python окружение (Масштабируемо до Streamlit Cloud/Docker)
+| Компонент | Технология |
+|---|---|
+| Frontend/Backend | [Streamlit](https://streamlit.io/) (Python 3.10+) |
+| ИИ Ядро | [Google Gemini](https://ai.google.dev/) Flash/Pro |
+| Синтез речи | [Edge TTS](https://github.com/rany2/edge-tts) |
+| Аутентификация | [Supabase Auth](https://supabase.com/) |
+| Аудио Плеер | Кастомный HTML5/CSS3/JS |
+| Развёртывание | Локально / Streamlit Cloud / Docker |
 
 ## Структура Проекта
 ```
-Корень Проекта
-├── app.py                # Точка входа: Роутинг, UI Генератора, Плеер
-├── auth.py               # Модуль авторизации (Supabase Integration)
-├── landing.py            # UI Лендинга и маркетинговые компоненты
-├── styles.py             # Централизованные CSS стили и темы
-├── utils.py              # Утилиты (определение валюты, форматирование)
+fairy_tale_generator/
+├── app.py                # Точка входа: роутинг, генератор, плеер
+├── auth.py               # Авторизация (Supabase)
+├── landing.py            # Лендинг-страница (временно отключён)
+├── styles.py             # Глобальные CSS-стили
+├── utils.py              # Утилиты (валюта, форматирование)
 ├── requirements.txt      # Зависимости Python
-├── .streamlit/           # Конфигурация Streamlit
-│   └── secrets.toml      # API ключи (Gemini + Supabase)
-├── app.log               # Логи работы приложения
-├── DEV_LOG.md            # Журнал разработки
+├── .streamlit/
+│   └── secrets.toml      # API-ключи (НЕ в git)
+├── DEV_LOG.md            # Журнал разработки (обратная хронология)
 ├── README.md             # Документация проекта
-├── ROADMAP.md            # План развития
+├── ROADMAP.md            # План развития и тарифы
 └── ARCHITECTURE.md       # Этот документ
 ```
 
-## Поток Данных (Data Flow)
-Приложение следует линейному, stateless потоку данных с проверкой сессии:
+## Поток Данных
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant App as app.py (Router)
+    participant App as app.py
     participant Auth as auth.py
-    participant Landing as landing.py
-    participant Generator as Logic (Gemini/TTS)
+    participant Gemini as Google Gemini
+    participant TTS as Edge TTS
 
     User->>App: Открывает приложение
-    App->>Auth: Проверка is_authenticated()
-    
-    alt Не авторизован
-        Auth-->>App: False
-        App->>Landing: Рендер Лендинга
-        Landing->>User: Показ преимуществ и Формы Входа
-        User->>Auth: Вход / Регистрация
-    else Авторизован
-        Auth-->>App: True
-        App->>Generator: Рендер Интерфейса Генератора
-    end
-    
+    App->>App: Генератор (лендинг отключён)
+
     rect rgb(240, 248, 255)
-        note right of Generator: Фаза Генерации
-        User->>Generator: Ввод данных -> "Придумать сказку"
-        Generator->>GeminiAPI: Запрос текста
-        GeminiAPI-->>Generator: Текст сказки
+        note right of App: Генерация текста
+        User->>App: Имя, возраст, тема
+        App->>Gemini: Промпт (адаптирован по возрасту)
+        Gemini-->>App: Текст сказки
     end
-    
+
     rect rgb(255, 240, 245)
-        note right of Generator: Фаза Озвучки
-        User->>Generator: "Озвучить"
-        Generator->>TTS: Синтез речи
-        TTS-->>Generator: Аудио поток
+        note right of App: Озвучка
+        User->>App: «Озвучить»
+        App->>TTS: Текст → аудио
+        TTS-->>App: MP3-поток
+        App-->>User: Кастомный HTML5-плеер
     end
 ```
 
 ## Ключевые Компоненты
 
 ### 1. `app.py` (Оркестратор)
-Главный файл, управляющий состоянием сессии (`st.session_state`) и маршрутизацией.
-- **Роутинг**: Переключает отображение между `landing.py` и внутренним интерфейсом генератора.
-- **Плеер**: Содержит функцию `display_audio_player` для рендеринга кастомного HTML5 плеера.
-- **Логика генерации**: Взаимодействует с `google.generativeai` и `edge_tts`.
+Главный файл (~660 строк). Управляет всем жизненным циклом:
+- **Роутинг**: Лендинг (временно отключён) ↔ Генератор. См. TODO в коде.
+- **Генерация**: Cascade-модель — перебор Gemini-моделей (`2.0-flash` → `2.5-flash` → `1.5-flash` → `pro`).
+- **Prompt Engineering**: Три возрастные группы (1–4, 5–8, 9–12) с адаптацией лексики и сюжета.
+- **Плеер**: `display_audio_player()` — HTML5/JS компонент в IIFE-обёртке.
 
 ### 2. `auth.py` (Безопасность)
-Обертка над Supabase Client.
-- Реализует функции `sign_up`, `sign_in`, `sign_out`.
-- Управляет сохранением пользователя в `st.session_state`.
-- Изолирует работу с секретными ключами базы данных.
+Обёртка над Supabase Client:
+- `sign_up()`, `sign_in()`, `sign_out()`, `is_authenticated()`
+- Безопасный импорт: `_SUPABASE_AVAILABLE` — приложение работает и без Supabase.
+- Хранение сессии в `st.session_state`.
 
-### 3. `landing.py` (Маркетинг UI)
-Отвечает за "лицо" приложения. Реализует **Hybrid Rendering** подход:
-- **Custom HTML/CSS**: Для сложных визуальных компонентов (Hero, Navbar, Pricing Cards) используется прямая инъекция HTML.
-- **Native Streamlit**: Для интерактивных элементов (Auth Forms, FAQ Expanders) используются нативные виджеты с глубокой CSS-кастомизацией.
-- **Инкапсуляция стилей**: Содержит функцию `inject_landing_styles()`, которая определяет дизайн-систему (цвета, шрифты, glassmorphism) специально для лендинга, переопределяя глобальные стили Streamlit.
+### 3. `landing.py` (Маркетинг)
+> ⚠️ **Временно отключён** (см. ROADMAP.md → Фаза 4).
+
+Hybrid Rendering: HTML/CSS для визуалов + Streamlit для интерактива.
+- Glassmorphism, mesh-градиенты, анимации
+- Инкапсулированные стили через `inject_landing_styles()`
+- Pricing, FAQ, Auth-формы
 
 ### 4. `styles.py` (Глобальный Дизайн)
-Хранит общие CSS-стили и тему приложения (Generator Interface).
-- Используется в основном для интерфейса авторизованного пользователя (Генератора).
-- Для Лендинга стили теперь изолированы внутри `landing.py` для большей гибкости.
+CSS-стили для интерфейса генератора (авторизованные пользователи):
+- Анимированные звёзды, glass-card, hero-секция
+- Стили auth-форм и pricing-карточек
+- `inject_landing_styles()` — инъекция в Streamlit
 
-### 5. Логирование
-Встроенный Python `logging` отслеживает критические события:
-- Статус конфигурации API.
-- Успех/ошибка генерации текста и аудио.
-- Проблемы с авторизацией.
-Логи выводятся в `console` и файл `app.log`.
+### 5. `utils.py` (Утилиты)
+- `get_user_currency()` — определение валюты по IP (ipapi.co)
+- `format_price()` — форматирование с разделителями тысяч
+- Поддержка: RUB, USD, EUR, KZT, BYN, UZS
 
-### 6. `utils.py` (Утилиты)
-Вспомогательные функции для лендинга.
-- `get_user_currency()` — определение валюты пользователя по IP (ipapi.co).
-- `format_price()` — форматирование цен с разделителем тысяч.
-- Поддержка RUB, USD, EUR, KZT, BYN, UZS.
+### 6. Логирование
+Python `logging` → `console` + `app.log`:
+- Статус API-конфигурации
+- Успех/ошибки генерации текста и аудио
+- Проблемы авторизации
+
+## Планируемые изменения
+Подробный план: см. [ROADMAP.md](ROADMAP.md)
+- Тарифы: Free / Pro (499₽) / Family (799₽)
+- Профили детей, история сказок, мультиязычность
+- Оплата: ЮKassa + Paddle + криптовалюты

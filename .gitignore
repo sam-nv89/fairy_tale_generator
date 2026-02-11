@@ -1,6 +1,24 @@
-.venv/
+# Python
 venv/
-.streamlit/secrets.toml
+.venv/
 __pycache__/
-.agent/
+*.pyc
+*.pyo
+
+# Logs
 *.log
+
+# Secrets
+.streamlit/secrets.toml
+
+# IDE / System
+.agent/
+.devcontainer/
+*.ini
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
