@@ -5,15 +5,7 @@
 """
 import streamlit as st
 import streamlit.components.v1 as components
-try:
-    # New SDK (google-genai >= 1.0)
-    from google import genai
-    from google.genai import types
-    USE_NEW_SDK = True
-except ImportError:
-    # Fallback to old SDK (google-generativeai)
-    import google.generativeai as genai_legacy
-    USE_NEW_SDK = False
+import google.generativeai as genai
 import edge_tts
 import asyncio
 import io
@@ -442,13 +434,9 @@ if submit_btn:
         st.stop()
 
     try:
-        # 2. Настройка модели (Версия 2.0 SDK - Миграция Phase 1)
-        if USE_NEW_SDK:
-            logger.info("Initializing GenAI Client v2 (new SDK)")
-            client = genai.Client(api_key=api_key)
-        else:
-            logger.info("Initializing GenAI legacy SDK")
-            genai_legacy.configure(api_key=api_key, transport='rest')
+        # 2. Настройка модели (google-generativeai SDK)
+        logger.info("Initializing GenAI SDK")
+        genai.configure(api_key=api_key, transport='rest')
         
         # 3. Генерация текста
         response_text = None
@@ -536,16 +524,9 @@ if submit_btn:
                     """
                     
                     # Вызов API
-                    if USE_NEW_SDK:
-                        response = client.models.generate_content(
-                            model=model_name, 
-                            contents=prompt
-                        )
-                        response_text = response.text
-                    else:
-                        model = genai_legacy.GenerativeModel(model_name)
-                        response = model.generate_content(prompt)
-                        response_text = response.text
+                    model = genai.GenerativeModel(model_name)
+                    response = model.generate_content(prompt)
+                    response_text = response.text
                     used_model_name = model_name
                     break 
                 except Exception as e:
