@@ -381,34 +381,34 @@ st.markdown("""
 # РОУТИНГ: Лендинг vs Генератор
 # =====================================
 
-# Инициализируем страницу в сессии
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'landing' if not is_authenticated() else 'generator'
+# TODO: Восстановить лендинг после доработки (см. ROADMAP.md → Фаза 2.5)
+# Лендинг временно отключён — генератор открывается сразу.
+# Оригинальная логика:
+# if 'current_page' not in st.session_state:
+#     st.session_state.current_page = 'landing' if not is_authenticated() else 'generator'
+# if st.session_state.current_page == 'landing' and not is_authenticated():
+#     render_full_landing_page()
+#     st.stop()
 
+st.session_state.current_page = 'generator'
 
 # =====================================
 # РЕНДЕРИНГ СТРАНИЦ
 # =====================================
 
-# Если пользователь не авторизован и на лендинге — показываем лендинг
-if st.session_state.current_page == 'landing' and not is_authenticated():
-    render_full_landing_page()
-    st.stop()  # Останавливаем выполнение, чтобы не показывать генератор
-
-# Если пользователь авторизован, показываем генератор
-
 # --- Верхняя панель (Навигация) ---
-# Отображаем email и кнопку выхода
-user_email = st.session_state.get('user_email', 'User')
+user_email = st.session_state.get('user_email', None)
 cols = st.columns([6, 2, 2])
 with cols[0]:
-    pass # Spacer
+    pass  # Spacer
 with cols[1]:
-    st.markdown(f"<div style='text-align:right; padding-top: 10px; opacity: 0.7'>{user_email}</div>", unsafe_allow_html=True)
+    if user_email:
+        st.markdown(f"<div style='text-align:right; padding-top: 10px; opacity: 0.7'>{user_email}</div>", unsafe_allow_html=True)
 with cols[2]:
-    if st.button("🚪 Выйти", key="logout_btn", use_container_width=True):
-        sign_out()
-        st.rerun()
+    if is_authenticated():
+        if st.button("🚪 Выйти", key="logout_btn", use_container_width=True):
+            sign_out()
+            st.rerun()
 
 st.divider()
 
