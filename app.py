@@ -25,11 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Импорт модулей авторизации и лендинга
-<<<<<<< HEAD
 from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
-=======
-from auth import init_auth_state, is_authenticated, sign_out, get_current_user
->>>>>>> a5ae382 (docs: audit report and fixes v2.8 (27 issues addressed))
 from landing import render_full_landing_page
 
 # Инициализация состояния авторизации
