@@ -84,9 +84,10 @@ Hybrid Rendering: HTML/CSS для визуалов + Streamlit для интер
 
 ### 4. `styles.py` (Глобальный Дизайн)
 CSS-стили для интерфейса генератора (авторизованные пользователи):
-- Анимированные звёзды, glass-card, hero-секция
-- Стили auth-форм и pricing-карточек
-- `inject_landing_styles()` — инъекция в Streamlit
+- **Premium UI**: Glassmorphisminputs, анимированные градиентные кнопки (Gradient Shift), кастомные Selectbox и Sliders.
+- **Темы**: Полная поддержка Light/Dark режимов с адаптивными цветовыми палитрами.
+- **Анимации**: Hover-эффекты, Pulse, Glow для интерактивных элементов.
+- `inject_landing_styles()` — инъекция в Streamlit.
 
 ### 5. `utils.py` (Утилиты)
 - `get_user_currency()` — определение валюты по IP (ipapi.co)
