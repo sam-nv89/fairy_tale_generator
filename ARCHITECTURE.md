@@ -22,6 +22,9 @@
 ├── .streamlit/           # Конфигурация Streamlit
 │   └── secrets.toml      # API ключи (Gemini + Supabase)
 ├── app.log               # Логи работы приложения
+├── DEV_LOG.md            # Журнал разработки
+├── README.md             # Документация проекта
+├── ROADMAP.md            # План развития
 └── ARCHITECTURE.md       # Этот документ
 ```
 
@@ -95,3 +98,9 @@ sequenceDiagram
 - Успех/ошибка генерации текста и аудио.
 - Проблемы с авторизацией.
 Логи выводятся в `console` и файл `app.log`.
+
+### 6. `utils.py` (Утилиты)
+Вспомогательные функции для лендинга.
+- `get_user_currency()` — определение валюты пользователя по IP (ipapi.co).
+- `format_price()` — форматирование цен с разделителем тысяч.
+- Поддержка RUB, USD, EUR, KZT, BYN, UZS.

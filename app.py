@@ -38,7 +38,6 @@ if not _SUPABASE_AVAILABLE:
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
     """Профессиональный аудио-плеер с полным набором функций"""
-    import base64
     import uuid
     
     audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode()

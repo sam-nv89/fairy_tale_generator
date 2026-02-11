@@ -3,52 +3,12 @@ CSS-стили для лендинга и компонентов приложе�
 Включает сказочные анимации, glassmorphism и адаптивный дизайн.
 """
 
-# CSS-переменные для темы
-THEME_COLORS = """
-:root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --bg-dark: #0f0f23;
-    --bg-card: rgba(255, 255, 255, 0.08);
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --accent-gold: #ffd700;
-    --accent-purple: #9d4edd;
-    --accent-blue: #667eea;
-    --success: #4ade80;
-    --error: #f87171;
-    --glass-border: rgba(255, 255, 255, 0.15);
-}
-"""
 
 # Базовые стили лендинга
 LANDING_BASE_CSS = """
 <style>
 /* Сброс и базовые стили */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-/* Скрываем якорные ссылки (цепочки) у заголовков - Усиленный вариант */
-.stMarkdown h1 a, .stMarkdown h2 a, .stMarkdown h3 a,
-.stMarkdown h4 a, .stMarkdown h5 a, .stMarkdown h6 a,
-[data-testid="stMarkdownContainer"] h1 > a,
-[data-testid="stMarkdownContainer"] h2 > a,
-[data-testid="stMarkdownContainer"] h3 > a,
-[data-testid="stMarkdownContainer"] h4 > a,
-[data-testid="stMarkdownContainer"] h5 > a,
-[data-testid="stMarkdownContainer"] h6 > a,
-a.anchor-link,
-[data-testid="stHeader"] a {
-    display: none !important;
-    pointer-events: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    opacity: 0 !important;
-    content: none !important;
-}
-
-/* Дополнительно скрываем иконки внутри ссылок, если они есть */
-h1 a svg, h2 a svg, h3 a svg, h4 a svg, h5 a svg, h6 a svg {
-    display: none !important;
-}
 
 .landing-page {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -215,50 +175,6 @@ h1 a svg, h2 a svg, h3 a svg, h4 a svg, h5 a svg, h6 a svg {
 .step-description {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.9rem;
-}
-
-/* Карточки преимуществ */
-.benefits-section {
-    padding: 3rem 2rem;
-    position: relative;
-    z-index: 1;
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-.benefit-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease;
-}
-
-.benefit-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(102, 126, 234, 0.5);
-}
-
-.benefit-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-.benefit-title {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
-.benefit-text {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
 }
 
 /* Форма авторизации */

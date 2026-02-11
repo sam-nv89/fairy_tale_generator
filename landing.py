@@ -87,6 +87,96 @@ def inject_landing_styles():
         color: var(--foreground);
     }
     
+=======
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Центрирование основного контейнера */
+    .block-container {
+        max-width: 1000px !important;
+        padding-top: 1rem !important;
+        padding-bottom: 3rem !important;
+        margin-top: -3rem !important; /* Force pull up */
+    }
+
+    /* =========================================
+       2. SCROLLBAR & BEHAVIOR
+       ========================================= */
+    /* Force NO horizontal scrollbar */
+    html, body, .stApp, [data-testid="stAppViewContainer"] {
+        overflow-x: hidden !important;
+    }
+
+    html {
+        scroll-behavior: smooth !important;
+    }
+
+    /* Scrollbar styles - Auto-hiding & Stylish */
+    
+    /* 1. Track is always transparent */
+    ::-webkit-scrollbar {
+        width: 20px !important; /* Requested wider width */
+        height: 20px !important;
+        background-color: transparent !important;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent !important;
+    }
+
+    /* 2. Thumb Default State (Invisible) */
+    ::-webkit-scrollbar-thumb {
+        background-color: transparent !important; /* Strictly invisible */
+        border-radius: 10px !important;
+        border: 5px solid transparent !important; /* Increased padding for floating look */
+        background-clip: content-box !important;
+        transition: background-color 0.3s ease, border-color 0.3s ease !important;
+    }
+
+    /* 3. Thumb Visible State (Strict Visibility) */
+    
+    /* Default: Invisible */
+    ::-webkit-scrollbar-thumb,
+    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb {
+        background-color: transparent !important;
+        background: transparent !important;
+    }
+
+    /* A. Visible on Scroll (via JS class) */
+    html.is-scrolling ::-webkit-scrollbar-thumb,
+    body.is-scrolling ::-webkit-scrollbar-thumb,
+    .stApp.is-scrolling ::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 0, 204, 0.3) !important; /* Faint Magenta */
+    }
+    
+    /* B. Proximity Visibility handled by JS adding 'is-scrolling' class */
+
+    /* 4. Active Interaction State (Hovering the thumb itself) */
+    ::-webkit-scrollbar-thumb:hover,
+    [data-testid="stAppViewContainer"]::-webkit-scrollbar-thumb:hover {
+        background-color: #ff00cc !important; 
+        background: linear-gradient(180deg, #ff00cc 0%, #333399 100%) !important;
+        border: 0 !important;
+        background-clip: border-box !important;
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: transparent !important;
+    }
+    
+    /* Remove universal scrollbar-color as it breaks WebKit custom styling in some browsers */
+    * {
+        scrollbar-width: auto !important; 
+        /* scrollbar-color: transparent transparent !important;  <-- REMOVED to let WebKit styles take over */
+    }
+
+    /* =========================================
+       3. TYPOGRAPHY
+       ========================================= */
+>>>>>>> a5ae382 (docs: audit report and fixes v2.8 (27 issues addressed))
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         color: var(--foreground) !important;
@@ -157,6 +247,7 @@ def inject_landing_styles():
         background: linear-gradient(90deg, #9f7aea 0%, #ed64a6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+<<<<<<< HEAD
         background-clip: text;
     }
 
@@ -842,3 +933,142 @@ def render_full_landing_page():
     render_faq()
     render_auth()
     render_footer()
+    inject_scroll_js()
+
+
+def inject_scroll_js():
+    """Инъекция JS через iframe компонент для надежного выполнения."""
+    import streamlit.components.v1 as components
+    
+    components.html("""
+    <script>
+    (function() {
+        const doc = window.parent.document;
+        
+        // 1. Инъекция стилей в основной документ
+        const styleId = 'scroll-animation-styles';
+        if (!doc.getElementById(styleId)) {
+            const style = doc.createElement('style');
+            style.id = styleId;
+            style.textContent = `
+                /* Базовый класс для анимации */
+                .on-scroll-animation {
+                    opacity: 0;
+                    transform: translateY(40px);
+                    transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    will-change: opacity, transform;
+                }
+                
+                /* Класс видимости */
+                .on-scroll-animation.visible {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+                
+                /* Stagger (каскад) для колонок */
+                [data-testid="column"]:nth-of-type(1) .pricing-card-container { transition-delay: 0.1s; }
+                [data-testid="column"]:nth-of-type(2) .pricing-card-container { transition-delay: 0.2s; }
+                [data-testid="column"]:nth-of-type(3) .pricing-card-container { transition-delay: 0.3s; }
+            `;
+            doc.head.appendChild(style);
+        }
+
+        // 2. Scroll Animation Observer (scoped correctly)
+        let observer; // Declared in shared scope
+
+        function initScrollObserver() {
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            // Apply to target elements
+            const selectors = [
+                'h3'
+            ];
+            const elements = doc.querySelectorAll(selectors.join(','));
+            elements.forEach((el) => {
+                if (!el.classList.contains('on-scroll-animation')) {
+                    el.classList.add('on-scroll-animation');
+                    observer.observe(el);
+                }
+            });
+        }
+
+        // 3. Logic for Auto-Hiding Scrollbar & Proximity Hover
+        const removeOldListeners = () => {
+             if (window.parent._onScrollHandler) {
+                 window.parent.removeEventListener('scroll', window.parent._onScrollHandler, true);
+                 const c = doc.querySelector('[data-testid="stAppViewContainer"]');
+                 if (c) c.removeEventListener('scroll', window.parent._onScrollHandler);
+             }
+             if (window.parent._onMouseMoveHandler) {
+                 window.parent.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
+                 window.removeEventListener('mousemove', window.parent._onMouseMoveHandler);
+             }
+        };
+        
+        removeOldListeners();
+
+        let scrollTimeout;
+        const showScrollbar = () => {
+            doc.body.classList.add('is-scrolling');
+            const app = doc.querySelector('.stApp');
+            if (app) app.classList.add('is-scrolling');
+            
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                doc.body.classList.remove('is-scrolling');
+                if (app) app.classList.remove('is-scrolling');
+            }, 1000);
+        };
+
+        window.parent._onScrollHandler = () => showScrollbar();
+        
+        window.parent._onMouseMoveHandler = (e) => {
+            const threshold = 20;
+            let width;
+            try {
+                if (window.parent.visualViewport) {
+                    width = window.parent.visualViewport.width;
+                } else {
+                    width = window.parent.innerWidth;
+                }
+            } catch (err) {
+                width = 0; 
+            }
+            if (!width || width < 50) return;
+            if (e.clientX > width - threshold) {
+                showScrollbar();
+            }
+        };
+
+        // Attach listeners
+        if (window.parent) {
+             try {
+                 window.parent.addEventListener('mousemove', window.parent._onMouseMoveHandler);
+             } catch(e) { console.warn("Cannot attach to parent mousemove"); }
+        }
+        
+        const scrollContainer = doc.querySelector('[data-testid="stAppViewContainer"]');
+        if (scrollContainer) {
+            scrollContainer.addEventListener('scroll', window.parent._onScrollHandler, { passive: true });
+        } else {
+             try {
+                if (window.parent) window.parent.addEventListener('scroll', window.parent._onScrollHandler, true);
+             } catch(e) {}
+        }
+
+        // Initialize observer
+        initScrollObserver();
+        
+    })();
+    </script>
+    """, height=0)
