@@ -155,7 +155,32 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
         <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать">
             <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
         </a>
-            
+    </div>
+
+    <audio id="audio_{player_id}" src="data:audio/mp3;base64,{audio_base64}" preload="metadata"></audio>
+
+    <script>
+        (function() {{
+            const audio = document.getElementById('audio_{player_id}');
+            const playBtn = document.getElementById('playBtn_{player_id}');
+            const playIcon = document.getElementById('playIcon_{player_id}');
+            const pauseIcon = document.getElementById('pauseIcon_{player_id}');
+            const progress = document.getElementById('progress_{player_id}');
+            const timeDisplay = document.getElementById('timeDisplay_{player_id}');
+            const volumeSlider = document.getElementById('volume_{player_id}');
+            const muteBtn = document.getElementById('muteBtn_{player_id}');
+            const volumeIcon = document.getElementById('volumeIcon_{player_id}');
+            const skipBack = document.getElementById('skipBack_{player_id}');
+            const skipForward = document.getElementById('skipForward_{player_id}');
+            const repeatBtn = document.getElementById('repeatBtn_{player_id}');
+            const speedBtn = document.getElementById('speedBtn_{player_id}');
+
+            let isRepeat = false;
+            let lastVolume = 1;
+            let totalDuration = 0;
+            const accent = '#3390ec';
+            const track = '#e8e8e8';
+
             function formatTime(sec) {{
                 if (isNaN(sec)) return '0:00';
                 const m = Math.floor(sec / 60);
@@ -268,11 +293,12 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 audio.playbackRate = speeds[speedIndex];
                 speedBtn.textContent = speeds[speedIndex] + 'x';
             }};
+        }})();
         </script>
     </body>
     </html>
     """
-    st.components.v1.html(html_code, height=240, scrolling=True)
+    st.components.v1.html(html_code, height=90)
 
 # --- Вспомогательная функция для озвучки (Text-to-Speech) ---
 async def generate_audio_stream(text, voice):
