@@ -9,16 +9,16 @@ DARK_THEME = {
     "bg": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
     "text": "#e8eaed",
     "text_secondary": "rgba(255, 255, 255, 0.7)",
-    "input_bg": "rgba(255, 255, 255, 0.12)",  # Lighter, more visible glass
-    "input_border": "rgba(255, 255, 255, 0.4)", # Higher contrast border
-    "input_text": "#ffffff",
+    "input_bg": "#ffffff",
+    "input_border": "rgba(255, 255, 255, 0.5)",
+    "input_text": "#1a1a2e",
     "label": "#e0e6ed", # Brighter labels
     "divider": "rgba(255, 255, 255, 0.25)",
     "btn_secondary_bg": "rgba(255, 255, 255, 0.1)",
     "btn_secondary_text": "#e8eaed",
     "btn_secondary_border": "rgba(255, 255, 255, 0.3)",
     "form_bg": "rgba(0, 0, 0, 0.25)", # Darker form bg to contrast with lighter inputs
-    "placeholder": "rgba(255, 255, 255, 0.5)",
+    "placeholder": "rgba(0, 0, 0, 0.6)",
     "header_bg": "transparent",
 }
 
@@ -26,7 +26,7 @@ LIGHT_THEME = {
     "bg": "linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 50%, #c3cfe2 100%)",
     "text": "#1a1a2e",
     "text_secondary": "rgba(0, 0, 0, 0.6)",
-    "input_bg": "rgba(255, 255, 255, 0.85)",
+    "input_bg": "#ffffff",
     "input_border": "rgba(0, 0, 0, 0.15)",
     "input_text": "#1a1a2e",
     "label": "#2c3e50",
@@ -35,7 +35,7 @@ LIGHT_THEME = {
     "btn_secondary_text": "#1a1a2e",
     "btn_secondary_border": "rgba(0, 0, 0, 0.15)",
     "form_bg": "rgba(255, 255, 255, 0.5)",
-    "placeholder": "rgba(0, 0, 0, 0.35)",
+    "placeholder": "rgba(0, 0, 0, 0.6)",
     "header_bg": "transparent",
 }
 
@@ -119,49 +119,89 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* ========== SELECT / DROPDOWN: Premium style ========== */
-    /* Target the container of the select input */
+    .stSelectbox div[data-baseweb="select"] {{
+        cursor: pointer !important;
+    }}
+
     .stSelectbox div[data-baseweb="select"] > div:first-child {{
         background-color: {t['input_bg']} !important;
         border: 1.5px solid {t['input_border']} !important;
         border-radius: 12px !important;
-        backdrop-filter: blur(12px) !important;
         box-shadow: {'inset 0 2px 4px rgba(0,0,0,0.2)' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.06)'} !important;
-        cursor: pointer !important;
     }}
     
-    /* Ensure internal elements are transparent so the container bg shows */
-    .stSelectbox div[data-baseweb="select"] > div:first-child div {{
-        background-color: transparent !important;
-        border: none !important;
+    /* Ensure all internal elements (text, spans, icons) use pointer cursor */
+    .stSelectbox div[data-baseweb="select"] *,
+    [data-baseweb="select"] .bui-select__value-container,
+    [data-baseweb="select"] .bui-select__value-container * {{
         cursor: pointer !important;
+        color: {t['input_text']} !important;
+        caret-color: transparent !important; /* Hide the text cursor (vertical line) */
     }}
 
-    /* Specific fix for the value text container */
-    [data-baseweb="select"] .bui-select__value-container {{
-        background: transparent !important;
+    /* Specific fix for search input */
+    .stSelectbox div[data-baseweb="select"] input {{
+        color: {t['input_text']} !important;
+        cursor: pointer !important;
+        caret-color: transparent !important; /* Hide the text cursor */
+        -webkit-text-fill-color: {t['input_text']} !important;
     }}
 
     /* Hover effect */
     .stSelectbox div[data-baseweb="select"] > div:first-child:hover {{
         border-color: #667eea !important;
     }}
-
-    /* Text color inside select */
-    [data-baseweb="select"] span,
-    [data-baseweb="select"] div[data-testid="stMarkdownContainer"] p {{
-        color: {t['input_text']} !important;
-    }}
     
-    /* Input element inside select (for search) */
-    [data-baseweb="select"] input {{
-        color: {t['input_text']} !important;
-        cursor: text !important; /* Cursor should be text when typing */
-    }}
-    
-    /* Dropdown icon */
+    /* Dropdown icon - ensure it uses input_text color (dark) */
     [data-baseweb="select"] svg {{
-        fill: {t['text_secondary']} !important;
+        fill: {t['input_text']} !important;
+        color: {t['input_text']} !important;
     }}
+
+    /* Voice Preview Button - CLEAN STYLE (Tertiary + Custom) */
+    .st-key-btn_preview_voice button {{
+        background: transparent !important;
+        background-color: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        
+        /* Shift content left: padding-right pushes center left */
+        padding-right: 5px !important; 
+        padding-left: 0 !important;
+        
+        margin: 0 !important;
+        height: 38px !important;
+        width: 38px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: transform 0.2s ease, color 0.2s ease !important;
+    }}
+    
+    .st-key-btn_preview_voice button p {{
+        font-size: 24px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1 !important;
+        /* Removed inner transform to rely on button padding */
+    }}
+
+    .st-key-btn_preview_voice button:hover {{
+        background-color: rgba(102, 126, 234, 0.1) !important;
+        color: #667eea !important;
+        transform: scale(1.15);
+    }}
+
+    .st-key-btn_preview_voice button:active {{
+        transform: scale(0.95);
+    }}
+
+    .st-key-btn_preview_voice button:focus:not(:focus-visible) {{
+        outline: none !important;
+        box-shadow: none !important;
+    }}
+    
 
     /* Dropdown menu */
     [data-baseweb="popover"],
@@ -323,15 +363,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-radius: 8px !important;
     }}
 
-    /* ========== DURATION RADIO: Pill-style selector ========== */
+    /* ========== DURATION & AGE RADIO: Pill-style selector ========== */
     /* Container: horizontal layout, centered */
-    div[data-testid="stRadio"][aria-label*="Длительность"] > div {{
+    div[data-testid="stRadio"][aria-label*="Длительность"] > div,
+    div[data-testid="stRadio"][aria-label*="Возраст"] > div {{
         gap: 0.5rem !important;
         justify-content: center !important;
     }}
     /* Each radio label as a pill */
-    div[data-testid="stRadio"][aria-label*="Длительность"] label {{
-        background: {t['btn_secondary_bg']} !important;
+    div[data-testid="stRadio"][aria-label*="Длительность"] label,
+    div[data-testid="stRadio"][aria-label*="Возраст"] label {{
+        background: {t['form_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 12px !important;
         padding: 0.5rem 0.9rem !important;
@@ -339,21 +381,25 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transition: all 0.25s ease !important;
         font-size: 0.82rem !important;
     }}
-    div[data-testid="stRadio"][aria-label*="Длительность"] label:hover {{
+    div[data-testid="stRadio"][aria-label*="Длительность"] label:hover,
+    div[data-testid="stRadio"][aria-label*="Возраст"] label:hover {{
         border-color: #6366f1 !important;
         background: rgba(99, 102, 241, 0.12) !important;
         transform: translateY(-1px) !important;
     }}
     /* Active / checked pill */
     div[data-testid="stRadio"][aria-label*="Длительность"] label[data-checked="true"],
-    div[data-testid="stRadio"][aria-label*="Длительность"] label:has(input:checked) {{
+    div[data-testid="stRadio"][aria-label*="Длительность"] label:has(input:checked),
+    div[data-testid="stRadio"][aria-label*="Возраст"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Возраст"] label:has(input:checked) {{
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border-color: transparent !important;
         color: #fff !important;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35) !important;
     }}
     /* Hide native radio circle */
-    div[data-testid="stRadio"][aria-label*="Длительность"] input[type="radio"] {{
+    div[data-testid="stRadio"][aria-label*="Длительность"] input[type="radio"],
+    div[data-testid="stRadio"][aria-label*="Возраст"] input[type="radio"] {{
         display: none !important;
     }}
 
@@ -363,7 +409,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: center !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] label {{
-        background: {t['btn_secondary_bg']} !important;
+        background: {t['form_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 14px !important;
         padding: 0.55rem 1.2rem !important;
@@ -394,6 +440,31 @@ def get_app_styles(dark_mode: bool = True) -> str:
     ::-webkit-scrollbar {{ width: 10px; background: transparent; }}
     ::-webkit-scrollbar-thumb {{ background: rgba(128, 128, 128, 0.25); border-radius: 5px; }}
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(128, 128, 128, 0.45); }}
+
+    /* ========== SLIDER (Global) ========== */
+    /* Slider Track (filled part) */
+    div[data-testid="stSlider"] div[data-baseweb="slider"] div[role="progressbar"] {{
+        background: {'linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)' if dark_mode else 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)'} !important;
+        height: 8px !important;
+        border-radius: 4px !important;
+    }}
+    /* Slider Thumb (handle) */
+    div[data-testid="stSlider"] div[role="slider"] {{
+        background-color: white !important;
+        border: 2px solid {'#6a11cb' if dark_mode else '#fda085'} !important;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2) !important;
+        width: 20px !important;
+        height: 20px !important;
+    }}
+    /* Slider min/max/value labels */
+    div[data-testid="stSlider"] [data-testid="stMarkdownContainer"] p {{
+        color: {t['text']} !important;
+        font-weight: 500 !important;
+    }}
+    /* Tick marks */
+    div[data-testid="stSlider"] div[data-testid="stTickBar"] div {{
+        background-color: {t['text_secondary']} !important;
+    }}
 
     /* ========== HEADER / TOOLBAR STREAMLIT ========== */
     header[data-testid="stHeader"] {{
