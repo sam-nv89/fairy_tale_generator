@@ -9,16 +9,16 @@ DARK_THEME = {
     "bg": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
     "text": "#e8eaed",
     "text_secondary": "rgba(255, 255, 255, 0.7)",
-    "input_bg": "rgba(30, 42, 74, 0.9)",
-    "input_border": "rgba(255, 255, 255, 0.2)",
+    "input_bg": "rgba(255, 255, 255, 0.12)",  # Lighter, more visible glass
+    "input_border": "rgba(255, 255, 255, 0.4)", # Higher contrast border
     "input_text": "#ffffff",
-    "label": "#c8cdd3",
-    "divider": "rgba(255, 255, 255, 0.15)",
+    "label": "#e0e6ed", # Brighter labels
+    "divider": "rgba(255, 255, 255, 0.25)",
     "btn_secondary_bg": "rgba(255, 255, 255, 0.1)",
     "btn_secondary_text": "#e8eaed",
-    "btn_secondary_border": "rgba(255, 255, 255, 0.2)",
-    "form_bg": "rgba(255, 255, 255, 0.04)",
-    "placeholder": "rgba(255, 255, 255, 0.35)",
+    "btn_secondary_border": "rgba(255, 255, 255, 0.3)",
+    "form_bg": "rgba(0, 0, 0, 0.25)", # Darker form bg to contrast with lighter inputs
+    "placeholder": "rgba(255, 255, 255, 0.5)",
     "header_bg": "transparent",
 }
 
@@ -84,7 +84,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: {t['label']} !important;
     }}
 
-    /* ========== INPUTS ========== */
+    /* ========== INPUTS: Glass-morphism style ========== */
     .stApp input[type="text"],
     .stApp input[type="password"],
     .stApp input[type="number"],
@@ -95,14 +95,19 @@ def get_app_styles(dark_mode: bool = True) -> str:
     [data-testid="stTextArea"] textarea {{
         background-color: {t['input_bg']} !important;
         color: {t['input_text']} !important;
-        border: 1px solid {t['input_border']} !important;
-        border-radius: 8px !important;
+        border: 1.5px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        padding: 0.7rem 1rem !important;
+        font-size: 0.95rem !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: {'inset 0 2px 4px rgba(0,0,0,0.2)' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.06)'} !important;
     }}
 
     /* Input container borders */
     [data-baseweb="input"] {{
         background-color: {t['input_bg']} !important;
         border-color: {t['input_border']} !important;
+        border-radius: 12px !important;
     }}
 
     /* Placeholder */
@@ -110,102 +115,182 @@ def get_app_styles(dark_mode: bool = True) -> str:
     .stApp textarea::placeholder {{
         color: {t['placeholder']} !important;
         opacity: 1 !important;
+        font-style: italic !important;
     }}
 
-    /* ========== SELECT / DROPDOWN ========== */
-    [data-testid="stSelectbox"] > div > div,
-    [data-baseweb="select"] > div {{
+    /* ========== SELECT / DROPDOWN: Premium style ========== */
+    /* Target the container of the select input */
+    .stSelectbox div[data-baseweb="select"] > div:first-child {{
         background-color: {t['input_bg']} !important;
-        border-color: {t['input_border']} !important;
+        border: 1.5px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: {'inset 0 2px 4px rgba(0,0,0,0.2)' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.06)'} !important;
+        cursor: pointer !important;
     }}
+    
+    /* Ensure internal elements are transparent so the container bg shows */
+    .stSelectbox div[data-baseweb="select"] > div:first-child div {{
+        background-color: transparent !important;
+        border: none !important;
+        cursor: pointer !important;
+    }}
+
+    /* Specific fix for the value text container */
+    [data-baseweb="select"] .bui-select__value-container {{
+        background: transparent !important;
+    }}
+
+    /* Hover effect */
+    .stSelectbox div[data-baseweb="select"] > div:first-child:hover {{
+        border-color: #667eea !important;
+    }}
+
+    /* Text color inside select */
     [data-baseweb="select"] span,
-    [data-baseweb="select"] div {{
+    [data-baseweb="select"] div[data-testid="stMarkdownContainer"] p {{
         color: {t['input_text']} !important;
+    }}
+    
+    /* Input element inside select (for search) */
+    [data-baseweb="select"] input {{
+        color: {t['input_text']} !important;
+        cursor: text !important; /* Cursor should be text when typing */
+    }}
+    
+    /* Dropdown icon */
+    [data-baseweb="select"] svg {{
+        fill: {t['text_secondary']} !important;
     }}
 
     /* Dropdown menu */
     [data-baseweb="popover"],
     [data-baseweb="menu"],
     ul[role="listbox"] {{
-        background-color: {'#1e1e2e' if dark_mode else '#ffffff'} !important;
+        background-color: {'rgba(35, 35, 50, 0.95)' if dark_mode else 'rgba(255, 255, 255, 0.98)'} !important;
         border: 1px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        backdrop-filter: blur(16px) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35) !important;
+        overflow: hidden !important;
     }}
     [data-baseweb="menu"] li,
     ul[role="listbox"] li {{
         color: {t['text']} !important;
+        border-radius: 8px !important;
+        margin: 2px 4px !important;
+        transition: all 0.15s ease !important;
     }}
     [data-baseweb="menu"] li:hover,
     ul[role="listbox"] li:hover {{
-        background-color: {'rgba(255,255,255,0.1)' if dark_mode else 'rgba(0,0,0,0.05)'} !important;
+        background: {'linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.15))' if dark_mode else 'linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.08))'} !important;
     }}
 
-    /* ========== NUMBER INPUT +/- BUTTONS ========== */
+    /* ========== NUMBER INPUT +/- BUTTONS: Mini pills ========== */
     [data-testid="stNumberInput"] button {{
-        background-color: {t['btn_secondary_bg']} !important;
+        background: {'rgba(255,255,255,0.08)' if dark_mode else 'rgba(0,0,0,0.04)'} !important;
         color: {t['btn_secondary_text']} !important;
-        border: 1px solid {t['btn_secondary_border']} !important;
+        border: 1.5px solid {t['btn_secondary_border']} !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 1rem !important;
+        transition: all 0.2s ease !important;
     }}
     [data-testid="stNumberInput"] button:hover {{
-        background-color: #2575fc !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
         color: white !important;
+        border-color: transparent !important;
+        transform: scale(1.08) !important;
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.35) !important;
     }}
 
     /* ========== BUTTONS ========== */
-    /* Primary button (gradient) */
+    /* Primary button (gradient + glow + pulse) */
     div.stButton > button[kind="primary"],
-    div[data-testid="stFormSubmitButton"] button,
+    div[data-testid="stFormSubmitButton"] button {{
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+        background-size: 200% 200% !important;
+        animation: gradientShift 3s ease infinite !important;
+        color: white !important;
+        border: none !important;
+        padding: 0.75rem 2.5rem !important;
+        border-radius: 14px !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.5px !important;
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.35) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }}
     div.stButton > button[kind="primary"] p,
     div[data-testid="stFormSubmitButton"] button p,
     div.stButton > button[kind="primary"] span,
     div[data-testid="stFormSubmitButton"] button span {{
-        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
         color: white !important;
-        border: none !important;
-    }}
-    div.stButton > button[kind="primary"],
-    div[data-testid="stFormSubmitButton"] button {{
-        padding: 0.6rem 2rem !important;
-        border-radius: 30px !important;
-        font-size: 1.05rem !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3) !important;
-        transition: all 0.3s ease !important;
-        letter-spacing: 0.5px !important;
     }}
     div.stButton > button[kind="primary"]:hover,
     div[data-testid="stFormSubmitButton"] button:hover {{
-        background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(37, 117, 252, 0.5) !important;
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5), 0 0 40px rgba(118, 75, 162, 0.2) !important;
+    }}
+    div.stButton > button[kind="primary"]:active,
+    div[data-testid="stFormSubmitButton"] button:active {{
+        transform: translateY(-1px) scale(0.99) !important;
     }}
 
-    /* Secondary button */
+    /* Secondary button — BOLD, high-contrast, unmissable */
     div.stButton > button:not([kind="primary"]) {{
-        background-color: {t['btn_secondary_bg']} !important;
-        color: {t['btn_secondary_text']} !important;
-        border: 1px solid {t['btn_secondary_border']} !important;
-        border-radius: 20px !important;
-        transition: all 0.2s ease !important;
+        background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 0.65rem 1.5rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.03em !important;
+        box-shadow: {'0 4px 15px rgba(16, 185, 129, 0.4)' if dark_mode else '0 4px 15px rgba(79, 70, 229, 0.35)'} !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    div.stButton > button:not([kind="primary"]) p,
+    div.stButton > button:not([kind="primary"]) span {{
+        color: white !important;
     }}
     div.stButton > button:not([kind="primary"]):hover {{
-        background-color: {'rgba(255,255,255,0.15)' if dark_mode else 'rgba(0,0,0,0.08)'} !important;
-        transform: translateY(-1px) !important;
+        background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
+        transform: translateY(-3px) scale(1.02) !important;
+        box-shadow: {'0 8px 25px rgba(16, 185, 129, 0.55)' if dark_mode else '0 8px 25px rgba(79, 70, 229, 0.5)'} !important;
+    }}
+    div.stButton > button:not([kind="primary"]):hover p,
+    div.stButton > button:not([kind="primary"]):hover span {{
+        color: white !important;
     }}
 
     /* Download button */
     [data-testid="stDownloadButton"] button {{
-        background-color: {t['btn_secondary_bg']} !important;
+        background: {'rgba(255,255,255,0.06)' if dark_mode else 'rgba(0,0,0,0.03)'} !important;
         color: {t['btn_secondary_text']} !important;
-        border: 1px solid {t['btn_secondary_border']} !important;
-        border-radius: 20px !important;
+        border: 1.5px solid {t['btn_secondary_border']} !important;
+        border-radius: 14px !important;
+        transition: all 0.3s ease !important;
+    }}
+    [data-testid="stDownloadButton"] button:hover {{
+        border-color: #667eea !important;
+        transform: translateY(-2px) !important;
     }}
 
-    /* ========== FORM ========== */
+    /* ========== FORM CONTAINER: Glassmorphism card ========== */
     [data-testid="stForm"] {{
-        background: {t['form_bg']} !important;
-        border: 1px solid {t['divider']} !important;
-        border-radius: 16px !important;
-        padding: 1.5rem !important;
+        background: {'rgba(255, 255, 255, 0.04)' if dark_mode else 'rgba(255, 255, 255, 0.7)'} !important;
+        border: {'1px solid rgba(255,255,255,0.1)' if dark_mode else '1px solid rgba(0,0,0,0.08)'} !important;
+        border-radius: 20px !important;
+        padding: 2rem !important;
+        backdrop-filter: blur(12px) !important;
+        box-shadow: {'0 8px 32px rgba(0,0,0,0.3)' if dark_mode else '0 4px 24px rgba(0,0,0,0.06)'} !important;
+        transition: all 0.3s ease !important;
+    }}
+    [data-testid="stForm"]:hover {{
+        box-shadow: {'0 12px 40px rgba(0,0,0,0.35)' if dark_mode else '0 8px 32px rgba(0,0,0,0.1)'} !important;
+        transform: translateY(-1px) !important;
     }}
 
     /* ========== DIVIDERS ========== */
@@ -213,11 +298,23 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-color: {t['divider']} !important;
     }}
 
-    /* ========== FOCUS STATES ========== */
+    /* ========== FOCUS STATES: Gradient border glow ========== */
     [data-testid="stTextInput"] > div:focus-within,
     [data-testid="stNumberInput"] > div:focus-within {{
-        border-color: #2575fc !important;
-        box-shadow: 0 0 0 1px #2575fc !important;
+        border-color: transparent !important;
+        box-shadow: 0 0 0 2px #667eea, 0 0 12px rgba(102, 126, 234, 0.25) !important;
+        border-radius: 12px !important;
+    }}
+    [data-baseweb="select"]:focus-within > div {{
+        border-color: #667eea !important;
+        box-shadow: 0 0 12px rgba(102, 126, 234, 0.25) !important;
+    }}
+
+    /* Gradient shift animation for primary button */
+    @keyframes gradientShift {{
+        0% {{ background-position: 0% 50%; }}
+        50% {{ background-position: 100% 50%; }}
+        100% {{ background-position: 0% 50%; }}
     }}
 
     /* ========== ALERTS / WARNINGS ========== */
@@ -226,39 +323,71 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-radius: 8px !important;
     }}
 
-    /* ========== SLIDER: Always show thumb value ========== */
-    [data-testid="stThumbValue"] {{
-        opacity: 1 !important;
-        visibility: visible !important;
+    /* ========== DURATION RADIO: Pill-style selector ========== */
+    /* Container: horizontal layout, centered */
+    div[data-testid="stRadio"][aria-label*="Длительность"] > div {{
+        gap: 0.5rem !important;
+        justify-content: center !important;
     }}
-    [data-testid="stSlider"] [data-testid="stTickBarMin"],
-    [data-testid="stSlider"] [data-testid="stTickBarMax"] {{
-        color: {t['text_secondary']} !important;
+    /* Each radio label as a pill */
+    div[data-testid="stRadio"][aria-label*="Длительность"] label {{
+        background: {t['form_bg']} !important;
+        border: 1px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        padding: 0.5rem 0.9rem !important;
+        cursor: pointer !important;
+        transition: all 0.25s ease !important;
+        font-size: 0.82rem !important;
+    }}
+    div[data-testid="stRadio"][aria-label*="Длительность"] label:hover {{
+        border-color: #6366f1 !important;
+        background: rgba(99, 102, 241, 0.12) !important;
+        transform: translateY(-1px) !important;
+    }}
+    /* Active / checked pill */
+    div[data-testid="stRadio"][aria-label*="Длительность"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Длительность"] label:has(input:checked) {{
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        border-color: transparent !important;
+        color: #fff !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35) !important;
+    }}
+    /* Hide native radio circle */
+    div[data-testid="stRadio"][aria-label*="Длительность"] input[type="radio"] {{
+        display: none !important;
     }}
 
-    /* ========== TOGGLE: ensure visible in both themes ========== */
-    [data-testid="stToggle"] label {{
-        color: {t['text']} !important;
+    /* ========== THEME RADIO: Animated pill selector ========== */
+    div[data-testid="stRadio"][aria-label*="Тема"] > div {{
+        gap: 0.5rem !important;
+        justify-content: center !important;
     }}
-    /* Toggle track (the pill-shaped background) */
-    [data-testid="stToggle"] [role="checkbox"] {{
-        background-color: {'rgba(255,255,255,0.25)' if dark_mode else '#e0e0e0'} !important;
-        border: {'1px solid rgba(255,255,255,0.3)' if dark_mode else '1px solid #ccc'} !important;
-        border-radius: 999px !important;
-        box-shadow: {'none' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.1)'} !important;
+    div[data-testid="stRadio"][aria-label*="Тема"] label {{
+        background: {t['form_bg']} !important;
+        border: 1px solid {t['input_border']} !important;
+        border-radius: 14px !important;
+        padding: 0.55rem 1.2rem !important;
+        cursor: pointer !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.02em !important;
     }}
-    /* Toggle track — checked (ON) state */
-    [data-testid="stToggle"] [role="checkbox"][aria-checked="true"] {{
-        background-color: #6a11cb !important;
-        border-color: #5a0db5 !important;
-        box-shadow: 0 0 6px rgba(106, 17, 203, 0.4) !important;
+    div[data-testid="stRadio"][aria-label*="Тема"] label:hover {{
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }}
-    /* Toggle thumb knob (the circle) — white */
-    [data-testid="stToggle"] [role="checkbox"] > div {{
-        background-color: white !important;
-        border-radius: 50% !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
-        border: 1px solid #ddd !important;
+    /* Active state: different gradient per theme choice */
+    div[data-testid="stRadio"][aria-label*="Тема"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Тема"] label:has(input:checked) {{
+        background: {'linear-gradient(135deg, #1a1a3e, #2d1b69)' if dark_mode else 'linear-gradient(135deg, #f6d365, #fda085)'} !important;
+        border-color: transparent !important;
+        color: {'#e8eaed' if dark_mode else '#1a1a2e'} !important;
+        box-shadow: {'0 4px 15px rgba(45, 27, 105, 0.5)' if dark_mode else '0 4px 15px rgba(253, 160, 133, 0.5)'} !important;
+        font-weight: 600 !important;
+    }}
+    div[data-testid="stRadio"][aria-label*="Тема"] input[type="radio"] {{
+        display: none !important;
     }}
 
     /* ========== SCROLLBAR ========== */
