@@ -331,7 +331,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
     /* Each radio label as a pill */
     div[data-testid="stRadio"][aria-label*="Длительность"] label {{
-        background: {t['form_bg']} !important;
+        background: {t['btn_secondary_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 12px !important;
         padding: 0.5rem 0.9rem !important;
@@ -363,7 +363,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: center !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] label {{
-        background: {t['form_bg']} !important;
+        background: {t['btn_secondary_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 14px !important;
         padding: 0.55rem 1.2rem !important;
