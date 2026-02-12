@@ -497,9 +497,9 @@ if submit_btn:
         
         # Список моделей для перебора
         model_candidates = [
-            'gemini-2.0-flash',
-            'gemini-1.5-flash',
-            'gemini-pro'
+            'gemini-2.0-flash-lite',
+            'gemini-flash-lite-latest',
+            'gemini-flash-latest'
         ]
 
         # Определение длины из настроек сайдбара
@@ -633,6 +633,7 @@ if submit_btn:
 
             if '\n' in full_text:
                 title, story_body = full_text.split('\n', 1)
+                title = title.strip().lstrip('#').replace('*', '').strip()
             else:
                 title = f"Сказка для {name}"
                 story_body = full_text
@@ -655,13 +656,23 @@ if 'current_story' in st.session_state:
     story = st.session_state['current_story']
     
     st.divider()
-    st.subheader(story['title'])
+    st.markdown(f"<h2 style='text-align: center; margin-bottom: 1rem;'>{story['title']}</h2>", unsafe_allow_html=True)
     
     # Контейнер для текста
+    formatted_body = "".join([f'<p style="text-indent: 1.5em; margin-bottom: 0.8em; text-align: justify;">{para.strip()}</p>' for para in story['body'].split('\n') if para.strip()])
+    
     st.markdown(
         f"""
-        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; font-size: 1.1em; line-height: 1.6;">
-        {story['body'].replace(chr(10), '<br><br>')}
+        <div style="
+            background: rgba(255,255,255,0.05); 
+            padding: 30px; 
+            border-radius: 12px; 
+            font-family: 'Georgia', 'Times New Roman', serif; 
+            font-size: 1.15em; 
+            line-height: 1.6; 
+            color: #e8eaed;
+        ">
+        {formatted_body}
         </div>
         """, 
         unsafe_allow_html=True
