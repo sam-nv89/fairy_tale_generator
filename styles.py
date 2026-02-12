@@ -242,10 +242,10 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
     /* Toggle track (the pill-shaped background) */
     [data-testid="stToggle"] [role="checkbox"] {{
-        background-color: {'rgba(255,255,255,0.25)' if dark_mode else '#999'} !important;
-        border: {'1px solid rgba(255,255,255,0.3)' if dark_mode else '2px solid #888'} !important;
+        background-color: {'rgba(255,255,255,0.25)' if dark_mode else '#e0e0e0'} !important;
+        border: {'1px solid rgba(255,255,255,0.3)' if dark_mode else '1px solid #ccc'} !important;
         border-radius: 999px !important;
-        box-shadow: {'none' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.3)'} !important;
+        box-shadow: {'none' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.1)'} !important;
     }}
     /* Toggle track — checked (ON) state */
     [data-testid="stToggle"] [role="checkbox"][aria-checked="true"] {{
@@ -253,11 +253,12 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-color: #5a0db5 !important;
         box-shadow: 0 0 6px rgba(106, 17, 203, 0.4) !important;
     }}
-    /* Toggle thumb knob (the circle) — always white */
+    /* Toggle thumb knob (the circle) — white */
     [data-testid="stToggle"] [role="checkbox"] > div {{
         background-color: white !important;
         border-radius: 50% !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+        border: 1px solid #ddd !important;
     }}
 
     /* ========== SCROLLBAR ========== */
