@@ -551,20 +551,18 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] {{
         background: {'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)' if dark_mode else 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%)'} !important;
     }}
-    section[data-testid="stSidebar"] * {{
+    /* Override to prevent color inheritance on form inputs */
+    section[data-testid="stSidebar"] input[type="radio"],
+    section[data-testid="stSidebar"] input[type="checkbox"] {{
+        color: {'#ffffff !important' if dark_mode else '#000000 !important'};
+        accent-color: {'#ffffff !important' if dark_mode else '#666666 !important'};
+    }}
+    /* Text labels in sidebar */
+    section[data-testid="stSidebar"] label {{
         color: {t['text']} !important;
     }}
-    
-    /* Unchecked radio button circles - must be visible in both themes */
-    section[data-testid="stSidebar"] input[type="radio"]::before {{
-        background-color: {'#ffffff' if dark_mode else '#e0e0e0'} !important;
-        border-color: {'rgba(255, 255, 255, 0.6)' if dark_mode else 'rgba(0, 0, 0, 0.3)'} !important;
-    }}
-    
-    /* Streamlit radio button styling (uses data-checked attribute on container) */
-    section[data-testid="stSidebar"] [role="radio"] {{
-        background-color: {'#ffffff' if dark_mode else '#e0e0e0'} !important;
-        border-color: {'rgba(255, 255, 255, 0.6)' if dark_mode else 'rgba(0, 0, 0, 0.3)'} !important;
+    section[data-testid="stSidebar"] * {{
+        color: {t['text']} !important;
     }}
     
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] label,
