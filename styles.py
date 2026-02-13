@@ -561,7 +561,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] label {{
         color: {t['text']} !important;
     }}
-    section[data-testid="stSidebar"] * {{
+    /* Apply color to everything EXCEPT radio/checkbox inputs */
+    section[data-testid="stSidebar"] *:not(input[type="radio"]):not(input[type="checkbox"]) {{
         color: {t['text']} !important;
     }}
     
