@@ -66,10 +66,6 @@ def get_app_styles(dark_mode: bool = True) -> str:
         visibility: hidden !important;
         display: none !important;
     }}
-    header[data-testid="stHeader"] {{
-        visibility: hidden !important;
-        display: none !important;
-    }}
 
     /* ========== TYPOGRAPHY ========== */
     .stApp, .stApp p, .stApp span, .stApp div,
