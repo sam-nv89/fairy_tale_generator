@@ -57,11 +57,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* ========== UI CLEANUP ========== */
-    /* Hide Streamlit Toolbar, Footer, and Burger Menu */
-    [data-testid="stToolbar"] {{
-        visibility: hidden !important;
-        display: none !important;
-    }}
+    /* Hide Streamlit Footer and Main Menu, but keep Toolbar for sidebar toggle */
     footer {{
         visibility: hidden !important;
         display: none !important;
