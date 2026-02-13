@@ -542,11 +542,6 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background-color: {t['text_secondary']} !important;
     }}
 
-    /* ========== HEADER / TOOLBAR STREAMLIT ========== */
-    header[data-testid="stHeader"] {{
-        background: {t['header_bg']} !important;
-    }}
-
     /* ========== SIDEBAR ========== */
     section[data-testid="stSidebar"] {{
         background: {'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)' if dark_mode else 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%)'} !important;
@@ -590,6 +585,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {t['text_secondary']} !important;
     }}
+
     /* ========== UI CLEANUP: Hide Streamlit Footer and Toolbar but KEEP Header for toggle ========== */
     footer, [data-testid="stToolbar"], #MainMenu {{
         visibility: hidden !important;
@@ -603,6 +599,15 @@ def get_app_styles(dark_mode: bool = True) -> str:
     
     header[data-testid="stHeader"] [data-testid="stHeaderActionElements"] {{
         display: none !important;
+    }}
+
+    /* Force visibility of the sidebar control container when collapsed */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="collapsedControl"] {{
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 999999 !important;
     }}
 
     /* Stationary Sidebar Toggle Button (Premium Style) */
@@ -640,6 +645,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         fill: {t['text']} !important;
         width: 24px !important;
         height: 24px !important;
+        color: {t['text']} !important;
     }}
     </style>
     """
