@@ -87,7 +87,6 @@ def inject_landing_styles():
         color: var(--foreground);
     }
     
-=======
     @keyframes gradientBG {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -176,7 +175,6 @@ def inject_landing_styles():
     /* =========================================
        3. TYPOGRAPHY
        ========================================= */
->>>>>>> a5ae382 (docs: audit report and fixes v2.8 (27 issues addressed))
     h1, h2, h3, h4, h5, h6 {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         color: var(--foreground) !important;
@@ -247,7 +245,6 @@ def inject_landing_styles():
         background: linear-gradient(90deg, #9f7aea 0%, #ed64a6 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-<<<<<<< HEAD
         background-clip: text;
     }
 
