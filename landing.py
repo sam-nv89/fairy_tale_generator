@@ -13,12 +13,29 @@ from auth import sign_up, sign_in, init_auth_state
 # Helpers
 # ==========================================
 
-def clean_html(html):
-    """Очищает HTML от отступов."""
+def clean_html(html: str) -> str:
+    """
+    Очищает HTML-код от лишних отступов и пустых строк.
+    
+    Args:
+        html: Строка с HTML-кодом для очистки.
+        
+    Returns:
+        Очищенная строка HTML без начальных отступов и пустых строк.
+    """
     return "\n".join([line.strip() for line in html.split("\n") if line.strip()])
 
-def load_image_as_base64(path):
-    """Загружает изображение и возвращает base64 строку."""
+
+def load_image_as_base64(path: str) -> str:
+    """
+    Загружает изображение из файла и кодирует в base64.
+    
+    Args:
+        path: Путь к файлу изображения.
+        
+    Returns:
+        Строка base64-закодированного изображения или пустая строка при ошибке.
+    """
     try:
         with open(path, "rb") as f:
             data = f.read()
