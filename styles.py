@@ -554,6 +554,19 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] * {{
         color: {t['text']} !important;
     }}
+    
+    /* Unchecked radio button circles - must be visible in both themes */
+    section[data-testid="stSidebar"] input[type="radio"]::before {{
+        background-color: {'#ffffff' if dark_mode else '#e0e0e0'} !important;
+        border-color: {'rgba(255, 255, 255, 0.6)' if dark_mode else 'rgba(0, 0, 0, 0.3)'} !important;
+    }}
+    
+    /* Streamlit radio button styling (uses data-checked attribute on container) */
+    section[data-testid="stSidebar"] [role="radio"] {{
+        background-color: {'#ffffff' if dark_mode else '#e0e0e0'} !important;
+        border-color: {'rgba(255, 255, 255, 0.6)' if dark_mode else 'rgba(0, 0, 0, 0.3)'} !important;
+    }}
+    
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] label,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
