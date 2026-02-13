@@ -11,6 +11,9 @@ __pycache__/
 # Secrets
 .streamlit/secrets.toml
 
+# Copilot Instructions (AI Agent Guidelines - internal use only)
+.github/copilot-instructions.md
+
 # IDE / System
 .agent/
 .devcontainer/

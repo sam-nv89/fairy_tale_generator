@@ -4,7 +4,6 @@
 и основной бизнес-логикой (интеграция с LLM и TTS).
 """
 import streamlit as st
-import streamlit.components.v1 as components
 import google.generativeai as genai
 import edge_tts
 import asyncio
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Импорт модулей
 from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
-from landing import render_full_landing_page
+# from landing import render_full_landing_page  # Отключено в Фазе 2, включится в Фазе 4 (Монетизация)
 from styles import get_app_styles # Импорт стилей
 import storage # Локальная библиотека сказок
 
@@ -730,7 +729,11 @@ if submit_btn:
             if not response_text:
                 st.error("❌ Не удалось создать сказку.")
                 st.error(f"Ошибка: {last_error}")
+                logger.error(f"Story generation failed after cascade attempts. Last error: {last_error}")
                 st.stop()
+            
+            # Логирование успешной генерации с использованной моделью
+            logger.info(f"Story generated successfully with model: {used_model_name}")
             
             # Обработка ответа
             full_text = response_text.strip()
