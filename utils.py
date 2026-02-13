@@ -1,6 +1,7 @@
 
 import requests
 import logging
+import json
 from typing import Tuple, Union
 
 logger = logging.getLogger(__name__)
@@ -16,8 +17,23 @@ def get_user_currency() -> Tuple[str, str]:
         # Используем ipapi.co (бесплатный лимит 1000/день) или ip-api.com
         # В локальной разработке это вернет IP разработчика -> его страну.
         response = requests.get('https://ipapi.co/json/', timeout=2)
-        data = response.json()
+        
+        # Проверка статуса ответа
+        if response.status_code != 200:
+            logger.warning(f"IP API returned status {response.status_code}")
+            return 'USD', '$'
+        
+        try:
+            data = response.json()
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse JSON response: {e}")
+            return 'USD', '$'
+        
         country = data.get('country_code')
+        
+        if not country:
+            logger.warning("Country code not found in response")
+            return 'USD', '$'
 
         logger.info(f"User country detected: {country}")
 
