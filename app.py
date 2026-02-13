@@ -17,19 +17,19 @@ st.set_page_config(
     page_title="Сказки для детей",
     page_icon="🧚",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
 from styles import get_app_styles
-# Определяем dark_mode из query params до инициализации session_state если возможно, 
-# или берем дефолт.
-init_dark_mode = True
-if "theme" in st.query_params:
-    init_dark_mode = st.query_params["theme"] == "dark"
 
-st.markdown(get_app_styles(init_dark_mode), unsafe_allow_html=True)
+# Инициализация темы из session_state или по умолчанию
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = True
+
+# Применяем стили на основе текущей темы
+st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
 # Конфигурация логирования
 import logging
@@ -328,14 +328,22 @@ with st.sidebar:
     
     # 1. Dark Mode
     # 1. Theme Switch (pill toggle)
+    # Определяем индекс на основе сохранённого состояния
+    theme_index = 1 if st.session_state.get('dark_mode', True) else 0
     theme_choice = st.radio(
         "🎨 Тема",
         options=["☀️ День", "🌙 Ночь"],
-        index=1,
+        index=theme_index,
         horizontal=True,
         key="theme_radio"
     )
-    dark_mode = (theme_choice == "🌙 Ночь")
+    # Сохраняем выбор в session_state
+    new_dark_mode = (theme_choice == "🌙 Ночь")
+    if new_dark_mode != st.session_state.get('dark_mode', True):
+        st.session_state.dark_mode = new_dark_mode
+        st.rerun()
+    
+    dark_mode = st.session_state.dark_mode
 
     st.divider()
 

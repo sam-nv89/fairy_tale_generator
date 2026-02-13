@@ -586,10 +586,15 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: {t['text_secondary']} !important;
     }}
 
-    /* ========== UI CLEANUP: Hide Streamlit Footer and Toolbar but KEEP Header for toggle ========== */
-    footer, [data-testid="stToolbar"], #MainMenu {{
+    /* ========== UI CLEANUP: Hide Streamlit Footer and MainMenu ========== */
+    footer, #MainMenu {{
         visibility: hidden !important;
         display: none !important;
+    }}
+
+    /* Keep toolbar visible for sidebar toggle */
+    [data-testid="stToolbar"] {{
+        visibility: visible !important;
     }}
 
     header[data-testid="stHeader"] {{
@@ -597,11 +602,12 @@ def get_app_styles(dark_mode: bool = True) -> str:
         visibility: visible !important;
     }}
     
+    /* Hide toolbar action elements but keep sidebar toggle */
     header[data-testid="stHeader"] [data-testid="stHeaderActionElements"] {{
-        display: none !important;
+        visibility: hidden !important;
     }}
 
-    /* Force visibility of the sidebar control container when collapsed */
+    /* Force visibility of the sidebar control container */
     [data-testid="stSidebarCollapsedControl"],
     [data-testid="stSidebarCollapseButton"],
     [data-testid="collapsedControl"] {{
