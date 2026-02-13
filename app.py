@@ -32,7 +32,6 @@ if 'dark_mode' not in st.session_state:
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
 # Конфигурация логирования
-import logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -300,8 +299,6 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             }};
         }})();
         </script>
-    </body>
-    </html>
     """
     st.components.v1.html(html_code, height=90)
 
@@ -368,7 +365,6 @@ with st.sidebar:
     }
     selected_voice = voice_map[voice_option]
 
-    # Логика превью (внутри сайдбара)
     # Логика превью (внутри сайдбара)
     if preview_clicked:
         async def play_sample():
