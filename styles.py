@@ -590,15 +590,57 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {t['text_secondary']} !important;
     }}
-    
-    /* Radio button fix: override accent color to make circles visible */
-    section[data-testid="stSidebar"] input[type="radio"] {{
-        accent-color: {'#ffffff' if dark_mode else '#999999'} !important;
+    /* ========== UI CLEANUP: Hide Streamlit Footer and Toolbar but KEEP Header for toggle ========== */
+    footer, [data-testid="stToolbar"], #MainMenu {{
+        visibility: hidden !important;
+        display: none !important;
     }}
-    section[data-testid="stSidebar"] input[type="checkbox"] {{
-        accent-color: {'#ffffff' if dark_mode else '#999999'} !important;
+
+    header[data-testid="stHeader"] {{
+        background: transparent !important;
+        visibility: visible !important;
     }}
     
+    header[data-testid="stHeader"] [data-testid="stHeaderActionElements"] {{
+        display: none !important;
+    }}
+
+    /* Stationary Sidebar Toggle Button (Premium Style) */
+    button[data-testid="stSidebarCollapse"] {{
+        visibility: visible !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 9999999 !important;
+        background-color: {'rgba(255, 255, 255, 0.15)' if dark_mode else 'rgba(0, 0, 0, 0.08)'} !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        color: {t['text']} !important;
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        cursor: pointer !important;
+    }}
+
+    button[data-testid="stSidebarCollapse"]:hover {{
+        background-color: {'rgba(255, 255, 255, 0.2)' if dark_mode else 'rgba(0, 0, 0, 0.1)'} !important;
+        transform: scale(1.08) !important;
+        border-color: #667eea !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3) !important;
+    }}
+
+    /* Ensure the icon inside is correctly colored */
+    button[data-testid="stSidebarCollapse"] svg {{
+        fill: {t['text']} !important;
+        width: 24px !important;
+        height: 24px !important;
+    }}
     </style>
     """
 

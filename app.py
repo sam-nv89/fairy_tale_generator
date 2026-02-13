@@ -12,7 +12,27 @@ import re
 import base64
 import logging
 
+# --- 1. Настройка страницы (ДОЛЖНА БЫТЬ ПЕРВОЙ) ---
+st.set_page_config(
+    page_title="Сказки для детей",
+    page_icon="🧚",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
+# Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
+from styles import get_app_styles
+# Определяем dark_mode из query params до инициализации session_state если возможно, 
+# или берем дефолт.
+init_dark_mode = True
+if "theme" in st.query_params:
+    init_dark_mode = st.query_params["theme"] == "dark"
+
+st.markdown(get_app_styles(init_dark_mode), unsafe_allow_html=True)
+
 # Конфигурация логирования
+import logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -23,14 +43,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Импорт модулей
-from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
-# from landing import render_full_landing_page  # Отключено в Фазе 2, включится в Фазе 4 (Монетизация)
-from styles import get_app_styles # Импорт стилей
-import storage # Локальная библиотека сказок
+# Диагностический блок для захвата "призрачных" ошибок
+try:
+    # Импорт модулей
+    from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
+    import storage # Локальная библиотека сказок
+    
+    # Инициализация состояния авторизации
+    init_auth_state()
+except Exception as diagnostic_error:
+    import traceback
+    error_details = traceback.format_exc()
+    logger.error(f"🔴 CRITICAL INITIALIZATION ERROR: {error_details}")
+    st.error(f"Ошибка инициализации: {diagnostic_error}")
+    st.stop()
 
-# Инициализация состояния авторизации
-init_auth_state()
+# (Debug code removed)
 
 # Предупреждение если Supabase недоступен
 if not _SUPABASE_AVAILABLE:
@@ -292,13 +320,7 @@ async def generate_audio_stream(text, voice):
         logger.error(f"Audio generation failed: {e}")
         raise e
 
-# Настройка страницы
-st.set_page_config(
-    page_title="Сказки для детей",
-    page_icon="🧚",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# (st.set_page_config moved to top)
 
 # --- САЙДБАР: НАСТРОЙКИ (Фаза 1 Реализации) ---
 with st.sidebar:
@@ -406,8 +428,7 @@ with st.sidebar:
     st.divider()
     st.caption(f"Версия: v3.0 | 2026")
 
-# --- ПРИМЕНЕНИЕ СТИЛЕЙ ---
-st.markdown(get_app_styles(dark_mode), unsafe_allow_html=True)
+# --- СТИЛИ ПЕРЕНЕСЕНЫ В НАЧАЛО ФАЙЛА ---
 
 # =====================================
 # РОУТИНГ: Лендинг vs Генератор
@@ -566,7 +587,10 @@ with st.form("story_form"):
     submit_btn = st.form_submit_button("✨ Придумать сказку", type="primary", use_container_width=True)
 
 # Логика обработки
+logger.info(f"Submit button state: {submit_btn}")
 if submit_btn:
+    logger.info("Submit button clicked! Processing...")
+    
     # 1. Проверки
     if not api_key:
         st.error("🔑 Пожалуйста, введите API ключ в меню слева, чтобы магия сработала!")
@@ -760,85 +784,90 @@ if submit_btn:
 
 # --- Отображение результата ---
 if 'current_story' in st.session_state:
-    story = st.session_state['current_story']
-    
-    st.divider()
-    st.markdown(f"<h2 style='text-align: center; margin-bottom: 1rem;'>{story['title']}</h2>", unsafe_allow_html=True)
-    
-    # Контейнер для текста
-    def format_paragraph(text):
-        # Заменяет **text** на <strong>text</strong> для рендеринга в HTML
-        formatted = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text.strip())
-        return f'<p style="text-indent: 1.5em; margin-bottom: 0.8em; text-align: justify;">{formatted}</p>'
-
-    formatted_body = "".join([format_paragraph(para) for para in story['body'].split('\n') if para.strip()])
-    
-    st.markdown(
-        f"""
-        <div style="
-            background: rgba(255,255,255,0.05); 
-            padding: 30px; 
-            border-radius: 12px; 
-            font-family: 'Georgia', 'Times New Roman', serif; 
-            font-size: 1.15em; 
-            line-height: 1.6; 
-            color: #e8eaed;
-            margin-bottom: 1.5rem;
-        ">
-        {formatted_body}
-        </div>
-        """, 
-        unsafe_allow_html=True
-    )
-
-    # Скачивание Текста (Перенесено по запросу: под текст, над линией)
-    story_text_export = f"{story['title']}\n\n{story['body']}\n\n---\nСгенерировано Fairy Tale Generator"
-    st.download_button(
-        label="📄 Скачать Текст",
-        data=story_text_export,
-        file_name=f"skazka.txt",
-        mime="text/plain",
-        key="download_btn_main",
-        use_container_width=False # Держим компактным, но с отступами
-    )
-    
-    st.divider()
-    
-    # Кнопки действий
-    col_actions = st.columns([1, 1, 2], vertical_alignment="center")
-    
-    with col_actions[0]:
-        # Озвучка - паттерн с заменой кнопки для индикации загрузки
-        # Используем placeholder для замены кнопки на "Озвучиваем..."
-        voice_btn_placeholder = st.empty()
+    try:
+        story = st.session_state['current_story']
         
-        # Проверяем состояние? Нет, просто реагируем на клик
-        # Но чтобы текст 'Озвучиваем' появился, нам нужно заменить кнопку
-        clicked = voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn")
-            
-        if clicked:
-            # Сразу меняем кнопку на неактивную с текстом БЕЗ точек, точки добавляет CSS
-            voice_btn_placeholder.button("🎙️ Озвучиваем", disabled=True, key="voice_gen_btn_processing")
-            
-            # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
-            audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁ0-9]', '', story['body'])
-            try:
-                # Используем run_in_executor или просто await, так как это async
-                audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
-                st.session_state['current_story']['audio'] = audio_fp
-                st.rerun() # Перезагрузка для обновления UI (показать плеер и вернуть кнопку)
-            except Exception as e_tts:
-                st.error(f"Ошибка озвучки: {e_tts}")
-                # Если ошибка, восстановим кнопку (хотя st.rerun сработает и так)
-                voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn_retry")
+        st.divider()
+        st.markdown(f"<h2 style='text-align: center; margin-bottom: 1rem;'>{story['title']}</h2>", unsafe_allow_html=True)
+        
+        # Контейнер для текста
+        def format_paragraph(text):
+            # Заменяет **text** на <strong>text</strong> для рендеринга в HTML
+            formatted = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text.strip())
+            return f'<p style="text-indent: 1.5em; margin-bottom: 0.8em; text-align: justify;">{formatted}</p>'
 
-    with col_actions[1]:
-        # Сохранение в библиотеку (Вместо скачивания)
-        if st.button("💾 В библиотеку", key="save_story_btn", help="Сохранить сказку в Мои сказки"):
-            storage.save_story(story)
-            st.toast("Сказка сохранена в библиотеку! 📚")
+        formatted_body = "".join([format_paragraph(para) for para in story['body'].split('\n') if para.strip()])
+        
+        st.markdown(
+            f"""
+            <div style="
+                background: rgba(255,255,255,0.05); 
+                padding: 30px; 
+                border-radius: 12px; 
+                font-family: 'Georgia', 'Times New Roman', serif; 
+                font-size: 1.15em; 
+                line-height: 1.6; 
+                color: #e8eaed;
+                margin-bottom: 1.5rem;
+            ">
+            {formatted_body}
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
 
-    # Показываем плеер
-    if st.session_state['current_story']['audio']:
-        st.success("Аудио готово! ⬇️")
-        display_audio_player(st.session_state['current_story']['audio'], "🎧 Плеер (MP3 можно скачать в плеере)")
+        # Скачивание Текста (Перенесено по запросу: под текст, над линией)
+        story_text_export = f"{story['title']}\n\n{story['body']}\n\n---\nСгенерировано Fairy Tale Generator"
+        st.download_button(
+            label="📄 Скачать Текст",
+            data=story_text_export,
+            file_name=f"skazka.txt",
+            mime="text/plain",
+            key="download_btn_main",
+            use_container_width=False # Держим компактным, но с отступами
+        )
+        
+        st.divider()
+        
+        # Кнопки действий
+        col_actions = st.columns([1, 1, 2], vertical_alignment="center")
+        
+        with col_actions[0]:
+            # Озвучка - паттерн с заменой кнопки для индикации загрузки
+            # Используем placeholder для замены кнопки на "Озвучиваем..."
+            voice_btn_placeholder = st.empty()
+            
+            # Проверяем состояние? Нет, просто реагируем на клик
+            # Но чтобы текст 'Озвучиваем' появился, нам нужно заменить кнопку
+            clicked = voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn")
+                
+            if clicked:
+                # Сразу меняем кнопку на неактивную с текстом БЕЗ точек, точки добавляет CSS
+                voice_btn_placeholder.button("🎙️ Озвучиваем", disabled=True, key="voice_gen_btn_processing")
+                
+                # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
+                audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁ0-9]', '', story['body'])
+                try:
+                    # Используем run_in_executor или просто await, так как это async
+                    audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
+                    st.session_state['current_story']['audio'] = audio_fp
+                    st.rerun() # Перезагрузка для обновления UI (показать плеер и вернуть кнопку)
+                except Exception as e_tts:
+                    st.error(f"Ошибка озвучки: {e_tts}")
+                    # Если ошибка, восстановим кнопку (хотя st.rerun сработает и так)
+                    voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn_retry")
+
+        with col_actions[1]:
+            # Сохранение в библиотеку (Вместо скачивания)
+            if st.button("💾 В библиотеку", key="save_story_btn", help="Сохранить сказку в Мои сказки"):
+                storage.save_story(story)
+                st.toast("Сказка сохранена в библиотеку! 📚")
+
+        # Показываем плеер
+        if st.session_state['current_story']['audio']:
+            st.success("Аудио готово! ⬇️")
+            display_audio_player(st.session_state['current_story']['audio'], "🎧 Плеер (MP3 можно скачать в плеере)")
+            
+    except Exception as e_render:
+        logger.error(f"Error rendering story result: {e_render}")
+        st.error(f"⚠️ Ошибка отображения истории: {e_render}")
