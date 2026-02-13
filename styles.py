@@ -56,6 +56,25 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background-attachment: fixed !important;
     }}
 
+    /* ========== UI CLEANUP ========== */
+    /* Hide Streamlit Toolbar, Footer, and Burger Menu */
+    [data-testid="stToolbar"] {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+    footer {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+    #MainMenu {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+    header[data-testid="stHeader"] {{
+        visibility: hidden !important;
+        display: none !important;
+    }}
+
     /* ========== TYPOGRAPHY ========== */
     .stApp, .stApp p, .stApp span, .stApp div,
     .stApp h1, .stApp h2, .stApp h3, .stApp h4,
@@ -66,6 +85,42 @@ def get_app_styles(dark_mode: bool = True) -> str:
     [data-testid="stMarkdownContainer"] em,
     [data-testid="stMarkdownContainer"] strong {{
         color: {t['text']} !important;
+    }}
+
+    /* Animated Dots for Processing Button */
+    /* Animated Dots for Processing Button */
+    .st-key-voice_gen_btn_processing button::after {{
+        content: '';
+        animation: dots 1.5s steps(4, end) infinite;
+        display: inline-block;
+        width: 1.5em; /* Reserve space */
+        text-align: left;
+        margin-left: 2px;
+        position: relative; /* Changed from absolute to flow naturally */
+    }}
+    
+    @keyframes dots {{
+        0%, 20% {{ content: ''; }}
+        40% {{ content: '.'; }}
+        60% {{ content: '..'; }}
+        80%, 100% {{ content: '...'; }}
+    }}
+
+    /* Animated Dots for Spinner Text and Status */
+    [data-testid="stStatusWidget"] header > div:first-child > div:first-child > div:nth-child(2)::after,
+    [data-testid="stSpinner"] > div:last-child::after {{
+        content: '';
+        animation: dots 1.5s steps(4, end) infinite;
+        display: inline-block;
+        width: 1.5em; /* Reserve space */
+        text-align: left;
+        margin-left: -0.2em; /* Negative margin to pull closer */
+        position: relative;
+    }}
+    
+    /* Ensure spinner container allows dots to be seen */
+    [data-testid="stSpinner"] {{
+        overflow: visible !important;
     }}
 
     /* Secondary / muted text */
@@ -159,7 +214,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* Voice Preview Button - CLEAN STYLE (Tertiary + Custom) */
-    .st-key-btn_preview_voice button {{
+    .st-key-btn_preview_sidebar button {{
         background: transparent !important;
         background-color: transparent !important;
         border: none !important;
@@ -179,7 +234,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transition: transform 0.2s ease, color 0.2s ease !important;
     }}
     
-    .st-key-btn_preview_voice button p {{
+    .st-key-btn_preview_sidebar button p {{
         font-size: 24px !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -187,21 +242,50 @@ def get_app_styles(dark_mode: bool = True) -> str:
         /* Removed inner transform to rely on button padding */
     }}
 
-    .st-key-btn_preview_voice button:hover {{
+    .st-key-btn_preview_sidebar button:hover {{
         background-color: rgba(102, 126, 234, 0.1) !important;
         color: #667eea !important;
         transform: scale(1.15);
     }}
 
-    .st-key-btn_preview_voice button:active {{
+    .st-key-btn_preview_sidebar button:active {{
         transform: scale(0.95);
     }}
 
-    .st-key-btn_preview_voice button:focus:not(:focus-visible) {{
+    .st-key-btn_preview_sidebar button:focus:not(:focus-visible) {{
         outline: none !important;
         box-shadow: none !important;
     }}
     
+
+    /* ========== TOOLTIPS ========== */
+    /* Help Icon Color - UNIFIED (User Request: Night variant for both themes) */
+    [data-testid="stTooltipIcon"] svg,
+    [data-testid="stTooltipIcon"] > div,
+    [data-testid="stTooltipHoverTarget"] svg,
+    [data-testid="stTooltipHoverTarget"] > div > svg {{
+        color: rgba(255, 255, 255, 0.7) !important;
+        fill: rgba(255, 255, 255, 0.7) !important;
+    }}
+
+
+    /* Tooltip Content Box - FIX for visibility */
+    [data-baseweb="popover"], [data-baseweb="tooltip"], 
+    [data-testid="stTooltipContent"] {{
+        background-color: {'#1e1e2f' if dark_mode else '#ffffff'} !important;
+        border: 1px solid {t['input_border']} !important;
+        color: {'#e8eaed' if dark_mode else '#1a1a2e'} !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }}
+    
+    /* Internal text in tooltip */
+    [data-baseweb="popover"] > div, 
+    [data-baseweb="tooltip"] > div,
+    [data-testid="stTooltipContent"] > div,
+    [data-testid="stTooltipContent"] p {{
+        color: {'#e8eaed' if dark_mode else '#1a1a2e'} !important;
+    }}
+
 
     /* Dropdown menu */
     [data-baseweb="popover"],
