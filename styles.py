@@ -58,12 +58,44 @@ def get_app_styles(dark_mode: bool = True) -> str:
 
     /* ========== UI CLEANUP ========== */
     /* Hide Streamlit Footer and Main Menu, but keep Toolbar for sidebar toggle */
+    /* Важно: эти стили применяются мгновенно, чтобы избежать мерцания */
     footer {{
         visibility: hidden !important;
         display: none !important;
     }}
     #MainMenu {{
         visibility: hidden !important;
+        display: none !important;
+    }}
+    
+    /* Скрываем системные уведомления Streamlit при загрузке */
+    [data-testid="stStatusWidget"] {{
+        display: none !important;
+    }}
+    
+    /* Скрываем депрекейшн предупреждения Streamlit */
+    .stDeprecationWarning {{
+        display: none !important;
+    }}
+    
+    /* DIAGNOSTIC: Показываем alert'ы с задержкой 2 секунды */
+    [data-testid="stAlert"] {{
+        opacity: 0;
+        animation: showAlertAfterDelay 0s forwards;
+        animation-delay: 2s;
+    }}
+    
+    @keyframes showAlertAfterDelay {{
+        to {{ opacity: 1; }}
+    }}
+    
+    @keyframes alertFadeIn {{
+        from {{ opacity: 0; transform: translateY(-10px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+    
+    /* Скрываем элементы загрузки Streamlit */
+    .stApp > div > div > div > div.loading {{
         display: none !important;
     }}
 

@@ -59,9 +59,10 @@ except Exception as diagnostic_error:
 
 # (Debug code removed)
 
-# Предупреждение если Supabase недоступен
+# Предупреждение если Supabase недоступен (только в логах, не на экране)
 if not _SUPABASE_AVAILABLE:
-    st.warning("⚠️ Supabase library is not installed. Auth features are disabled.")
+    logger.warning("Supabase library is not installed or incompatible. Auth features are disabled.")
+    # Не показываем st.warning на экране, чтобы не засорять UI
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
@@ -326,7 +327,8 @@ with st.sidebar:
     # 1. Dark Mode
     # 1. Theme Switch (pill toggle)
     # Определяем индекс на основе сохранённого состояния
-    theme_index = 1 if st.session_state.get('dark_mode', True) else 0
+    current_dark_mode = st.session_state.get('dark_mode', True)
+    theme_index = 1 if current_dark_mode else 0
     theme_choice = st.radio(
         "🎨 Тема",
         options=["☀️ День", "🌙 Ночь"],
@@ -336,7 +338,7 @@ with st.sidebar:
     )
     # Сохраняем выбор в session_state
     new_dark_mode = (theme_choice == "🌙 Ночь")
-    if new_dark_mode != st.session_state.get('dark_mode', True):
+    if new_dark_mode != current_dark_mode:
         st.session_state.dark_mode = new_dark_mode
         st.rerun()
     

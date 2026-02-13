@@ -9,7 +9,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
-# Безопасный импорт supabase — позволит запускаться приложению, если пакет не установлен
+# Безопасный импорт supabase — позволит запускаться приложению, если пакет не установлен или несовместим
 try:
     from supabase import create_client, Client  # type: ignore
     _SUPABASE_AVAILABLE = True
@@ -17,7 +17,8 @@ except Exception as e:
     create_client = None
     Client = None
     _SUPABASE_AVAILABLE = False
-    logger.warning(f"Supabase not available: {e}")
+    # Логируем как debug, чтобы не засорять логи — это ожидаемая ситуация при отсутствии/несовместимости supabase
+    logger.debug(f"Supabase not available (expected if not installed or Python 3.14+): {type(e).__name__}")
 
 
 def validate_email(email: str) -> bool:
