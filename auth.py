@@ -5,6 +5,7 @@
 
 import streamlit as st
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,14 @@ except Exception as e:
     Client = None
     _SUPABASE_AVAILABLE = False
     logger.warning(f"Supabase not available: {e}")
+
+
+def validate_email(email: str) -> bool:
+    """Проверяет формат email адреса."""
+    if not email:
+        return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email.strip()))
 
 
 def get_supabase_client() -> Client:
@@ -46,6 +55,10 @@ def sign_up(email: str, password: str) -> dict:
     Returns:
         dict: {'success': bool, 'user': user_data или None, 'error': str или None}
     """
+    # Валидация email
+    if not validate_email(email):
+        return {'success': False, 'user': None, 'error': 'Некорректный формат email'}
+    
     client = get_supabase_client()
     if not client:
         return {'success': False, 'user': None, 'error': 'Ошибка подключения к базе данных'}
@@ -77,6 +90,10 @@ def sign_in(email: str, password: str) -> dict:
     Returns:
         dict: {'success': bool, 'user': user_data или None, 'error': str или None}
     """
+    # Валидация email
+    if not validate_email(email):
+        return {'success': False, 'user': None, 'error': 'Некорректный формат email'}
+    
     client = get_supabase_client()
     if not client:
         return {'success': False, 'user': None, 'error': 'Ошибка подключения к базе данных'}
