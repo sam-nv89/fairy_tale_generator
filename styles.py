@@ -551,21 +551,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] {{
         background: {'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)' if dark_mode else 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%)'} !important;
     }}
-    /* Override to prevent color inheritance on form inputs */
-    section[data-testid="stSidebar"] input[type="radio"],
-    section[data-testid="stSidebar"] input[type="checkbox"] {{
-        color: {'#ffffff !important' if dark_mode else '#000000 !important'};
-        accent-color: {'#ffffff !important' if dark_mode else '#666666 !important'};
-    }}
-    /* Text labels in sidebar */
-    section[data-testid="stSidebar"] label {{
+    section[data-testid="stSidebar"] * {{
         color: {t['text']} !important;
     }}
-    /* Apply color to everything EXCEPT radio/checkbox inputs */
-    section[data-testid="stSidebar"] *:not(input[type="radio"]):not(input[type="checkbox"]) {{
-        color: {t['text']} !important;
-    }}
-    
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] label,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
@@ -602,6 +590,15 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {t['text_secondary']} !important;
     }}
+    
+    /* Radio button fix: override accent color to make circles visible */
+    section[data-testid="stSidebar"] input[type="radio"] {{
+        accent-color: {'#ffffff' if dark_mode else '#999999'} !important;
+    }}
+    section[data-testid="stSidebar"] input[type="checkbox"] {{
+        accent-color: {'#ffffff' if dark_mode else '#999999'} !important;
+    }}
+    
     </style>
     """
 
