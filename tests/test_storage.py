@@ -89,6 +89,36 @@ class TestSaveStory:
         stories = load_stories()
         assert len(stories) == 1
         assert stories[0]["title"] == "Updated"
+    
+    def test_save_story_with_bytesio_excludes_audio(self, tmp_path, monkeypatch):
+        """Test that BytesIO audio field is excluded when saving to JSON."""
+        from io import BytesIO
+        
+        monkeypatch.chdir(tmp_path)
+        
+        # Create story with BytesIO audio (simulating real app behavior)
+        audio_data = BytesIO(b"fake mp3 audio data")
+        story = {
+            "title": "Story with Audio",
+            "body": "Once upon a time...",
+            "audio": audio_data
+        }
+        
+        # Should not raise JSON serialization error
+        save_story(story)
+        
+        # Check file was created
+        assert os.path.exists("stories.json")
+        
+        # Check that audio field was NOT saved to file
+        stories = load_stories()
+        assert len(stories) == 1
+        assert stories[0]["title"] == "Story with Audio"
+        assert "audio" not in stories[0]
+        
+        # Original story object should still have audio (not modified)
+        assert "audio" in story
+        assert story["audio"] is audio_data
 
 
 class TestDeleteStory:

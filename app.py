@@ -12,6 +12,29 @@ import re
 import base64
 import logging
 
+# Импорт констант из конфигурационного модуля
+from config import (
+    GEMINI_MODEL_CASCADE,
+    STORY_LENGTH_MAP,
+    DEFAULT_STORY_LENGTH,
+    AGE_RANGES,
+    DEFAULT_AGE_INDEX,
+    AVAILABLE_VOICES,
+    DEFAULT_VOICE,
+    NAME_PATTERN,
+    APP_VERSION,
+    APP_YEAR,
+    SUPPORTED_LANGUAGES,
+    DEFAULT_LANGUAGE,
+    TTS_VOICES_BY_LANGUAGE
+)
+
+# Импорт утилит для определения языка
+from utils import get_user_language
+
+# Импорт модуля интернационализации
+from i18n import t, get_translations, get_genre_list, get_age_ranges
+
 # --- 1. Настройка страницы (ДОЛЖНА БЫТЬ ПЕРВОЙ) ---
 st.set_page_config(
     page_title="Сказки для детей",
@@ -19,6 +42,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# --- 1.5. Автодетект языка (i18n) ---
+# Определяем язык пользователя один раз при первой загрузке
+if 'user_lang' not in st.session_state:
+    # Пытаемся получить Accept-Language из заголовков браузера
+    # Streamlit не даёт прямой доступ к заголовкам, поэтому используем IP-детекцию
+    st.session_state.user_lang = get_user_language()
+
+# Текущий язык (можно переключить вручную в сайдбаре)
+user_lang = st.session_state.user_lang
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
@@ -130,7 +163,9 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
         #player_{player_id} .volume-btn svg {{ width: 18px; height: 18px; fill: #606060; }}
         #player_{player_id} .volume-slider-wrap {{ width: 0; height: 100%; overflow: hidden; transition: width 0.2s ease; display: flex; align-items: center; }}
         #player_{player_id} .volume-control:hover .volume-slider-wrap {{ width: 76px; margin-left: 4px; }}
-        #player_{player_id} .volume-slider {{ -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 52px !important; height: 20px !important; background: transparent !important; cursor: pointer !important; outline: none !important; border: none !important; margin: 0 12px !important; padding: 0 !important; }}
+        #player_{player_id} .volume-slider {{ -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 52px !important; height: 4px !important; background: #e8e8e8 !important; border-radius: 2px !important; cursor: pointer !important; outline: none !important; border: none !important; margin: 0 12px !important; padding: 0 !important; }}
+        #player_{player_id} .volume-slider::-webkit-slider-thumb {{ -webkit-appearance: none !important; width: 14px !important; height: 14px !important; background: #3390ec !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; margin-top: -5px !important; }}
+        #player_{player_id} .volume-slider::-moz-range-thumb {{ width: 14px !important; height: 14px !important; background: #3390ec !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; }}
         #player_{player_id} .download-link {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: all 0.15s; text-decoration: none; }}
         #player_{player_id} .download-link svg {{ fill: #666; width: 16px; height: 16px; }}
         #player_{player_id} .download-link:hover {{ background: rgba(0,0,0,0.06); }}
@@ -195,7 +230,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             const track = '#e8e8e8';
 
             function formatTime(sec) {{
-                if (isNaN(sec)) return '0:00';
+                if (isNaN(sec) || !isFinite(sec)) return '0:00';
                 const m = Math.floor(sec / 60);
                 const s = Math.floor(sec % 60);
                 return m + ':' + (s < 10 ? '0' : '') + s;
@@ -206,7 +241,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             }}
             
             function updateProgress(el, val, max) {{
-                const pct = max > 0 ? (val / max) * 100 : 0;
+                const pct = (max > 0 && isFinite(max)) ? (val / max) * 100 : 0;
                 el.style.background = `linear-gradient(to right, ${{accent}} ${{pct}}%, ${{track}} ${{pct}}%)`;
             }}
             
@@ -220,16 +255,33 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             audio.onpause = () => {{ playIcon.style.display = 'block'; pauseIcon.style.display = 'none'; }};
             
             audio.onloadedmetadata = () => {{
-                progress.max = audio.duration;
-                totalDuration = audio.duration;
+                if (isFinite(audio.duration)) {{
+                    progress.max = audio.duration;
+                    totalDuration = audio.duration;
+                }} else {{
+                    progress.max = 0;
+                    totalDuration = 0;
+                }}
                 updateTimeDisplay();
                 updateProgress(progress, 0, audio.duration);
                 updateVolumeProgress();
                 if ({autoplay_js}) audio.play().catch(e => {{}});
             }};
             
+            audio.ondurationchange = () => {{
+                if (isFinite(audio.duration) && audio.duration > 0) {{
+                    progress.max = audio.duration;
+                    totalDuration = audio.duration;
+                    updateTimeDisplay();
+                }}
+            }};
+            
             audio.ontimeupdate = () => {{
                 progress.value = audio.currentTime;
+                if (isFinite(audio.duration) && audio.duration > 0 && totalDuration !== audio.duration) {{
+                    totalDuration = audio.duration;
+                    progress.max = audio.duration;
+                }}
                 updateTimeDisplay();
                 updateProgress(progress, audio.currentTime, audio.duration);
             }};
@@ -304,7 +356,20 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     st.components.v1.html(html_code, height=90)
 
 # --- Вспомогательная функция для озвучки (Text-to-Speech) ---
-async def generate_audio_stream(text, voice):
+async def generate_audio_stream(text: str, voice: str) -> io.BytesIO:
+    """
+    Генерирует аудиопоток из текста с использованием Edge TTS.
+    
+    Args:
+        text: Текст для озвучки.
+        voice: Идентификатор голоса (например, 'ru-RU-DmitryNeural').
+    
+    Returns:
+        io.BytesIO: Буфер с аудиоданными в формате MP3.
+    
+    Raises:
+        Exception: При ошибке генерации аудио.
+    """
     logger.info(f"Starting audio generation for voice: {voice}")
     try:
         communicate = edge_tts.Communicate(text, voice)
@@ -322,7 +387,24 @@ async def generate_audio_stream(text, voice):
 
 # --- САЙДБАР: НАСТРОЙКИ (Фаза 1 Реализации) ---
 with st.sidebar:
-    st.title("⚙️ Настройки")
+    st.title(t('settings_title', user_lang))
+    
+    # 0. Переключатель языка
+    lang_options = {'ru': '🇷🇺 Русский', 'en': '🇬🇧 English'}
+    current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
+    selected_lang_display = st.selectbox(
+        "🌐 Язык / Language",
+        options=list(lang_options.values()),
+        index=current_lang_index,
+        key="lang_select"
+    )
+    # Обновляем язык при изменении
+    selected_lang = [k for k, v in lang_options.items() if v == selected_lang_display][0]
+    if selected_lang != user_lang:
+        st.session_state.user_lang = selected_lang
+        st.rerun()
+    
+    st.divider()
     
     # 1. Dark Mode
     # 1. Theme Switch (pill toggle)
@@ -330,14 +412,14 @@ with st.sidebar:
     current_dark_mode = st.session_state.get('dark_mode', True)
     theme_index = 1 if current_dark_mode else 0
     theme_choice = st.radio(
-        "🎨 Тема",
-        options=["☀️ День", "🌙 Ночь"],
+        t('theme_label', user_lang),
+        options=[t('theme_day', user_lang), t('theme_night', user_lang)],
         index=theme_index,
         horizontal=True,
         key="theme_radio"
     )
     # Сохраняем выбор в session_state
-    new_dark_mode = (theme_choice == "🌙 Ночь")
+    new_dark_mode = (theme_choice == t('theme_night', user_lang))
     if new_dark_mode != current_dark_mode:
         st.session_state.dark_mode = new_dark_mode
         st.rerun()
@@ -347,30 +429,23 @@ with st.sidebar:
     st.divider()
 
     # 2. Выбор голоса (Перенесено из Хедера)
-    # Используем компактную верстку
-    col_v1, col_v2 = st.columns([5, 1], gap="small", vertical_alignment="bottom")
-    with col_v1:
-        voice_option = st.selectbox(
-            "🎙️ Голос озвучки",
-            ("Дмитрий (Мужской)", "Светлана (Женский)"),
-            index=0,
-            key="voice_select_sidebar"
-        )
-    with col_v2:
-        # Кнопка превью
-        preview_clicked = st.button("🔊", key="btn_preview_sidebar", type="tertiary", help="Прослушать пример")
+    # Используем голоса для текущего языка
+    voice_options = TTS_VOICES_BY_LANGUAGE.get(user_lang, TTS_VOICES_BY_LANGUAGE['ru'])['options']
+    voice_option = st.selectbox(
+        t('voice_label', user_lang),
+        options=list(voice_options.keys()),
+        index=0,
+        key="voice_select_sidebar"
+    )
+    selected_voice = voice_options[voice_option]
     
-    # Маппинг
-    voice_map = {
-        "Светлана (Женский)": "ru-RU-SvetlanaNeural",
-        "Дмитрий (Мужской)": "ru-RU-DmitryNeural"
-    }
-    selected_voice = voice_map[voice_option]
+    # Кнопка превью
+    preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help="Прослушать пример" if user_lang == 'ru' else "Listen to sample")
 
     # Логика превью (внутри сайдбара)
     if preview_clicked:
         async def play_sample():
-            sample_text = "Привет! Я буду читать сказку."
+            sample_text = "Привет! Я буду читать сказку." if user_lang == 'ru' else "Hello! I will read you a story."
             return await generate_audio_stream(sample_text, selected_voice)
         
         try:
@@ -379,16 +454,16 @@ with st.sidebar:
             # Используем мини-плеер или нативный, чтобы не загромождать сайдбар
             st.audio(sample_audio, format="audio/mp3", autoplay=True)
         except Exception as e:
-            st.error(f"Ошибка: {e}")
+            st.error(f"Ошибка: {e}" if user_lang == 'ru' else f"Error: {e}")
 
     st.divider()
     
     # 3. Личная библиотека
-    st.markdown("### 📚 Мои сказки")
+    st.markdown(f"### {t('library_title', user_lang)}")
     saved_stories = storage.load_stories()
     
     if not saved_stories:
-        st.caption("Пока пусто. Создайте и сохраните сказку!")
+        st.caption(t('library_empty', user_lang))
     else:
         for s in saved_stories:
             tc1, tc2 = st.columns([5, 1], vertical_alignment="center")
@@ -396,43 +471,39 @@ with st.sidebar:
                 # Truncate title
                 display_title = (s['title'][:22] + '..') if len(s['title']) > 22 else s['title']
                 created_date = s.get('created_at', '')[:10]
-                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"Дата: {created_date}\nНажмите, чтобы прочитать", use_container_width=True):
+                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"Дата: {created_date}\nНажмите, чтобы прочитать" if user_lang == 'ru' else f"Date: {created_date}\nClick to read", use_container_width=True):
+                    # Добавляем поле audio при загрузке из библиотеки (там оно отсутствует)
+                    s['audio'] = None
                     st.session_state['current_story'] = s
                     st.rerun()
             with tc2:
-                if st.button("🗑️", key=f"del_{s['id']}", help="Удалить сказку", type="secondary"):
+                if st.button("🗑️", key=f"del_{s['id']}", help="Удалить сказку" if user_lang == 'ru' else "Delete story", type="secondary"):
                     storage.delete_story(s['id'])
                     st.rerun()
     
     st.divider()
     
     # 2. Длительность (Фаза 1)
-    story_length_map = {
-        "🐇 Короткая (~1 мин)": 150,
-        "⭐ Средняя (~3 мин)": 300,
-        "🐢 Длинная (~5 мин)": 500
-    }
     story_length = st.radio(
         "⏱️ Длительность сказки",
-        options=list(story_length_map.keys()),
+        options=list(STORY_LENGTH_MAP.keys()),
         index=1,
         horizontal=True,
         key="story_duration_radio"
     )
-    if story_length == "🐢 Длинная (~5 мин)":
-        st.info("💎 Длинные сказки лучше для детей от 7 лет.")
+    # Проверяем по индексу (2 = длинная сказка), т.к. ключи STORY_LENGTH_MAP на русском
+    if list(STORY_LENGTH_MAP.keys()).index(story_length) == 2:
+        st.info(t('duration_long_hint', user_lang))
         
     st.divider()
     
     # 3. Донаты (Фаза 1)
-    st.markdown("""
-    ### Поддержать проект ☕
-    Если вам нравятся наши сказки, вы можете угостить разработчика кофе!
-    """)
-    st.link_button("☕ Buy Me a Coffee", "https://www.buymeacoffee.com") # TODO: Реальная ссылка
+    st.markdown(t('donate_title', user_lang))
+    st.caption(t('donate_text', user_lang))
+    st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com") # TODO: Реальная ссылка
     
     st.divider()
-    st.caption(f"Версия: v3.0 | 2026")
+    st.caption(f"{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}")
 
 # --- СТИЛИ ПЕРЕНЕСЕНЫ В НАЧАЛО ФАЙЛА ---
 
@@ -455,7 +526,7 @@ with cols[1]:
         st.markdown(f"<div style='text-align:right; padding-top: 10px; opacity: 0.7'>{user_email}</div>", unsafe_allow_html=True)
 with cols[2]:
     if is_authenticated():
-        if st.button("🚪 Выйти", key="logout_btn", use_container_width=True):
+        if st.button(t('logout_btn', user_lang), key="logout_btn", use_container_width=True):
             sign_out()
             st.rerun()
 
@@ -498,7 +569,7 @@ html_header = f"""
         text-shadow: 0 4px 6px rgba(0,0,0,0.1);
         letter-spacing: 1px;
     ">
-        🧚 Генератор Сказок
+        {t('app_title', user_lang)}
     </h1>
     <p style="
         font-size: 1.2rem;
@@ -508,7 +579,7 @@ html_header = f"""
         margin: 0 auto;
         line-height: 1.6;
     ">
-        Умный помощник, который создает <span style="animation: magic-glow 3s infinite alternate; color: #FFD700;">волшебные истории</span> для Вас и Ваших детей ✨
+        {t('app_subtitle', user_lang)}
     </p>
 </div>
 """
@@ -520,8 +591,8 @@ if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
 else:
     # Если ключа нет в секретах, показываем предупреждение и инпут в основном поле
-    st.warning("⚠️ API ключ Google не найден в secrets.toml")
-    api_key = st.text_input("🔑 Введите ваш Google API Key", type="password")
+    st.warning(t('api_key_warning', user_lang))
+    api_key = st.text_input(t('api_key_input', user_lang), type="password")
 
 # Основная форма
 with st.form("story_form"):
@@ -530,28 +601,21 @@ with st.form("story_form"):
     c1, c2, c3 = st.columns([2, 1, 3])
     
     with c1:
-        name = st.text_input("Имя ребенка", placeholder="Например: Аня")
+        name = st.text_input(t('name_label', user_lang), placeholder=t('name_placeholder', user_lang))
     
     with c2:
         gender = st.selectbox(
-            "Пол героя",
-            options=["Авто", "Мальчик", "Девочка"],
+            t('gender_label', user_lang),
+            options=[t('gender_auto', user_lang), t('gender_boy', user_lang), t('gender_girl', user_lang)],
             index=0,
-            help="Помогает ИИ правильно склонять имя"
+            help=t('gender_help', user_lang)
         )
 
     with c3:
         # Вариант 3: Горизонтальные кнопки (Pills) с диапазонами
-        age_ranges = {
-            "0-12 мес": 0.5,
-            "1-3 года": 2,
-            "4-7 лет": 5,
-            "8-12 лет": 10,
-            "13-17 лет": 15,
-            "18+": 25
-        }
+        age_ranges = get_age_ranges(user_lang)
         age_selection = st.radio(
-            "Возраст",
+            t('age_label', user_lang),
             options=list(age_ranges.keys()),
             horizontal=True,
             index=2, # Default: 4-7 лет
@@ -568,29 +632,26 @@ with st.form("story_form"):
     
     with col_genre:
         # Выбор Жанра
-        genre_options = sorted([
-            "Сказка", "Приключение", "Фантастика", "Детектив", "Фэнтези", 
-            "Супергероика", "Поучительная история", "Колыбельная", 
-            "Мистика", "Киберпанк", "Философская притча", "Романтика"
-        ])
+        genre_options = get_genre_list(user_lang)
         
-        # Находим индекс для "Сказка" или используем 0
+        # Находим индекс для "Сказка"/"Fairy Tale" или используем 0
+        default_genre = t('genres.fairytale', user_lang) if user_lang == 'ru' else 'Fairy Tale'
         try:
-             default_genre_index = genre_options.index("Сказка")
+             default_genre_index = genre_options.index(default_genre)
         except ValueError:
              default_genre_index = 0
              
-        genre = st.selectbox("🎭 Жанр истории", options=genre_options, index=default_genre_index)
+        genre = st.selectbox(t('genre_label', user_lang), options=genre_options, index=default_genre_index)
 
     with col_hobbies:
         hobbies = st.text_input(
-            "🎨 О чем сказка / Важные детали", 
-            placeholder="Например: любит динозавров, боится темноты, хочет найти клад...",
-            help="Любые пожелания к сюжету или характеру героя"
+            t('hobbies_label', user_lang), 
+            placeholder=t('hobbies_placeholder', user_lang),
+            help=t('hobbies_help', user_lang)
         )
 
     st.markdown("---")
-    submit_btn = st.form_submit_button("✨ Придумать сказку", type="primary", use_container_width=True)
+    submit_btn = st.form_submit_button(t('submit_btn', user_lang), type="primary", use_container_width=True)
 
 # Логика обработки
 logger.info(f"Submit button state: {submit_btn}")
@@ -599,19 +660,18 @@ if submit_btn:
     
     # 1. Проверки
     if not api_key:
-        st.error("🔑 Пожалуйста, введите API ключ в меню слева, чтобы магия сработала!")
+        st.error(t('api_key_error', user_lang))
         st.stop()
     
     # Валидация имени ребёнка
     name = name.strip() if name else ""
     if not name:
-        st.warning("⚠️ Пожалуйста, напишите имя ребенка.")
+        st.warning(t('name_warning', user_lang))
         st.stop()
     
     # Проверка на допустимые символы (буквы, пробелы, дефисы)
-    import re
-    if not re.match(r'^[\w\s\-а-яА-ЯёЁ]+$', name):
-        st.warning("⚠️ Имя может содержать только буквы, пробелы и дефисы.")
+    if not re.match(NAME_PATTERN, name):
+        st.warning(t('name_invalid', user_lang))
         st.stop()
 
     try:
@@ -622,33 +682,33 @@ if submit_btn:
         # 3. Генерация текста
         response_text = None
         used_model_name = ""
-        
-        # Список моделей для перебора
-        model_candidates = [
-            'gemini-2.0-flash-lite',
-            'gemini-flash-lite-latest',
-            'gemini-flash-latest'
-        ]
 
         # Определение длины из настроек сайдбара
-        target_word_count = story_length_map.get(story_length, 200)
+        target_word_count = STORY_LENGTH_MAP.get(story_length, DEFAULT_STORY_LENGTH)
 
-        with st.spinner('🪄 Сочиняем волшебную историю'):
+        with st.spinner(t('generating', user_lang)):
             last_error = None
-            for model_name in model_candidates:
+            for model_name in GEMINI_MODEL_CASCADE:
                 try:
                     logger.info(f"Attempting generation with model: {model_name}")
                     
                     # --- Логика генерации промпта (Prompt Engineering 3.0 - Expanded Ages & Genres) ---
                     
                     # Инструкция по полу
-                    gender_instruction = ""
-                    if gender == "Мальчик":
-                        gender_instruction = f"Главный герой - мальчик по имени {name}. Используй мужской род."
-                    elif gender == "Девочка":
-                        gender_instruction = f"Главный герой - девочка по имени {name}. Используй женский род."
+                    if user_lang == 'en':
+                        if gender == t('gender_boy', user_lang):
+                            gender_instruction = f"The main character is a boy named {name}. Use masculine pronouns."
+                        elif gender == t('gender_girl', user_lang):
+                            gender_instruction = f"The main character is a girl named {name}. Use feminine pronouns."
+                        else:
+                            gender_instruction = f"The main character is {name}. Determine gender from the name automatically."
                     else:
-                        gender_instruction = f"Главный герой - {name}. Определи пол по имени автоматически."
+                        if gender == t('gender_boy', user_lang):
+                            gender_instruction = f"Главный герой - мальчик по имени {name}. Используй мужской род."
+                        elif gender == t('gender_girl', user_lang):
+                            gender_instruction = f"Главный герой - девочка по имени {name}. Используй женский род."
+                        else:
+                            gender_instruction = f"Главный герой - {name}. Определи пол по имени автоматически."
                     
                     if age < 1:
                         # 0-12 мес (Babies)
@@ -765,8 +825,8 @@ if submit_btn:
                     continue
             
             if not response_text:
-                st.error("❌ Не удалось создать сказку.")
-                st.error(f"Ошибка: {last_error}")
+                st.error("❌ " + ("Не удалось создать сказку." if user_lang == 'ru' else "Could not create the story."))
+                st.error(f"Ошибка: {last_error}" if user_lang == 'ru' else f"Error: {last_error}")
                 logger.error(f"Story generation failed after cascade attempts. Last error: {last_error}")
                 st.stop()
             
@@ -780,7 +840,7 @@ if submit_btn:
                 title, story_body = full_text.split('\n', 1)
                 title = title.strip().lstrip('#').replace('*', '').strip()
             else:
-                title = f"Сказка для {name}"
+                title = f"Сказка для {name}" if user_lang == 'ru' else f"A Story for {name}"
                 story_body = full_text
 
             # Сохранение в сессии
@@ -792,9 +852,9 @@ if submit_btn:
 
     except Exception as e:
         if "429" in str(e):
-            st.error("⏳ Лимит запросов исчерпан. Попробуйте позже.")
+            st.error("⏳ " + ("Лимит запросов исчерпан. Попробуйте позже." if user_lang == 'ru' else "Rate limit exceeded. Please try again later."))
         else:
-            st.error(f"Ошибка: {e}")
+            st.error(f"Ошибка: {e}" if user_lang == 'ru' else f"Error: {e}")
 
 # --- Отображение результата ---
 if 'current_story' in st.session_state:
@@ -831,11 +891,11 @@ if 'current_story' in st.session_state:
         )
 
         # Скачивание Текста (Перенесено по запросу: под текст, над линией)
-        story_text_export = f"{story['title']}\n\n{story['body']}\n\n---\nСгенерировано Fairy Tale Generator"
+        story_text_export = f"{story['title']}\n\n{story['body']}\n\n---\n{'Сгенерировано Fairy Tale Generator' if user_lang == 'ru' else 'Generated by Fairy Tale Generator'}"
         st.download_button(
-            label="📄 Скачать Текст",
+            label=t('download_txt', user_lang),
             data=story_text_export,
-            file_name=f"skazka.txt",
+            file_name=f"{'skazka' if user_lang == 'ru' else 'story'}.txt",
             mime="text/plain",
             key="download_btn_main",
             use_container_width=False # Держим компактным, но с отступами
@@ -853,35 +913,40 @@ if 'current_story' in st.session_state:
             
             # Проверяем состояние? Нет, просто реагируем на клик
             # Но чтобы текст 'Озвучиваем' появился, нам нужно заменить кнопку
-            clicked = voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn")
+            voice_btn_text = "🎧 Озвучить" if user_lang == 'ru' else "🎧 Narrate"
+            clicked = voice_btn_placeholder.button(voice_btn_text, type="primary", key="voice_gen_btn")
                 
             if clicked:
                 # Сразу меняем кнопку на неактивную с текстом БЕЗ точек, точки добавляет CSS
-                voice_btn_placeholder.button("🎙️ Озвучиваем", disabled=True, key="voice_gen_btn_processing")
+                processing_text = "🎙️ Озвучиваем" if user_lang == 'ru' else "🎙️ Processing..."
+                voice_btn_placeholder.button(processing_text, disabled=True, key="voice_gen_btn_processing")
                 
                 # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
-                audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁ0-9]', '', story['body'])
+                audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁa-zA-Z0-9]', '', story['body'])
                 try:
                     # Используем run_in_executor или просто await, так как это async
                     audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
                     st.session_state['current_story']['audio'] = audio_fp
                     st.rerun() # Перезагрузка для обновления UI (показать плеер и вернуть кнопку)
                 except Exception as e_tts:
-                    st.error(f"Ошибка озвучки: {e_tts}")
+                    st.error(f"Ошибка озвучки: {e_tts}" if user_lang == 'ru' else f"Narration error: {e_tts}")
                     # Если ошибка, восстановим кнопку (хотя st.rerun сработает и так)
-                    voice_btn_placeholder.button("🎧 Озвучить", type="primary", key="voice_gen_btn_retry")
+                    voice_btn_placeholder.button(voice_btn_text, type="primary", key="voice_gen_btn_retry")
 
         with col_actions[1]:
             # Сохранение в библиотеку (Вместо скачивания)
-            if st.button("💾 В библиотеку", key="save_story_btn", help="Сохранить сказку в Мои сказки"):
+            save_btn_text = "💾 В библиотеку" if user_lang == 'ru' else "💾 To Library"
+            save_help = "Сохранить сказку в Мои сказки" if user_lang == 'ru' else "Save story to My Stories"
+            if st.button(save_btn_text, key="save_story_btn", help=save_help):
                 storage.save_story(story)
-                st.toast("Сказка сохранена в библиотеку! 📚")
+                st.toast("Сказка сохранена в библиотеку! 📚" if user_lang == 'ru' else "Story saved to library! 📚")
 
         # Показываем плеер
-        if st.session_state['current_story']['audio']:
-            st.success("Аудио готово! ⬇️")
-            display_audio_player(st.session_state['current_story']['audio'], "🎧 Плеер (MP3 можно скачать в плеере)")
+        if st.session_state['current_story'].get('audio'):
+            st.success("Аудио готово! ⬇️" if user_lang == 'ru' else "Audio ready! ⬇️")
+            player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
+            display_audio_player(st.session_state['current_story']['audio'], player_label)
             
     except Exception as e_render:
         logger.error(f"Error rendering story result: {e_render}")
-        st.error(f"⚠️ Ошибка отображения истории: {e_render}")
+        st.error(f"⚠️ Ошибка отображения истории: {e_render}" if user_lang == 'ru' else f"⚠️ Error rendering story: {e_render}")

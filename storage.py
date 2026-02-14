@@ -5,7 +5,7 @@ import uuid
 from typing import List, Dict, Optional
 import streamlit as st
 
-STORIES_FILE = "stories.json"
+from config import STORIES_FILE
 
 def load_stories() -> List[Dict]:
     """Загружает список сохраненных сказок из локального JSON файла."""
@@ -31,14 +31,17 @@ def save_story(story: Dict) -> None:
     # Добавление даты создания, если нет
     if "created_at" not in story:
         story["created_at"] = datetime.now().isoformat()
+    
+    # Создаём копию для сохранения, исключая неп сериализуемые поля (BytesIO audio)
+    story_to_save = {k: v for k, v in story.items() if k != "audio"}
         
     # Проверка на существование (обновление)
-    existing_index = next((i for i, s in enumerate(stories) if s.get("id") == story["id"]), -1)
+    existing_index = next((i for i, s in enumerate(stories) if s.get("id") == story_to_save["id"]), -1)
     
     if existing_index >= 0:
-        stories[existing_index] = story
+        stories[existing_index] = story_to_save
     else:
-        stories.insert(0, story) # Добавляем в начало
+        stories.insert(0, story_to_save) # Добавляем в начало
         
     try:
         with open(STORIES_FILE, "w", encoding="utf-8") as f:
