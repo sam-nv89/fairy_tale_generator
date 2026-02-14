@@ -35,6 +35,23 @@ class TestTranslationFunction:
         """Проверка что русский - язык по умолчанию"""
         # При вызове без указания языка
         assert t('page_title') == "Сказки для детей"
+    
+    def test_nested_key_russian(self):
+        """Проверка вложенных ключей для русского языка"""
+        assert t('genres.fairytale', 'ru') == "Сказка"
+        assert t('genres.adventure', 'ru') == "Приключение"
+        assert t('genres.detective', 'ru') == "Детектив"
+    
+    def test_nested_key_english(self):
+        """Проверка вложенных ключей для английского языка"""
+        assert t('genres.fairytale', 'en') == "Fairy Tale"
+        assert t('genres.adventure', 'en') == "Adventure"
+        assert t('genres.detective', 'en') == "Detective"
+    
+    def test_nested_key_fallback(self):
+        """Проверка fallback для вложенных ключей"""
+        # При отсутствии перевода должен вернуться ключ
+        assert t('genres.nonexistent', 'ru') == "genres.nonexistent"
 
 
 class TestGetTranslations:

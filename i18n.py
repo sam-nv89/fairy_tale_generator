@@ -182,9 +182,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
 def t(key: str, lang: str = 'ru', **kwargs) -> str:
     """
     Получить перевод по ключу.
+    Поддерживает вложенные ключи через точку (например, 'genres.fairytale').
     
     Args:
-        key: Ключ перевода (например, 'page_title')
+        key: Ключ перевода (например, 'page_title' или 'genres.fairytale')
         lang: Код языка ('ru', 'en')
         **kwargs: Параметры для форматирования строки
     
@@ -195,15 +196,27 @@ def t(key: str, lang: str = 'ru', **kwargs) -> str:
     if lang not in TRANSLATIONS:
         lang = 'ru'
     
-    # Получаем перевод
-    translation = TRANSLATIONS.get(lang, {}).get(key)
+    # Получаем перевод (поддержка вложенных ключей через точку)
+    translation = TRANSLATIONS.get(lang, {})
+    for part in key.split('.'):
+        if isinstance(translation, dict):
+            translation = translation.get(part)
+        else:
+            translation = None
+            break
     
     # Если перевод не найден, пробуем fallback на русский
     if translation is None:
-        translation = TRANSLATIONS.get('ru', {}).get(key)
+        translation = TRANSLATIONS.get('ru', {})
+        for part in key.split('.'):
+            if isinstance(translation, dict):
+                translation = translation.get(part)
+            else:
+                translation = None
+                break
     
     # Если всё ещё не найден, возвращаем ключ
-    if translation is None:
+    if translation is None or not isinstance(translation, str):
         return key
     
     # Форматирование с параметрами
@@ -241,7 +254,9 @@ def get_genre_list(lang: str = 'ru') -> list:
     Returns:
         list: Список жанров
     """
-    genres = t('genres', lang)
+    if lang not in TRANSLATIONS:
+        lang = 'ru'
+    genres = TRANSLATIONS.get(lang, {}).get('genres', {})
     if isinstance(genres, dict):
         return sorted(genres.values())
     return []
@@ -267,18 +282,24 @@ def get_age_ranges(lang: str = 'ru') -> Dict[str, float]:
         "18+": 25
     }
     
-    # Получаем переведённые названия
-    translated_ranges = t('age_ranges', lang)
-    if isinstance(translated_ranges, dict):
+    # Получаем переведённые названия напрямую из TRANSLATIONS
+    if lang not in TRANSLATIONS:
+        lang = 'ru'
+    translated_ranges = TRANSLATIONS.get(lang, {}).get('age_ranges', {})
+    
+    if isinstance(translated_ranges, dict) and translated_ranges:
         # Маппинг ключей к значениям
+        keys = list(translated_ranges.keys())
         key_mapping = {
-            "0-12 мес": list(translated_ranges.keys())[0],
-            "1-3 года": list(translated_ranges.keys())[1],
-            "4-7 лет": list(translated_ranges.keys())[2],
-            "8-12 лет": list(translated_ranges.keys())[3],
-            "13-17 лет": list(translated_ranges.keys())[4],
-            "18+": list(translated_ranges.keys())[5]
+            "0-12 мес": keys[0],
+            "1-3 года": keys[1],
+            "4-7 лет": keys[2],
+            "8-12 лет": keys[3],
+            "13-17 лет": keys[4],
+            "18+": keys[5]
         }
         return {key_mapping[k]: v for k, v in age_values.items()}
+    
+    return age_values
     
     return age_values

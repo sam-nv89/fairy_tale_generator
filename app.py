@@ -634,13 +634,13 @@ with st.form("story_form"):
         # Выбор Жанра
         genre_options = get_genre_list(user_lang)
         
-        # Находим индекс для "Сказка"/"Fairy Tale" или используем 0
-        default_genre = t('genres.fairytale', user_lang) if user_lang == 'ru' else 'Fairy Tale'
+        # Находим индекс для "Сказка"/"Fairy Tale" как жанра по умолчанию
+        default_genre = t('genres.fairytale', user_lang)
         try:
              default_genre_index = genre_options.index(default_genre)
         except ValueError:
              default_genre_index = 0
-             
+              
         genre = st.selectbox(t('genre_label', user_lang), options=genre_options, index=default_genre_index)
 
     with col_hobbies:
