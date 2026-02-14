@@ -283,13 +283,13 @@ def get_app_styles(dark_mode: bool = True) -> str:
     
 
     /* ========== TOOLTIPS ========== */
-    /* Help Icon Color - UNIFIED (User Request: Night variant for both themes) */
+    /* Help Icon Color - Theme-aware for better visibility */
     [data-testid="stTooltipIcon"] svg,
     [data-testid="stTooltipIcon"] > div,
     [data-testid="stTooltipHoverTarget"] svg,
     [data-testid="stTooltipHoverTarget"] > div > svg {{
-        color: rgba(255, 255, 255, 0.7) !important;
-        fill: rgba(255, 255, 255, 0.7) !important;
+        color: {'rgba(255, 255, 255, 0.7)' if dark_mode else 'rgba(0, 0, 0, 0.5)'} !important;
+        fill: {'rgba(255, 255, 255, 0.7)' if dark_mode else 'rgba(0, 0, 0, 0.5)'} !important;
     }}
 
 
@@ -336,9 +336,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
 
     /* ========== NUMBER INPUT +/- BUTTONS: Mini pills ========== */
     [data-testid="stNumberInput"] button {{
-        background: {'rgba(255,255,255,0.08)' if dark_mode else 'rgba(0,0,0,0.04)'} !important;
+        background: {'rgba(255,255,255,0.08)' if dark_mode else 'rgba(79, 70, 229, 0.1)'} !important;
         color: {t['btn_secondary_text']} !important;
-        border: 1.5px solid {t['btn_secondary_border']} !important;
+        border: 1.5px solid {'rgba(255, 255, 255, 0.3)' if dark_mode else 'rgba(79, 70, 229, 0.3)'} !important;
         border-radius: 10px !important;
         font-weight: 700 !important;
         font-size: 1rem !important;
@@ -413,16 +413,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: white !important;
     }}
 
-    /* Download button */
+    /* Download button - Improved contrast for Light theme */
     [data-testid="stDownloadButton"] button {{
-        background: {'rgba(255,255,255,0.06)' if dark_mode else 'rgba(0,0,0,0.03)'} !important;
+        background: {'rgba(255,255,255,0.06)' if dark_mode else 'rgba(79, 70, 229, 0.08)'} !important;
         color: {t['btn_secondary_text']} !important;
-        border: 1.5px solid {t['btn_secondary_border']} !important;
+        border: 1.5px solid {'rgba(255, 255, 255, 0.3)' if dark_mode else 'rgba(79, 70, 229, 0.25)'} !important;
         border-radius: 14px !important;
         transition: all 0.3s ease !important;
     }}
     [data-testid="stDownloadButton"] button:hover {{
         border-color: #667eea !important;
+        background: {'rgba(255,255,255,0.1)' if dark_mode else 'rgba(79, 70, 229, 0.15)'} !important;
         transform: translateY(-2px) !important;
     }}
 
@@ -531,13 +532,13 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }}
-    /* Active state: different gradient per theme choice */
+    /* Active state: unified purple gradient for both themes */
     div[data-testid="stRadio"][aria-label*="Тема"] label[data-checked="true"],
     div[data-testid="stRadio"][aria-label*="Тема"] label:has(input:checked) {{
-        background: {'linear-gradient(135deg, #1a1a3e, #2d1b69)' if dark_mode else 'linear-gradient(135deg, #f6d365, #fda085)'} !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border-color: transparent !important;
-        color: {'#e8eaed' if dark_mode else '#1a1a2e'} !important;
-        box-shadow: {'0 4px 15px rgba(45, 27, 105, 0.5)' if dark_mode else '0 4px 15px rgba(253, 160, 133, 0.5)'} !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
         font-weight: 600 !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] input[type="radio"] {{
@@ -550,17 +551,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
     ::-webkit-scrollbar-thumb:hover {{ background: rgba(128, 128, 128, 0.45); }}
 
     /* ========== SLIDER (Global) ========== */
-    /* Slider Track (filled part) */
+    /* Slider Track (filled part) - Unified purple gradient */
     div[data-testid="stSlider"] div[data-baseweb="slider"] div[role="progressbar"] {{
-        background: {'linear-gradient(90deg, #6a11cb 0%, #2575fc 100%)' if dark_mode else 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)'} !important;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
         height: 8px !important;
         border-radius: 4px !important;
     }}
     /* Slider Thumb (handle) */
     div[data-testid="stSlider"] div[role="slider"] {{
         background-color: white !important;
-        border: 2px solid {'#6a11cb' if dark_mode else '#fda085'} !important;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2) !important;
+        border: 2px solid #667eea !important;
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.3) !important;
         width: 20px !important;
         height: 20px !important;
     }}
@@ -606,12 +607,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] [data-testid="stSlider"] [data-testid="stTickBarMax"] {{
         color: {t['text']} !important;
     }}
-    /* Sidebar button */
+    /* Sidebar button - Improved contrast for Light theme */
     section[data-testid="stSidebar"] [data-testid="stLinkButton"] a {{
         color: {t['btn_secondary_text']} !important;
-        border: 1px solid {t['btn_secondary_border']} !important;
-        background-color: {t['btn_secondary_bg']} !important;
+        border: 1px solid {'rgba(255, 255, 255, 0.3)' if dark_mode else 'rgba(79, 70, 229, 0.3)'} !important;
+        background-color: {'rgba(255, 255, 255, 0.1)' if dark_mode else 'rgba(79, 70, 229, 0.1)'} !important;
         border-radius: 20px !important;
+        transition: all 0.3s ease !important;
+    }}
+    section[data-testid="stSidebar"] [data-testid="stLinkButton"] a:hover {{
+        background-color: {'rgba(255, 255, 255, 0.15)' if dark_mode else 'rgba(79, 70, 229, 0.2)'} !important;
+        border-color: #667eea !important;
     }}
     /* Caption */
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
