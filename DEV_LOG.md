@@ -1,5 +1,102 @@
 # Журнал разработки (Dev Log)
 
+## 15.02.2026 (Вечер, Update 10)
+### 🐛 Bug Fix: Контраст кнопок в разделе "Мои сказки" (тема "Ночь")
+**Статус**: Выполнено
+
+#### Постановка задачи
+В разделе "Мои сказки" (sidebar) при использовании темы "Ночь" кнопки сохранённых сказок имели:
+- Светлый фон (дефолтный Streamlit через `st-emotion-cache-*` классы)
+- Светлый текст (из-за правила `section[data-testid="stSidebar"] *`)
+- Всё сливалось и становилось видно только при hover
+
+#### Диагностика
+**Анализ возможных причин:**
+1. **Отсутствие специфичных стилей для `stButton` внутри sidebar** - подтверждено
+2. **Конфликт с правилом `section[data-testid="stSidebar"] *`** - устанавливает светлый текст для всех элементов
+3. **Streamlit emotion-cache классы** - динамические CSS-классы с светлым фоном
+4. ~~Проблема с hover-эффектами~~ - hover работал корректно
+
+**Корневая причина:**
+Streamlit использует динамические CSS-классы `st-emotion-cache-*` для стилизации элементов. Эти классы имели светлый фон, который не перекрывался существующими стилями в sidebar.
+
+#### Решение
+Добавлены инлайн-стили в [`app.py`](app.py:68-96) после основных стилей:
+
+```css
+/* Fix for story library cards in dark theme - override emotion-cache backgrounds */
+section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Static state for story library buttons - subtle button appearance */
+section[data-testid="stSidebar"] div.stButton {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Hover effect for story library buttons */
+section[data-testid="stSidebar"] div.stButton:hover {
+    background: rgba(102, 126, 234, 0.15) !important;
+    border-color: rgba(102, 126, 234, 0.4) !important;
+    box-shadow: 0 0 12px rgba(102, 126, 234, 0.2) !important;
+}
+```
+
+**Результат:**
+- Статичное состояние: лёгкий полупрозрачный фон, тонкая граница
+- Hover: фиолетовый фон, более яркая граница, свечение
+- Тема "День" не затронута (стили применяются только для `dark_mode=True`)
+
+#### Изменённые файлы
+- `app.py`: Добавлены инлайн-стили для темной темы (строки 68-96)
+- `styles.py`: Добавлены стили для кнопок в sidebar (строки 624-675)
+
+---
+
+## 15.02.2026 (Вечер, Update 10)
+### 🐛 Bug Fix: Контраст кнопок в разделе "Мои сказки" (тема "Ночь")
+**Статус**: Выполнено
+
+#### Постановка задачи
+В разделе "Мои сказки" (sidebar) при использовании темы "Ночь" кнопки сохранённых сказок имели:
+- Светлый фон (дефолтный Streamlit)
+- Светлый текст (из-за правила `section[data-testid="stSidebar"] *`)
+- Всё сливалось и становилось видно только при hover
+
+#### Диагностика
+**Анализ возможных причин:**
+1. **Отсутствие специфичных стилей для `stButton` внутри sidebar** - подтверждено
+2. **Конфликт с правилом `section[data-testid="stSidebar"] *`** - устанавливает светлый текст для всех элементов
+3. ~~Проблема с hover-эффектами~~ - hover работал корректно
+
+**Корневая причина:**
+В [`styles.py`](styles.py:610-625) были стили только для `stLinkButton` в sidebar, но не для обычных `stButton`. Общие стили кнопок (строки 391-414) не применялись к sidebar из-за более высокой специфичности правила `section[data-testid="stSidebar"] *`.
+
+#### Решение
+Добавлены специфичные CSS-правила для кнопок в sidebar (после строки 621):
+
+```css
+/* Sidebar regular buttons (stButton) - Fix for dark theme contrast */
+section[data-testid="stSidebar"] div.stButton > button {
+    background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%) !important;
+    color: white !important;
+    /* ... */
+}
+```
+
+**Результат:**
+- Тёмная тема: градиентный зелёно-голубой фон, белый текст
+- Светлая тема: градиентный фиолетовый фон, белый текст
+- Hover-эффекты сохранены
+
+#### Изменённые файлы
+- `styles.py`: Добавлены стили для `section[data-testid="stSidebar"] div.stButton > button`
+
+---
+
 ## 15.02.2026 (Вечер, Update 9)
 ### 🐛 Bug Fix: Исправление поведения выпадающих списков в генераторе сказок
 **Статус**: Выполнено

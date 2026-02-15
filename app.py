@@ -64,6 +64,40 @@ if 'dark_mode' not in st.session_state:
 # Применяем стили на основе текущей темы
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
+# DARK THEME FIX: Дополнительные стили для исправления контраста в sidebar
+# Применяем ПОСЛЕ основных стилей, чтобы перекрыть их
+if st.session_state.dark_mode:
+    st.markdown("""
+    <style>
+    /* Fix for story library cards in dark theme - override emotion-cache backgrounds */
+    section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+    
+    /* Static state for story library buttons in dark theme - subtle button appearance */
+    section[data-testid="stSidebar"] div.stButton {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border-radius: 14px !important;
+        padding: 2px !important;
+        margin: 2px 0 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* Hover effect for story library buttons in dark theme */
+    section[data-testid="stSidebar"] div.stButton:hover {
+        background: rgba(102, 126, 234, 0.15) !important;
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 0 12px rgba(102, 126, 234, 0.2) !important;
+    }
+    
+    section[data-testid="stSidebar"] div.stButton > button:hover {
+        box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # Применяем JavaScript для исправления dropdown (через components для работы JS)
 st.components.v1.html(get_dropdown_fix_js(), height=0)
 

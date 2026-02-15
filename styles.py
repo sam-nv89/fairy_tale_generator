@@ -582,6 +582,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     section[data-testid="stSidebar"] * {{
         color: {t['text']} !important;
     }}
+    
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] label,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
     section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] span,
@@ -619,6 +620,50 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background-color: {'rgba(255, 255, 255, 0.15)' if dark_mode else 'rgba(79, 70, 229, 0.2)'} !important;
         border-color: #667eea !important;
     }}
+    
+    /* Sidebar regular buttons (stButton) - Fix for dark theme contrast */
+    /* Covers both default buttons and secondary buttons */
+    section[data-testid="stSidebar"] div.stButton > button,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] {{
+        background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        box-shadow: {'0 4px 15px rgba(16, 185, 129, 0.4)' if dark_mode else '0 4px 15px rgba(79, 70, 229, 0.35)'} !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    /* Fix for stMarkdownContainer inside buttons - remove light background in dark theme only */
+    section[data-testid="stSidebar"] div.stButton > button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] [data-testid="stMarkdownContainer"] {{
+        background: {'transparent' if dark_mode else 'inherit'} !important;
+        background-color: {'transparent' if dark_mode else 'inherit'} !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button p,
+    section[data-testid="stSidebar"] div.stButton > button span,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] p,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] span {{
+        color: white !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button:hover,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover {{
+        background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: {'0 6px 20px rgba(16, 185, 129, 0.55)' if dark_mode else '0 6px 20px rgba(79, 70, 229, 0.5)'} !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button:hover p,
+    section[data-testid="stSidebar"] div.stButton > button:hover span,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover p,
+    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover span {{
+        color: white !important;
+    }}
+    
+    /* DARK THEME ONLY: Fix for emotion-cache classes with light backgrounds in sidebar */
+    {'''section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
+        background: transparent !important;
+        background-color: transparent !important;
+    }''' if dark_mode else ''}
+    
     /* Caption */
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {t['text_secondary']} !important;
