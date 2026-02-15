@@ -691,6 +691,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
         height: 24px !important;
         color: {t['text']} !important;
     }}
+
+    /* ========== DROPDOWN TOGGLE FIX ========== */
+    /* Fix for dropdown reopening on second click instead of closing */
     </style>
     """
 
@@ -1077,6 +1080,105 @@ if (document.readyState === 'loading') {
 def get_landing_styles() -> str:
     """Возвращает все CSS-стили для лендинга."""
     return LANDING_BASE_CSS
+
+
+def get_dropdown_fix_js() -> str:
+    """Возвращает JavaScript для исправления поведения dropdown.
+    
+    Использовать через st.components.v1.html() для корректной работы.
+    Скрипт внедряется в родительский документ через DOM manipulation.
+    
+    Проблема: Streamlit selectbox внутри формы при повторном клике 
+    переоткрывает dropdown вместо закрытия.
+    Решение: Отслеживание закрытия popover и блокировка повторного открытия
+    в течение 400мс после закрытия.
+    """
+    return """
+    <script>
+    (function() {
+        // Inject script into parent document
+        const script = document.createElement('script');
+        script.textContent = `
+            (function() {
+                // Global state to track dropdown open/close
+                window.__dropdownState = window.__dropdownState || { 
+                    justClosed: false, 
+                    closeTime: 0,
+                    openPopover: null 
+                };
+                
+                // Function to check if popover is open
+                function isPopoverOpen() {
+                    const popovers = document.querySelectorAll('[data-baseweb="popover"]');
+                    for (const p of popovers) {
+                        const style = getComputedStyle(p);
+                        if (style.display !== 'none' && style.visibility !== 'hidden' && p.offsetHeight > 0) {
+                            return p;
+                        }
+                    }
+                    return null;
+                }
+                
+                // Track popover state changes
+                const popoverObserver = new MutationObserver(function(mutations) {
+                    const state = window.__dropdownState;
+                    const openPopover = isPopoverOpen();
+                    
+                    if (!openPopover && state.openPopover) {
+                        // Popover was just closed
+                        state.justClosed = true;
+                        state.closeTime = Date.now();
+                        setTimeout(() => {
+                            state.justClosed = false;
+                        }, 400);
+                    }
+                    
+                    state.openPopover = openPopover;
+                });
+                
+                // Start observing
+                if (document.body) {
+                    popoverObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style', 'class', 'aria-hidden']
+                    });
+                }
+                
+                // Intercept clicks on selectbox triggers
+                document.addEventListener('click', function(e) {
+                    const target = e.target;
+                    const selectbox = target.closest('[data-baseweb="select"]');
+                    const state = window.__dropdownState;
+                    const now = Date.now();
+                    
+                    if (selectbox) {
+                        // If we just closed this dropdown, prevent reopening
+                        if (state.justClosed && (now - state.closeTime) < 400) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                            return false;
+                        }
+                    }
+                }, true); // capture phase
+            })();
+        `;
+        
+        // Try to inject into parent document
+        try {
+            if (window.parent && window.parent.document && window.parent.document.body) {
+                window.parent.document.body.appendChild(script);
+            } else {
+                document.body.appendChild(script);
+            }
+        } catch (e) {
+            document.body.appendChild(script);
+        }
+    })();
+    </script>
+    """
 
 
 def get_stars_animation() -> str:

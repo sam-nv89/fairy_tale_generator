@@ -55,7 +55,7 @@ user_lang = st.session_state.user_lang
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
-from styles import get_app_styles
+from styles import get_app_styles, get_dropdown_fix_js
 
 # Инициализация темы из session_state или по умолчанию
 if 'dark_mode' not in st.session_state:
@@ -63,6 +63,9 @@ if 'dark_mode' not in st.session_state:
 
 # Применяем стили на основе текущей темы
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
+
+# Применяем JavaScript для исправления dropdown (через components для работы JS)
+st.components.v1.html(get_dropdown_fix_js(), height=0)
 
 # Конфигурация логирования
 logging.basicConfig(
