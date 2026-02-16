@@ -475,13 +475,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* ========== DURATION & AGE RADIO: Pill-style selector ========== */
     /* Container: horizontal layout, centered */
     div[data-testid="stRadio"][aria-label*="Длительность"] > div,
-    div[data-testid="stRadio"][aria-label*="Возраст"] > div {{
+    div[data-testid="stRadio"][aria-label*="Возраст"] > div,
+    div[data-testid="stRadio"][aria-label*="Duration"] > div,
+    div[data-testid="stRadio"][aria-label*="Age"] > div {{
         gap: 0.5rem !important;
         justify-content: center !important;
     }}
     /* Each radio label as a pill */
     div[data-testid="stRadio"][aria-label*="Длительность"] label,
-    div[data-testid="stRadio"][aria-label*="Возраст"] label {{
+    div[data-testid="stRadio"][aria-label*="Возраст"] label,
+    div[data-testid="stRadio"][aria-label*="Duration"] label,
+    div[data-testid="stRadio"][aria-label*="Age"] label {{
         background: {t['form_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 12px !important;
@@ -491,7 +495,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-size: 0.82rem !important;
     }}
     div[data-testid="stRadio"][aria-label*="Длительность"] label:hover,
-    div[data-testid="stRadio"][aria-label*="Возраст"] label:hover {{
+    div[data-testid="stRadio"][aria-label*="Возраст"] label:hover,
+    div[data-testid="stRadio"][aria-label*="Duration"] label:hover,
+    div[data-testid="stRadio"][aria-label*="Age"] label:hover {{
         border-color: #6366f1 !important;
         background: rgba(99, 102, 241, 0.12) !important;
         transform: translateY(-1px) !important;
@@ -500,7 +506,11 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stRadio"][aria-label*="Длительность"] label[data-checked="true"],
     div[data-testid="stRadio"][aria-label*="Длительность"] label:has(input:checked),
     div[data-testid="stRadio"][aria-label*="Возраст"] label[data-checked="true"],
-    div[data-testid="stRadio"][aria-label*="Возраст"] label:has(input:checked) {{
+    div[data-testid="stRadio"][aria-label*="Возраст"] label:has(input:checked),
+    div[data-testid="stRadio"][aria-label*="Duration"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Duration"] label:has(input:checked),
+    div[data-testid="stRadio"][aria-label*="Age"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Age"] label:has(input:checked) {{
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border-color: transparent !important;
         color: #fff !important;
@@ -508,16 +518,20 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
     /* Hide native radio circle */
     div[data-testid="stRadio"][aria-label*="Длительность"] input[type="radio"],
-    div[data-testid="stRadio"][aria-label*="Возраст"] input[type="radio"] {{
+    div[data-testid="stRadio"][aria-label*="Возраст"] input[type="radio"],
+    div[data-testid="stRadio"][aria-label*="Duration"] input[type="radio"],
+    div[data-testid="stRadio"][aria-label*="Age"] input[type="radio"] {{
         display: none !important;
     }}
 
     /* ========== THEME RADIO: Animated pill selector ========== */
-    div[data-testid="stRadio"][aria-label*="Тема"] > div {{
+    div[data-testid="stRadio"][aria-label*="Тема"] > div,
+    div[data-testid="stRadio"][aria-label*="Theme"] > div {{
         gap: 0.5rem !important;
         justify-content: center !important;
     }}
-    div[data-testid="stRadio"][aria-label*="Тема"] label {{
+    div[data-testid="stRadio"][aria-label*="Тема"] label,
+    div[data-testid="stRadio"][aria-label*="Theme"] label {{
         background: {t['form_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 14px !important;
@@ -527,21 +541,41 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-size: 0.85rem !important;
         font-weight: 500 !important;
         letter-spacing: 0.02em !important;
+        position: relative !important;
+        overflow: hidden !important;
     }}
-    div[data-testid="stRadio"][aria-label*="Тема"] label:hover {{
+    div[data-testid="stRadio"][aria-label*="Тема"] label::before,
+    div[data-testid="stRadio"][aria-label*="Theme"] label::before {{
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+        z-index: -1 !important;
+    }}
+    div[data-testid="stRadio"][aria-label*="Тема"] label:hover,
+    div[data-testid="stRadio"][aria-label*="Theme"] label:hover {{
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }}
     /* Active state: unified purple gradient for both themes */
     div[data-testid="stRadio"][aria-label*="Тема"] label[data-checked="true"],
-    div[data-testid="stRadio"][aria-label*="Тема"] label:has(input:checked) {{
+    div[data-testid="stRadio"][aria-label*="Тема"] label:has(input:checked),
+    div[data-testid="stRadio"][aria-label*="Theme"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="Theme"] label:has(input:checked) {{
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border-color: transparent !important;
         color: #ffffff !important;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
         font-weight: 600 !important;
+        transform: scale(1.02) !important;
     }}
-    div[data-testid="stRadio"][aria-label*="Тема"] input[type="radio"] {{
+    div[data-testid="stRadio"][aria-label*="Тема"] input[type="radio"],
+    div[data-testid="stRadio"][aria-label*="Theme"] input[type="radio"] {{
         display: none !important;
     }}
 
@@ -667,6 +701,37 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* Caption */
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{
         color: {t['text_secondary']} !important;
+    }}
+    
+    /* Radio & Checkbox inputs - accent-color for visibility in sidebar */
+    /* This fixes the issue where unchecked radio buttons become black */
+    /* accent-color is the correct HTML5 property for radio/checkbox color */
+    /* Firefox support: accent-color works since Firefox 92+ */
+    section[data-testid="stSidebar"] input[type="radio"],
+    section[data-testid="stSidebar"] input[type="checkbox"],
+    section[data-testid="stSidebar"] .stRadio input[type="radio"],
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"] {{
+        accent-color: {'#e8eaed' if dark_mode else '#4f46e5'} !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        border: 2px solid {'rgba(255, 255, 255, 0.7)' if dark_mode else 'rgba(79, 70, 229, 0.7)'} !important;
+        border-radius: 50% !important;
+        background-color: {'#1a1a2e' if dark_mode else '#ffffff'} !important;
+        cursor: pointer !important;
+        outline: none !important;
+    }}
+    section[data-testid="stSidebar"] input[type="radio"]:checked,
+    section[data-testid="stSidebar"] input[type="checkbox"]:checked,
+    section[data-testid="stSidebar"] .stRadio input[type="radio"]:checked,
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"]:checked {{
+        border-color: #667eea !important;
+        background-color: #667eea !important;
+        box-shadow: inset 0 0 0 3px {'#1a1a2e' if dark_mode else '#ffffff'} !important;
     }}
 
     /* ========== UI CLEANUP: Hide Streamlit Footer and MainMenu ========== */

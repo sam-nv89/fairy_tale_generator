@@ -62,6 +62,7 @@ if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
 # Применяем стили на основе текущей темы
+# CSS Version: 2026-02-16-v3 - Radio buttons Firefox fix
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
 # DARK THEME FIX: Дополнительные стили для исправления контраста в sidebar
@@ -95,10 +96,108 @@ if st.session_state.dark_mode:
     section[data-testid="stSidebar"] div.stButton > button:hover {
         box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(16, 185, 129, 0.4) !important;
     }
+    
+    /* Radio buttons fix for Firefox - Dark theme */
+    section[data-testid="stSidebar"] input[type="radio"],
+    section[data-testid="stSidebar"] input[type="checkbox"],
+    section[data-testid="stSidebar"] .stRadio input[type="radio"],
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"],
+    div[data-testid="stRadio"] input[type="radio"],
+    div[data-testid="stCheckbox"] input[type="checkbox"] {
+        accent-color: #e8eaed !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        border: 2px solid rgba(255, 255, 255, 0.7) !important;
+        border-radius: 50% !important;
+        background-color: #1a1a2e !important;
+        cursor: pointer !important;
+        outline: none !important;
+        display: inline-block !important;
+    }
+    section[data-testid="stSidebar"] input[type="radio"]:checked,
+    section[data-testid="stSidebar"] input[type="checkbox"]:checked,
+    section[data-testid="stSidebar"] .stRadio input[type="radio"]:checked,
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"]:checked,
+    div[data-testid="stRadio"] input[type="radio"]:checked,
+    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
+        border-color: #667eea !important;
+        background-color: #667eea !important;
+        box-shadow: inset 0 0 0 3px #1a1a2e !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    # LIGHT THEME FIX: Стили для кнопок библиотеки сказок в светлой теме
+    st.markdown("""
+    <style>
+    /* Fix for story library cards in light theme - override emotion-cache backgrounds */
+    section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+    
+    /* Static state for story library buttons in light theme - subtle button appearance */
+    section[data-testid="stSidebar"] div.stButton {
+        background: rgba(79, 70, 229, 0.05) !important;
+        border-radius: 14px !important;
+        padding: 2px !important;
+        margin: 2px 0 !important;
+        border: 1px solid rgba(79, 70, 229, 0.15) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    /* Hover effect for story library buttons in light theme */
+    section[data-testid="stSidebar"] div.stButton:hover {
+        background: rgba(102, 126, 234, 0.12) !important;
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 0 12px rgba(102, 126, 234, 0.15) !important;
+    }
+    
+    section[data-testid="stSidebar"] div.stButton > button:hover {
+        box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(79, 70, 229, 0.35) !important;
+    }
+    
+    /* Radio buttons fix for Firefox - Light theme */
+    section[data-testid="stSidebar"] input[type="radio"],
+    section[data-testid="stSidebar"] input[type="checkbox"],
+    section[data-testid="stSidebar"] .stRadio input[type="radio"],
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"],
+    div[data-testid="stRadio"] input[type="radio"],
+    div[data-testid="stCheckbox"] input[type="checkbox"] {
+        accent-color: #4f46e5 !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        min-height: 16px !important;
+        border: 2px solid rgba(79, 70, 229, 0.7) !important;
+        border-radius: 50% !important;
+        background-color: #ffffff !important;
+        cursor: pointer !important;
+        outline: none !important;
+        display: inline-block !important;
+    }
+    section[data-testid="stSidebar"] input[type="radio"]:checked,
+    section[data-testid="stSidebar"] input[type="checkbox"]:checked,
+    section[data-testid="stSidebar"] .stRadio input[type="radio"]:checked,
+    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"]:checked,
+    div[data-testid="stRadio"] input[type="radio"]:checked,
+    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
+        border-color: #667eea !important;
+        background-color: #667eea !important;
+        box-shadow: inset 0 0 0 3px #ffffff !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# Применяем JavaScript для исправления dropdown (через components для работы JS)
+    # Применяем JavaScript для исправления dropdown (через components для работы JS)
 st.components.v1.html(get_dropdown_fix_js(), height=0)
 
 # Конфигурация логирования
