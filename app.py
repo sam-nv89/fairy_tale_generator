@@ -33,7 +33,7 @@ from config import (
 from utils import get_user_language
 
 # Импорт модуля интернационализации
-from i18n import t, get_translations, get_genre_list, get_age_ranges
+from i18n import t, get_translations, get_genre_list, get_age_ranges, get_story_prompt, get_language_name
 
 # --- 1. Настройка страницы (ДОЛЖНА БЫТЬ ПЕРВОЙ) ---
 st.set_page_config(
@@ -537,6 +537,9 @@ with st.sidebar:
         'hi': '🇮🇳 हिन्दी',
         'ar': '🇸🇦 العربية'
     }
+    # DEBUG: Логирование текущего языка
+    logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
+    logger.info(f"[DEBUG i18n] Sample translation 'app_title': {t('app_title', user_lang)}")
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     selected_lang_display = st.selectbox(
         "🌐 Язык / Language",
@@ -838,126 +841,73 @@ if submit_btn:
                 try:
                     logger.info(f"Attempting generation with model: {model_name}")
                     
-                    # --- Логика генерации промпта (Prompt Engineering 3.0 - Expanded Ages & Genres) ---
+                    # --- Логика генерации промпта (Prompt Engineering 4.0 - i18n Support) ---
                     
-                    # Инструкция по полу
-                    if user_lang == 'en':
-                        if gender == t('gender_boy', user_lang):
-                            gender_instruction = f"The main character is a boy named {name}. Use masculine pronouns."
-                        elif gender == t('gender_girl', user_lang):
-                            gender_instruction = f"The main character is a girl named {name}. Use feminine pronouns."
-                        else:
-                            gender_instruction = f"The main character is {name}. Determine gender from the name automatically."
+                    # Получаем инструкции для текущего языка
+                    story_prompt = get_story_prompt(user_lang)
+                    language_name = get_language_name(user_lang)
+                    
+                    # Определяем тип пола героя
+                    if gender == t('gender_boy', user_lang):
+                        gender_type = 'boy'
+                    elif gender == t('gender_girl', user_lang):
+                        gender_type = 'girl'
                     else:
-                        if gender == t('gender_boy', user_lang):
-                            gender_instruction = f"Главный герой - мальчик по имени {name}. Используй мужской род."
-                        elif gender == t('gender_girl', user_lang):
-                            gender_instruction = f"Главный герой - девочка по имени {name}. Используй женский род."
-                        else:
-                            gender_instruction = f"Главный герой - {name}. Определи пол по имени автоматически."
+                        gender_type = 'auto'
                     
+                    # Формируем инструкцию по полу
+                    gender_instruction = story_prompt['gender_instructions'][gender_type].format(name=name)
+                    
+                    # Определяем возрастную группу
                     if age < 1:
-                        # 0-12 мес (Babies)
-                        role_instruction = "Ты — нежный, любящий голос родителя."
-                        style_instruction = f"""
-                        Стиль: Колыбельная, ритмичная, очень простая. Много повторов, звукоподражаний.
-                        Атмосфера: Тепло, уют, защита, сон.
-                        Сюжет: Очень простой (герой пошел спать, звезды светят).
-                        Лексика: Ультра-простая. 
-                        Жанр: {genre} (в адаптации для младенца).
-                        Длина: Короткая, около 50-100 слов.
-                        """
-                        structure_instruction = "Структура: Убаюкивающее начало -> Плавное наблюдение -> Сонный финал."
-                        ending_instruction = "Финал: 'Баю-бай, спи, малыш'."
-
+                        age_group = 'baby'
+                        age_category = '0-12 months'
                     elif 1 <= age <= 3:
-                        # 1-3 года (Toddlers)
-                        role_instruction = "Ты — веселый воспитатель в детском саду."
-                        style_instruction = f"""
-                        Стиль: Игривый, понятный, сенсорный (цвета, звуки, тактильность).
-                        Герой: {name}. Совершает простые действия (поел, погулял, нашел друга).
-                        Жанр: {genre}.
-                        Избегать: Сложных слов, страшных моментов.
-                        Длина: Около 150 слов.
-                        """
-                        structure_instruction = "Структура: Приветствие -> Маленькое приключение -> Радостный вывод."
-                        ending_instruction = "Финал: Позитивный и понятный."
-
+                        age_group = 'toddler'
+                        age_category = '1-3 years'
                     elif 4 <= age <= 7:
-                        # Дошкольники 4-7 (Preschool)
-                        role_instruction = "Ты — сказочник Disney."
-                        style_instruction = f"""
-                        Стиль: Волшебный, добрый, с моралью (но не скучной).
-                        Сюжет: Классическое приключение с преодолением небольшого препятствия.
-                        Жанр: {genre}.
-                        Длина: Около {target_word_count} слов.
-                        """
-                        structure_instruction = "Структура: Завязка -> Испытание -> Помощь друзей -> Победа добра."
-                        ending_instruction = "Финал: Счастливый и поучительный."
-
+                        age_group = 'preschool'
+                        age_category = '4-7 years'
                     elif 8 <= age <= 12:
-                        # Школьники 8-12 (School)
-                        role_instruction = "Ты — автор приключенческих книг для детей."
-                        style_instruction = f"""
-                        Стиль: Динамичный, увлекательный, с диалогами и шутками.
-                        Сюжет: Более сложный, с загадками или активными действиями.
-                        Жанр: {genre}.
-                        Длина: Около {target_word_count} слов.
-                        """
-                        structure_instruction = "Структура: Интрига -> Развитие событий -> Кульминация -> Развязка."
-                        ending_instruction = "Финал: Вдохновляющий."
-
+                        age_group = 'school'
+                        age_category = '8-12 years'
                     elif 13 <= age <= 17:
-                        # Подростки 13-17 (Teens)
-                        role_instruction = "Ты — автор популярных Young Adult романов."
-                        style_instruction = f"""
-                        Стиль: Современный, эмоциональный, искренний. Без нравоучений.
-                        Темы: Дружба, поиск себя, смелость, выбор.
-                        Жанр: {genre}.
-                        Длина: Около {target_word_count} слов.
-                        """
-                        structure_instruction = "Структура: Проблема героя -> Сложный выбор -> Решение -> Новый опыт."
-                        ending_instruction = "Финал: Открытый или глубокий."
+                        age_group = 'teen'
+                        age_category = '13-17 years'
+                    else:
+                        age_group = 'adult'
+                        age_category = '18+'
+                    
+                    # Получаем инструкции для возрастной группы
+                    age_instructions = story_prompt['age_groups'][age_group]
+                    
+                    role_instruction = age_instructions['role']
+                    style_instruction = age_instructions['style'].format(
+                        name=name, 
+                        genre=genre, 
+                        word_count=target_word_count,
+                        age=age
+                    )
+                    structure_instruction = age_instructions['structure']
+                    ending_instruction = age_instructions['ending']
 
-                    else: 
-                        # Взрослые 18+ (Adults)
-                        role_instruction = "Ты — мастер короткого рассказа (уровень Чехова, О. Генри или Брэдбери)."
-                        style_instruction = f"""
-                        ВАЖНО: Это история для ВЗРОСЛОГО ({age} лет).
-                        Жанр: {genre}.
-                        Контент: Строго Safe For Work (без эротики/насилия), но интеллектуально взрослый.
-                        Темы: Психология, философия, ирония, ностальгия, поиск смысла, отношения (эмоциональные).
-                        Стиль: Литературный, метафоричный, богатый язык.
-                        Длина: Около {target_word_count} слов.
-                        """
-                        structure_instruction = "Структура: Атмосферное погружение -> Конфликт (внутренний или внешний) -> Катарсис/Осознание."
-                        ending_instruction = "Финал: Эмоционально сильный, оставляющий послевкусие."
-
-                    prompt = f"""
-                    {role_instruction}
-                    Задача: Напиши историю в жанре "{genre}" для читателя возраста {age} лет (категория: {age_selection}).
+                    # DEBUG: Логирование языка генерации
+                    logger.info(f"[DEBUG STORY GEN] user_lang: {user_lang}, language_name: {language_name}, genre: {genre}")
                     
-                    ГЛАВНЫЙ ГЕРОЙ: {name}.
-                    ВАЖНО ПРО ИМЯ: Используй имя героя естественно и разнообразно. Склоняй его по падежам, используй уменьшительно-ласкательные формы (если уместно для возраста/ситуации), полные или сокращенные варианты. Имя должно звучать органично в тексте, как в хорошей книге.
-                    
-                    {gender_instruction}
-                    Интегрируй интересы/детали: {hobbies}.
-                    Язык: Русский.
-                    
-                    Требования:
-                    1. **Название**: Креативное заглавие в первой строке.
-                    2. **Жанр**: Строго соответствуй выбранному жанру ({genre}).
-                    3. **Аудитория**: Учитывай возраст {age} лет ({age_selection}). Для детей - проще, для взрослых - глубже.
-                    4. **Качество**: Логичный сюжет, живой язык, эмоции.
-                    
-                    {style_instruction}
-                    {structure_instruction}
-                    
-                    Технические детали:
-                    - Начни с Названия.
-                    - Используй абзацы.
-                    - {ending_instruction}
-                    """
+                    # Формируем промпт из шаблона
+                    prompt = story_prompt['prompt_template'].format(
+                        role_instruction=role_instruction,
+                        genre=genre,
+                        age=age,
+                        age_category=age_category,
+                        name=name,
+                        gender_instruction=gender_instruction,
+                        hobbies=hobbies,
+                        language_name=language_name,
+                        style_instruction=style_instruction,
+                        structure_instruction=structure_instruction,
+                        ending_instruction=ending_instruction
+                    )
                     
                     # Вызов API
                     model = genai.GenerativeModel(model_name)
@@ -1069,6 +1019,11 @@ if 'current_story' in st.session_state:
                 
                 # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
                 audio_text = re.sub(r'[^\w\s,.!?;:—\-\(\)\[\]а-яА-ЯёЁa-zA-Z0-9]', '', story['body'])
+                
+                # DEBUG: Логирование озвучки
+                logger.info(f"[DEBUG TTS] user_lang: {user_lang}, selected_voice: {selected_voice}")
+                logger.info(f"[DEBUG TTS] audio_text preview (first 100 chars): {audio_text[:100] if audio_text else 'EMPTY'}")
+                
                 try:
                     # Используем run_in_executor или просто await, так как это async
                     audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))

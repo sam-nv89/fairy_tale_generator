@@ -1,6 +1,6 @@
 # 🧚 Генератор Аудио-Сказок
 
-![Version](https://img.shields.io/badge/version-v3.1-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
+![Version](https://img.shields.io/badge/version-v3.0-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
 
 Умный веб-сервис для родителей: генерирует персонализированные сказки с помощью ИИ и озвучивает нейронными голосами. Поддерживает 8 языков с охватом ~3.5 млрд носителей.
 
@@ -21,10 +21,10 @@
 
 ## 🛠 Технологический стек
 - **Python 3.10+** — основной язык
-- **Streamlit 1.53.1** — Web UI фреймворк
+- **Streamlit >=1.45.0** — Web UI фреймворк
 - **Google Gemini API** — генерация текста (cascade: Flash 2.0 Lite → Flash Lite Latest → Flash Latest)
-- **Edge-TTS 7.2.7** — нейронная озвучка (Microsoft)
-- **Supabase 2.27.2** — аутентификация пользователей (опционально, graceful fallback)
+- **Edge-TTS >=7.0.0** — нейронная озвучка (Microsoft)
+- **Supabase >=2.0.0** — аутентификация пользователей (опционально, graceful fallback)
 
 ## 📂 Структура проекта
 | Файл | Назначение |

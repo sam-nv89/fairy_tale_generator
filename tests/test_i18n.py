@@ -24,7 +24,8 @@ class TestTranslationFunction:
         """Проверка fallback на русский при неизвестном языке"""
         # Если язык не поддерживается, должен вернуться русский перевод
         assert t('page_title', 'de') == "Сказки для детей"
-        assert t('page_title', 'fr') == "Сказки для детей"
+        assert t('page_title', 'ja') == "Сказки для детей"  # Japanese - not supported
+        assert t('page_title', 'ko') == "Сказки для детей"  # Korean - not supported
     
     def test_missing_key_returns_key(self):
         """Проверка возврата ключа при отсутствии перевода"""
