@@ -175,6 +175,522 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "13-17 years": "13-17 years",
             "18+": "18+"
         }
+    },
+    
+    # === ESPAÑOL (Spanish) - ~500 million speakers ===
+    'es': {
+        # Meta
+        'page_title': "Cuentos para Niños",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy Generador de Cuentos",
+        'app_subtitle': "Un asistente inteligente que crea historias magicas para ti y tus hijos magic",
+        
+        # Sidebar
+        'settings_title': "magic Configuracion",
+        'theme_label': "magic Tema",
+        'theme_day': "sun Dia",
+        'theme_night': "moon Noche",
+        'voice_label': "microphone2 Voz del Narrador",
+        'voice_male': "Jorge (Masculino)",
+        'voice_female': "Lucia (Femenino)",
+        'preview_btn': "speaker",
+        'library_title': "books Mis Cuentos",
+        'library_empty': "Aun no hay nada. Crea y guarda un cuento.",
+        'duration_label': "stopwatch Duracion del Cuento",
+        'duration_short': "rabbit Corto (~1 min)",
+        'duration_medium': "star Medio (~3 min)",
+        'duration_long': "turtle Largo (~5 min)",
+        'duration_long_hint': "gem Los cuentos largos son mejores para ninos de 7+ anos.",
+        'donate_title': "### Apoyar el Proyecto coffee",
+        'donate_text': "Si te gustan nuestros cuentos, puedes invitar al desarrollador a un cafe.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Version",
+        
+        # Form
+        'name_label': "Nombre del Nino",
+        'name_placeholder': "Ejemplo: Maria",
+        'gender_label': "Genero del Heroe",
+        'gender_auto': "Auto",
+        'gender_boy': "Nino",
+        'gender_girl': "Nina",
+        'gender_help': "Ayuda a la IA a usar pronombres correctos",
+        'age_label': "Edad",
+        'genre_label': "performing_arts Genero de la Historia",
+        'hobbies_label': "magic Tema del Cuento / Detalles Importantes",
+        'hobbies_placeholder': "Ejemplo: le encantan los dinosaurios, tiene miedo a la oscuridad, quiere encontrar un tesoro...",
+        'hobbies_help': "Cualquier deseo para la trama o rasgos de caracter",
+        'submit_btn': "magic Crear un Cuento",
+        
+        # Messages
+        'api_key_warning': "warning No se encontro la clave API de Google en secrets.toml",
+        'api_key_input': "key Introduce tu clave API de Google",
+        'api_key_error': "key Por favor, introduce una clave API en el menu izquierdo para que la magia funcione.",
+        'name_warning': "warning Por favor, escribe el nombre del nino.",
+        'name_invalid': "warning El nombre solo puede contener letras, espacios y guiones.",
+        'generating': "crystal_ball Componiendo una historia magica",
+        'processing_audio': "headphones Creando audio...",
+        'save_btn': "floppy_disk Guardar en la Biblioteca",
+        'saved_success': "white_check_mark Cuento guardado.",
+        'download_txt': "memo Descargar Texto",
+        'logout_btn': "door Salir",
+        
+        # Genres
+        'genres': {
+            'fairytale': "Cuento de Hadas",
+            'adventure': "Aventura",
+            'scifi': "Ciencia Ficcion",
+            'detective': "Detective",
+            'fantasy': "Fantasia",
+            'superhero': "Superheroe",
+            'educational': "Educativo",
+            'lullaby': "Cancion de Cuna",
+            'mystery': "Misterio",
+            'cyberpunk': "Cyberpunk",
+            'philosophical': "Parabola Filosofica",
+            'romance': "Romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 meses": "0-12 meses",
+            "1-3 anos": "1-3 anos",
+            "4-7 anos": "4-7 anos",
+            "8-12 anos": "8-12 anos",
+            "13-17 anos": "13-17 anos",
+            "18+": "18+"
+        }
+    },
+    
+    # === FRANCAIS (French) - ~300 million speakers ===
+    'fr': {
+        # Meta
+        'page_title': "Contes pour Enfants",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy Generateur de Contes",
+        'app_subtitle': "Un assistant intelligent qui cree des histoires magiques pour vous et vos enfants magic",
+        
+        # Sidebar
+        'settings_title': "magic Parametres",
+        'theme_label': "magic Theme",
+        'theme_day': "sun Jour",
+        'theme_night': "moon Nuit",
+        'voice_label': "microphone2 Voix du Narrateur",
+        'voice_male': "Thomas (Masculin)",
+        'voice_female': "Julie (Feminin)",
+        'preview_btn': "speaker",
+        'library_title': "books Mes Contes",
+        'library_empty': "Rien pour l'instant. Creez et enregistrez un conte.",
+        'duration_label': "stopwatch Duree du Conte",
+        'duration_short': "rabbit Court (~1 min)",
+        'duration_medium': "star Moyen (~3 min)",
+        'duration_long': "turtle Long (~5 min)",
+        'duration_long_hint': "gem Les contes longs sont meilleurs pour les enfants de 7+ ans.",
+        'donate_title': "### Soutenir le Projet coffee",
+        'donate_text': "Si vous aimez nos contes, vous pouvez offrir un cafe au developpeur.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Version",
+        
+        # Form
+        'name_label': "Nom de l'Enfant",
+        'name_placeholder': "Exemple: Marie",
+        'gender_label': "Genre du Heros",
+        'gender_auto': "Auto",
+        'gender_boy': "Garcon",
+        'gender_girl': "Fille",
+        'gender_help': "Aide l'IA a utiliser les bons pronoms",
+        'age_label': "Age",
+        'genre_label': "performing_arts Genre de l'Histoire",
+        'hobbies_label': "magic Theme du Conte / Details Importants",
+        'hobbies_placeholder': "Exemple: adore les dinosaures, a peur du noir, veut trouver un tresor...",
+        'hobbies_help': "Tous les souhaits pour l'intrigue ou les traits de caractere",
+        'submit_btn': "magic Creer un Conte",
+        
+        # Messages
+        'api_key_warning': "warning Cle API Google non trouvee dans secrets.toml",
+        'api_key_input': "key Entrez votre cle API Google",
+        'api_key_error': "key Veuillez entrer une cle API dans le menu de gauche pour que la magie opere.",
+        'name_warning': "warning Veuillez entrer le nom de l'enfant.",
+        'name_invalid': "warning Le nom ne peut contenir que des lettres, des espaces et des tirets.",
+        'generating': "crystal_ball Composition d'une histoire magique",
+        'processing_audio': "headphones Creation de l'audio...",
+        'save_btn': "floppy_disk Sauvegarder dans la Bibliotheque",
+        'saved_success': "white_check_mark Conte sauvegarde.",
+        'download_txt': "memo Telecharger le Texte",
+        'logout_btn': "door Deconnexion",
+        
+        # Genres
+        'genres': {
+            'fairytale': "Conte de Fees",
+            'adventure': "Aventure",
+            'scifi': "Science-Fiction",
+            'detective': "Detective",
+            'fantasy': "Fantastique",
+            'superhero': "Super-Heros",
+            'educational': "Educatif",
+            'lullaby': "Berceuse",
+            'mystery': "Mystere",
+            'cyberpunk': "Cyberpunk",
+            'philosophical': "Parabole Philosophique",
+            'romance': "Romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 mois": "0-12 mois",
+            "1-3 ans": "1-3 ans",
+            "4-7 ans": "4-7 ans",
+            "8-12 ans": "8-12 ans",
+            "13-17 ans": "13-17 ans",
+            "18+": "18+"
+        }
+    },
+    
+    # === PORTUGUES (Portuguese) - ~260 million speakers ===
+    'pt': {
+        # Meta
+        'page_title': "Contos para Criancas",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy Gerador de Contos",
+        'app_subtitle': "Um assistente inteligente que cria historias magicas para voce e seus filhos magic",
+        
+        # Sidebar
+        'settings_title': "magic Configuracoes",
+        'theme_label': "magic Tema",
+        'theme_day': "sun Dia",
+        'theme_night': "moon Noite",
+        'voice_label': "microphone2 Voz do Narrador",
+        'voice_male': "Ricardo (Masculino)",
+        'voice_female': "Fernanda (Feminino)",
+        'preview_btn': "speaker",
+        'library_title': "books Meus Contos",
+        'library_empty': "Ainda nao ha nada. Crie e salve um conto.",
+        'duration_label': "stopwatch Duracao do Conto",
+        'duration_short': "rabbit Curto (~1 min)",
+        'duration_medium': "star Medio (~3 min)",
+        'duration_long': "turtle Longo (~5 min)",
+        'duration_long_hint': "gem Contos longos sao melhores para criancas de 7+ anos.",
+        'donate_title': "### Apoiar o Projeto coffee",
+        'donate_text': "Se voce gosta de nossos contos, pode oferecer um cafe ao desenvolvedor.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Versao",
+        
+        # Form
+        'name_label': "Nome da Crianca",
+        'name_placeholder': "Exemplo: Maria",
+        'gender_label': "Genero do Heroi",
+        'gender_auto': "Auto",
+        'gender_boy': "Menino",
+        'gender_girl': "Menina",
+        'gender_help': "Ajuda a IA a usar pronomes corretos",
+        'age_label': "Idade",
+        'genre_label': "performing_arts Genero da Historia",
+        'hobbies_label': "magic Tema do Conto / Detalhes Importantes",
+        'hobbies_placeholder': "Exemplo: adora dinossauros, tem medo do escuro, quer encontrar um tesouro...",
+        'hobbies_help': "Qualquer desejo para o enredo ou tracos de carater",
+        'submit_btn': "magic Criar um Conto",
+        
+        # Messages
+        'api_key_warning': "warning Chave API do Google nao encontrada em secrets.toml",
+        'api_key_input': "key Digite sua chave API do Google",
+        'api_key_error': "key Por favor, digite uma chave API no menu a esquerda para a magia funcionar.",
+        'name_warning': "warning Por favor, digite o nome da crianca.",
+        'name_invalid': "warning O nome so pode conter letras, espacos e hifens.",
+        'generating': "crystal_ball Compondo uma historia magica",
+        'processing_audio': "headphones Criando audio...",
+        'save_btn': "floppy_disk Salvar na Biblioteca",
+        'saved_success': "white_check_mark Conto salvo.",
+        'download_txt': "memo Baixar Texto",
+        'logout_btn': "door Sair",
+        
+        # Genres
+        'genres': {
+            'fairytale': "Conto de Fadas",
+            'adventure': "Aventura",
+            'scifi': "Ficcao Cientifica",
+            'detective': "Detetive",
+            'fantasy': "Fantasia",
+            'superhero': "Super-Heroi",
+            'educational': "Educativo",
+            'lullaby': "Cancao de Ninar",
+            'mystery': "Misterio",
+            'cyberpunk': "Cyberpunk",
+            'philosophical': "Parabola Filosofica",
+            'romance': "Romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 meses": "0-12 meses",
+            "1-3 anos": "1-3 anos",
+            "4-7 anos": "4-7 anos",
+            "8-12 anos": "8-12 anos",
+            "13-17 anos": "13-17 anos",
+            "18+": "18+"
+        }
+    },
+    
+    # === SIMPLIFIED CHINESE (zh-CN) - ~1.3 billion speakers ===
+    'zh-CN': {
+        # Meta
+        'page_title': "children stories",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy story generator",
+        'app_subtitle': "A smart assistant that creates magical stories for you and your children magic",
+        
+        # Sidebar
+        'settings_title': "magic settings",
+        'theme_label': "magic theme",
+        'theme_day': "sun daytime",
+        'theme_night': "moon night",
+        'voice_label': "microphone2 Narrator Voice",
+        'voice_male': "Yunxi (Male)",
+        'voice_female': "Xiaoxiao (Female)",
+        'preview_btn': "speaker",
+        'library_title': "books My Stories",
+        'library_empty': "Nothing yet. Create and save a story.",
+        'duration_label': "stopwatch Story Duration",
+        'duration_short': "rabbit Short (~1 min)",
+        'duration_medium': "star Medium (~3 min)",
+        'duration_long': "turtle Long (~5 min)",
+        'duration_long_hint': "gem Long stories are better for kids 7+.",
+        'donate_title': "### Support the Project coffee",
+        'donate_text': "If you enjoy our fairy tales, you can buy the developer a coffee.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Version",
+        
+        # Form
+        'name_label': "childs name",
+        'name_placeholder': "For example: Mingming",
+        'gender_label': "protagonist gender",
+        'gender_auto': "auto",
+        'gender_boy': "boy",
+        'gender_girl': "girl",
+        'gender_help': "Helps AI use correct pronouns",
+        'age_label': "age",
+        'genre_label': "performing_arts Story Genre",
+        'hobbies_label': "magic Story Theme / Important Details",
+        'hobbies_placeholder': "For example: loves dinosaurs, afraid of the dark, wants to find treasure...",
+        'hobbies_help': "Any wishes for the plot or character traits",
+        'submit_btn': "magic Create a Story",
+        
+        # Messages
+        'api_key_warning': "warning Google API key not found in secrets.toml",
+        'api_key_input': "key Enter your Google API Key",
+        'api_key_error': "key Please enter an API key in the left menu for the magic to work.",
+        'name_warning': "warning Please enter the childs name.",
+        'name_invalid': "warning Name can only contain letters, spaces, and hyphens.",
+        'generating': "crystal_ball Composing a magical story",
+        'processing_audio': "headphones Creating audio...",
+        'save_btn': "floppy_disk Save to Library",
+        'saved_success': "white_check_mark Story saved.",
+        'download_txt': "memo Download Text",
+        'logout_btn': "door Logout",
+        
+        # Genres
+        'genres': {
+            'fairytale': "fairy tale",
+            'adventure': "adventure",
+            'scifi': "sci-fi",
+            'detective': "detective",
+            'fantasy': "fantasy",
+            'superhero': "superhero",
+            'educational': "educational",
+            'lullaby': "lullaby",
+            'mystery': "mystery",
+            'cyberpunk': "cyberpunk",
+            'philosophical': "philosophical parable",
+            'romance': "romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 months": "0-12 months",
+            "1-3 years": "1-3 years",
+            "4-7 years": "4-7 years",
+            "8-12 years": "8-12 years",
+            "13-17 years": "13-17 years",
+            "18+": "18+"
+        }
+    },
+    
+    # === HINDI (hi) - ~600 million speakers ===
+    'hi': {
+        # Meta
+        'page_title': "children stories",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy story generator",
+        'app_subtitle': "A smart assistant that creates magical stories for you and your children magic",
+        
+        # Sidebar
+        'settings_title': "magic settings",
+        'theme_label': "magic theme",
+        'theme_day': "sun daytime",
+        'theme_night': "moon night",
+        'voice_label': "microphone2 Narrator Voice",
+        'voice_male': "Madhur (Male)",
+        'voice_female': "Swara (Female)",
+        'preview_btn': "speaker",
+        'library_title': "books My Stories",
+        'library_empty': "Nothing yet. Create and save a story.",
+        'duration_label': "stopwatch Story Duration",
+        'duration_short': "rabbit Short (~1 min)",
+        'duration_medium': "star Medium (~3 min)",
+        'duration_long': "turtle Long (~5 min)",
+        'duration_long_hint': "gem Long stories are better for kids 7+.",
+        'donate_title': "### Support the Project coffee",
+        'donate_text': "If you enjoy our fairy tales, you can buy the developer a coffee.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Version",
+        
+        # Form
+        'name_label': "childs name",
+        'name_placeholder': "For example: Aarav",
+        'gender_label': "protagonist gender",
+        'gender_auto': "auto",
+        'gender_boy': "boy",
+        'gender_girl': "girl",
+        'gender_help': "Helps AI use correct pronouns",
+        'age_label': "age",
+        'genre_label': "performing_arts Story Genre",
+        'hobbies_label': "magic Story Theme / Important Details",
+        'hobbies_placeholder': "For example: loves dinosaurs, afraid of the dark, wants to find treasure...",
+        'hobbies_help': "Any wishes for the plot or character traits",
+        'submit_btn': "magic Create a Story",
+        
+        # Messages
+        'api_key_warning': "warning Google API key not found in secrets.toml",
+        'api_key_input': "key Enter your Google API Key",
+        'api_key_error': "key Please enter an API key in the left menu for the magic to work.",
+        'name_warning': "warning Please enter the childs name.",
+        'name_invalid': "warning Name can only contain letters, spaces, and hyphens.",
+        'generating': "crystal_ball Composing a magical story",
+        'processing_audio': "headphones Creating audio...",
+        'save_btn': "floppy_disk Save to Library",
+        'saved_success': "white_check_mark Story saved.",
+        'download_txt': "memo Download Text",
+        'logout_btn': "door Logout",
+        
+        # Genres
+        'genres': {
+            'fairytale': "fairy tale",
+            'adventure': "adventure",
+            'scifi': "sci-fi",
+            'detective': "detective",
+            'fantasy': "fantasy",
+            'superhero': "superhero",
+            'educational': "educational",
+            'lullaby': "lullaby",
+            'mystery': "mystery",
+            'cyberpunk': "cyberpunk",
+            'philosophical': "philosophical parable",
+            'romance': "romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 months": "0-12 months",
+            "1-3 years": "1-3 years",
+            "4-7 years": "4-7 years",
+            "8-12 years": "8-12 years",
+            "13-17 years": "13-17 years",
+            "18+": "18+"
+        }
+    },
+    
+    # === ARABIC (ar) - ~400 million speakers ===
+    'ar': {
+        # Meta
+        'page_title': "children stories",
+        'page_icon': "fairy",
+        
+        # Header
+        'app_title': "fairy story generator",
+        'app_subtitle': "A smart assistant that creates magical stories for you and your children magic",
+        
+        # Sidebar
+        'settings_title': "magic settings",
+        'theme_label': "magic theme",
+        'theme_day': "sun daytime",
+        'theme_night': "moon night",
+        'voice_label': "microphone2 Narrator Voice",
+        'voice_male': "Hamdan (Male)",
+        'voice_female': "Fatima (Female)",
+        'preview_btn': "speaker",
+        'library_title': "books My Stories",
+        'library_empty': "Nothing yet. Create and save a story.",
+        'duration_label': "stopwatch Story Duration",
+        'duration_short': "rabbit Short (~1 min)",
+        'duration_medium': "star Medium (~3 min)",
+        'duration_long': "turtle Long (~5 min)",
+        'duration_long_hint': "gem Long stories are better for kids 7+.",
+        'donate_title': "### Support the Project coffee",
+        'donate_text': "If you enjoy our fairy tales, you can buy the developer a coffee.",
+        'donate_btn': "coffee Buy Me a Coffee",
+        'version_label': "Version",
+        
+        # Form
+        'name_label': "childs name",
+        'name_placeholder': "For example: Ahmed",
+        'gender_label': "protagonist gender",
+        'gender_auto': "auto",
+        'gender_boy': "boy",
+        'gender_girl': "girl",
+        'gender_help': "Helps AI use correct pronouns",
+        'age_label': "age",
+        'genre_label': "performing_arts Story Genre",
+        'hobbies_label': "magic Story Theme / Important Details",
+        'hobbies_placeholder': "For example: loves dinosaurs, afraid of the dark, wants to find treasure...",
+        'hobbies_help': "Any wishes for the plot or character traits",
+        'submit_btn': "magic Create a Story",
+        
+        # Messages
+        'api_key_warning': "warning Google API key not found in secrets.toml",
+        'api_key_input': "key Enter your Google API Key",
+        'api_key_error': "key Please enter an API key in the left menu for the magic to work.",
+        'name_warning': "warning Please enter the childs name.",
+        'name_invalid': "warning Name can only contain letters, spaces, and hyphens.",
+        'generating': "crystal_ball Composing a magical story",
+        'processing_audio': "headphones Creating audio...",
+        'save_btn': "floppy_disk Save to Library",
+        'saved_success': "white_check_mark Story saved.",
+        'download_txt': "memo Download Text",
+        'logout_btn': "door Logout",
+        
+        # Genres
+        'genres': {
+            'fairytale': "fairy tale",
+            'adventure': "adventure",
+            'scifi': "sci-fi",
+            'detective': "detective",
+            'fantasy': "fantasy",
+            'superhero': "superhero",
+            'educational': "educational",
+            'lullaby': "lullaby",
+            'mystery': "mystery",
+            'cyberpunk': "cyberpunk",
+            'philosophical': "philosophical parable",
+            'romance': "romance"
+        },
+        
+        # Age ranges
+        'age_ranges': {
+            "0-12 months": "0-12 months",
+            "1-3 years": "1-3 years",
+            "4-7 years": "4-7 years",
+            "8-12 years": "8-12 years",
+            "13-17 years": "13-17 years",
+            "18+": "18+"
+        }
     }
 }
 

@@ -58,7 +58,8 @@ APP_VERSION = "v3.0"
 APP_YEAR = "2026"
 
 # === ЯЗЫКИ (i18n) ===
-SUPPORTED_LANGUAGES = ['ru', 'en']
+# Поддерживаемые языки с охватом ~3.5 млрд носителей
+SUPPORTED_LANGUAGES = ['ru', 'en', 'es', 'fr', 'pt', 'zh-CN', 'hi', 'ar']
 DEFAULT_LANGUAGE = 'ru'
 
 # Маппинг стран к языкам (для IP-детекции)
@@ -68,13 +69,33 @@ COUNTRY_TO_LANGUAGE = {
     'TJ': 'ru', 'UZ': 'ru', 'TM': 'ru', 'MD': 'ru',
     # Англоязычные страны
     'US': 'en', 'GB': 'en', 'CA': 'en', 'AU': 'en', 
-    'NZ': 'en', 'IE': 'en', 'ZA': 'en',
-    # Другие (для будущего расширения)
-    'DE': 'de', 'FR': 'fr', 'ES': 'es', 'IT': 'it',
-    'PT': 'pt', 'PL': 'pl', 'CZ': 'cs', 'NL': 'nl',
+    'NZ': 'en', 'IE': 'en', 'ZA': 'en', 'PH': 'en',
+    # Испаноязычные страны
+    'ES': 'es', 'MX': 'es', 'AR': 'es', 'CO': 'es',
+    'CL': 'es', 'PE': 'es', 'VE': 'es', 'EC': 'es',
+    'GT': 'es', 'CU': 'es', 'BO': 'es', 'DO': 'es',
+    'HN': 'es', 'PY': 'es', 'SV': 'es', 'NI': 'es',
+    'CR': 'es', 'PA': 'es', 'UY': 'es', 'PR': 'es',
+    # Франкоязычные страны
+    'FR': 'fr', 'BE': 'fr', 'LU': 'fr', 'MC': 'fr',
+    # Португалоязычные страны
+    'PT': 'pt', 'BR': 'pt', 'AO': 'pt', 'MZ': 'pt',
+    # Китайскоязычные регионы
+    'CN': 'zh-CN', 'TW': 'zh-CN', 'HK': 'zh-CN', 'SG': 'zh-CN',
+    # Хинди (Индия)
+    'IN': 'hi',
+    # Арабоязычные страны
+    'SA': 'ar', 'AE': 'ar', 'EG': 'ar', 'KW': 'ar',
+    'QA': 'ar', 'BH': 'ar', 'OM': 'ar', 'JO': 'ar',
+    'LB': 'ar', 'SY': 'ar', 'IQ': 'ar', 'YE': 'ar',
+    'MA': 'ar', 'DZ': 'ar', 'TN': 'ar', 'LY': 'ar',
+    # Другие (fallback на английский)
+    'DE': 'en', 'IT': 'en', 'PL': 'en', 'CZ': 'en', 'NL': 'en',
+    'SE': 'en', 'NO': 'en', 'DK': 'en', 'FI': 'en',
+    'JP': 'en', 'KR': 'en', 'VN': 'en', 'TH': 'en',
 }
 
-# Голоса TTS для каждого языка
+# Голоса TTS для каждого языка (Microsoft Edge TTS)
 TTS_VOICES_BY_LANGUAGE = {
     'ru': {
         'male': 'ru-RU-DmitryNeural',
@@ -90,6 +111,54 @@ TTS_VOICES_BY_LANGUAGE = {
         'options': {
             "Guy (Male)": "en-US-GuyNeural",
             "Jenny (Female)": "en-US-JennyNeural"
+        }
+    },
+    'es': {
+        'male': 'es-ES-AlvaroNeural',
+        'female': 'es-ES-ElviraNeural',
+        'options': {
+            "Jorge (Masculino)": "es-ES-AlvaroNeural",
+            "Lucia (Femenino)": "es-ES-ElviraNeural"
+        }
+    },
+    'fr': {
+        'male': 'fr-FR-HenriNeural',
+        'female': 'fr-FR-JulieNeural',
+        'options': {
+            "Thomas (Masculin)": "fr-FR-HenriNeural",
+            "Julie (Feminin)": "fr-FR-JulieNeural"
+        }
+    },
+    'pt': {
+        'male': 'pt-BR-AntonioNeural',
+        'female': 'pt-BR-FranciscaNeural',
+        'options': {
+            "Ricardo (Masculino)": "pt-BR-AntonioNeural",
+            "Fernanda (Feminino)": "pt-BR-FranciscaNeural"
+        }
+    },
+    'zh-CN': {
+        'male': 'zh-CN-YunxiNeural',
+        'female': 'zh-CN-XiaoxiaoNeural',
+        'options': {
+            "Yunxi (Male)": "zh-CN-YunxiNeural",
+            "Xiaoxiao (Female)": "zh-CN-XiaoxiaoNeural"
+        }
+    },
+    'hi': {
+        'male': 'hi-IN-MadhurNeural',
+        'female': 'hi-IN-SwaraNeural',
+        'options': {
+            "Madhur (Male)": "hi-IN-MadhurNeural",
+            "Swara (Female)": "hi-IN-SwaraNeural"
+        }
+    },
+    'ar': {
+        'male': 'ar-AE-HamdanNeural',
+        'female': 'ar-AE-FatimaNeural',
+        'options': {
+            "Hamdan (Male)": "ar-AE-HamdanNeural",
+            "Fatima (Female)": "ar-AE-FatimaNeural"
         }
     }
 }

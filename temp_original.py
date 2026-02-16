@@ -526,17 +526,7 @@ with st.sidebar:
     st.title(t('settings_title', user_lang))
     
     # 0. Переключатель языка
-    # Языки с флагами и названиями
-    lang_options = {
-        'ru': '🇷🇺 Русский',
-        'en': '🇬🇧 English',
-        'es': '🇪🇸 Español',
-        'fr': '🇫🇷 Français',
-        'pt': '🇧🇷 Português',
-        'zh-CN': '🇨🇳 中文',
-        'hi': '🇮🇳 हिन्दी',
-        'ar': '🇸🇦 العربية'
-    }
+    lang_options = {'ru': '🇷🇺 Русский', 'en': '🇬🇧 English'}
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     selected_lang_display = st.selectbox(
         "🌐 Язык / Language",
