@@ -549,8 +549,10 @@ with st.sidebar:
     prev_lang = st.session_state.get('prev_lang', user_lang)
     
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
+    # Language selector - show only "Language" for English, show "Язык / Language" for others
+    lang_label = f"🌐 {t('language_label', user_lang)}" if user_lang == 'en' else f"🌐 {t('language_label', user_lang)} / Language"
     selected_lang_display = st.selectbox(
-        f"🌐 {t('language_label', user_lang)} / Language",
+        lang_label,
         options=list(lang_options.values()),
         index=current_lang_index,
         key="lang_select"
