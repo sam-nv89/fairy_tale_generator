@@ -39,6 +39,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'donate_title': "### Поддержать проект ☕",
         'donate_text': "Если вам нравятся наши сказки, вы можете угостить разработчика кофе!",
         'donate_btn': "☕ Buy Me a Coffee",
+        'language_label': "Язык",
         'version_label': "Версия",
         
         # Форма
@@ -127,7 +128,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 Long stories are better for kids 7+.",
         'donate_title': "### Support the Project ☕",
         'donate_text': "If you enjoy our fairy tales, you can buy the developer a coffee!",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ Support the Project",
+        'language_label': "Language",
         'version_label': "Version",
         
         # Form
@@ -217,7 +219,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 Los cuentos largos son mejores para niños de 7+ años.",
         'donate_title': "### Apoyar el Proyecto ☕",
         'donate_text': "Si te gustan nuestros cuentos, puedes invitar al desarrollador a un café.",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ Apoyar el Proyecto",
+        'language_label': "Idioma",
         'version_label': "Versión",
         
         # Form
@@ -307,7 +310,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 Les contes longs sont meilleurs pour les enfants de 7+ ans.",
         'donate_title': "### Soutenir le Projet ☕",
         'donate_text': "Si vous aimez nos contes, vous pouvez offrir un café au développeur.",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ Soutenir le Projet",
+        'language_label': "Langue",
         'version_label': "Version",
         
         # Form
@@ -397,7 +401,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 Contos longos são melhores para crianças de 7+ anos.",
         'donate_title': "### Apoiar o Projeto ☕",
         'donate_text': "Se você gosta de nossos contos, pode oferecer um café ao desenvolvedor.",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ Apoiar o Projeto",
+        'language_label': "Idioma",
         'version_label': "Versão",
         
         # Form
@@ -487,7 +492,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 长篇故事更适合7岁以上的孩子。",
         'donate_title': "### 支持项目 ☕",
         'donate_text': "如果您喜欢我们的故事，可以请开发者喝杯咖啡。",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ 支持项目",
+        'language_label': "语言",
         'version_label': "版本",
         
         # Form
@@ -577,7 +583,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 लंबी कहानियाँ 7+ साल के बच्चों के लिए बेहतर हैं।",
         'donate_title': "### परियोजना का समर्थन करें ☕",
         'donate_text': "अगर आप हमारी कहानियों का आनंद लेते हैं, तो आप डेवलपर को कॉफी पिला सकते हैं।",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ समर्थन करें",
+        'language_label': "भाषा",
         'version_label': "संस्करण",
         
         # Form
@@ -667,7 +674,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 القصص الطويلة أفضل للأطفال من 7 سنوات فما فوق.",
         'donate_title': "### دعم المشروع ☕",
         'donate_text': "إذا استمتعت بقصصنا، يمكنك دعوة المطور لقهوة.",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ ادعم المشروع",
+        'language_label': "اللغة",
         'version_label': "الإصدار",
         
         # Form

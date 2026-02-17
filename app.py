@@ -546,7 +546,7 @@ with st.sidebar:
     
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     selected_lang_display = st.selectbox(
-        "🌐 Язык / Language",
+        f"🌐 {t('language_label', user_lang)} / Language",
         options=list(lang_options.values()),
         index=current_lang_index,
         key="lang_select"
@@ -660,7 +660,7 @@ with st.sidebar:
     
     # 2. Длительность (Фаза 1)
     story_length = st.radio(
-        "⏱️ Длительность сказки",
+        t('duration_label', user_lang),
         options=list(STORY_LENGTH_MAP.keys()),
         index=1,
         horizontal=True,
