@@ -609,7 +609,18 @@ with st.sidebar:
     # Логика превью (внутри сайдбара)
     if preview_clicked:
         async def play_sample():
-            sample_text = "Привет! Я буду читать сказку." if user_lang == 'ru' else "Hello! I will read you a story."
+            # Тексты для preview на всех 8 языках
+            sample_texts = {
+                'ru': "Привет! Я буду читать сказку.",
+                'en': "Hello! I will read you a story.",
+                'es': "¡Hola! Te leeré un cuento.",
+                'fr': "Bonjour! Je vais vous lire une histoire.",
+                'pt': "Olá! Vou contar uma história para você.",
+                'zh-CN': "你好! 我会给你讲故事。",
+                'hi': "नमस्ते! मैं आपको एक कहानी सुनाऊंगा।",
+                'ar': "مرحبا! سأقرأ لك قصة."
+            }
+            sample_text = sample_texts.get(user_lang, sample_texts['en'])
             return await generate_audio_stream(sample_text, selected_voice)
         
         try:
