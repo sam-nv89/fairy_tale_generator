@@ -55,7 +55,7 @@ user_lang = st.session_state.user_lang
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
-from styles import get_app_styles, get_dropdown_fix_js
+from styles import get_app_styles, get_dropdown_fix_js, get_rtl_styles
 
 # Инициализация темы из session_state или по умолчанию
 if 'dark_mode' not in st.session_state:
@@ -64,6 +64,10 @@ if 'dark_mode' not in st.session_state:
 # Применяем стили на основе текущей темы
 # CSS Version: 2026-02-16-v3 - Radio buttons Firefox fix
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
+
+# RTL Support for Arabic
+if user_lang == 'ar':
+    st.markdown(get_rtl_styles(), unsafe_allow_html=True)
 
 # DARK THEME FIX: Дополнительные стили для исправления контраста в sidebar
 # Применяем ПОСЛЕ основных стилей, чтобы перекрыть их

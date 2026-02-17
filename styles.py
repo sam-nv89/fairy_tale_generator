@@ -40,6 +40,32 @@ LIGHT_THEME = {
 }
 
 
+def get_rtl_styles() -> str:
+    """Возвращает CSS для поддержки RTL (справа-налево) для арабского языка."""
+    return """
+    /* RTL Support for Arabic */
+    [data-testid="stAppViewContainer"], 
+    [data-testid="stSidebar"],
+    .stRadio > div,
+    .stSelectbox > div,
+    .stTextInput > div,
+    .stTextArea > div {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+    
+    /* Align icons and emojis in RTL */
+    .stMarkdown {
+        direction: rtl;
+    }
+    
+    /* Fix for radio buttons in RTL */
+    .stRadio > div[role="radiogroup"] {
+        flex-direction: row-reverse;
+    }
+    """
+
+
 def get_app_styles(dark_mode: bool = True) -> str:
     """Возвращает CSS для основного приложения с поддержкой тем.
     
