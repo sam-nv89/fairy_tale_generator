@@ -604,7 +604,7 @@ with st.sidebar:
     selected_voice = voice_options[voice_option]
     
     # Кнопка превью
-    preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help="Прослушать пример" if user_lang == 'ru' else "Listen to sample")
+    preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
 
     # Логика превью (внутри сайдбара)
     if preview_clicked:
@@ -646,13 +646,13 @@ with st.sidebar:
                 # Truncate title
                 display_title = (s['title'][:22] + '..') if len(s['title']) > 22 else s['title']
                 created_date = s.get('created_at', '')[:10]
-                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"Дата: {created_date}\nНажмите, чтобы прочитать" if user_lang == 'ru' else f"Date: {created_date}\nClick to read", use_container_width=True):
+                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{t('load_help', user_lang)}\n{created_date}", use_container_width=True):
                     # Добавляем поле audio при загрузке из библиотеки (там оно отсутствует)
                     s['audio'] = None
                     st.session_state['current_story'] = s
                     st.rerun()
             with tc2:
-                if st.button("🗑️", key=f"del_{s['id']}", help="Удалить сказку" if user_lang == 'ru' else "Delete story", type="secondary"):
+                if st.button("🗑️", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
                     storage.delete_story(s['id'])
                     st.rerun()
     
@@ -1063,8 +1063,7 @@ if 'current_story' in st.session_state:
         with col_actions[1]:
             # Сохранение в библиотеку (Вместо скачивания)
             save_btn_text = "💾 В библиотеку" if user_lang == 'ru' else "💾 To Library"
-            save_help = "Сохранить сказку в Мои сказки" if user_lang == 'ru' else "Save story to My Stories"
-            if st.button(save_btn_text, key="save_story_btn", help=save_help):
+            if st.button(save_btn_text, key="save_story_btn", help=t('save_help', user_lang)):
                 storage.save_story(story)
                 st.toast("Сказка сохранена в библиотеку! 📚" if user_lang == 'ru' else "Story saved to library! 📚")
 
