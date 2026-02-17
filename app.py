@@ -532,14 +532,14 @@ with st.sidebar:
     # 0. Переключатель языка
     # Языки с флагами и названиями
     lang_options = {
-        'ru': '🇷🇺 Русский',
-        'en': '🇬🇧 English',
-        'es': '🇪🇸 Español',
-        'fr': '🇫🇷 Français',
-        'pt': '🇧🇷 Português',
-        'zh-CN': '🇨🇳 中文',
-        'hi': '🇮🇳 हिन्दी',
-        'ar': '🇸🇦 العربية'
+        'ru': 'Русский',
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'pt': 'Português',
+        'zh-CN': '中文',
+        'hi': 'हिन्दी',
+        'ar': 'العربية'
     }
     # DEBUG: Логирование текущего языка
     logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
@@ -550,7 +550,7 @@ with st.sidebar:
     
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     # Language selector - show only "Language" for English, show "Язык / Language" for others
-    lang_label = f"🌐 {t('language_label', user_lang)}" if user_lang == 'en' else f"🌐 {t('language_label', user_lang)} / Language"
+    lang_label = f"{t('language_label', user_lang)}" if user_lang == 'en' else f"{t('language_label', user_lang)} / Language"
     selected_lang_display = st.selectbox(
         lang_label,
         options=list(lang_options.values()),

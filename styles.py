@@ -76,7 +76,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: {t['bg']} !important;
         background-attachment: fixed !important;
     }}
-
+    
     /* ========== UI CLEANUP ========== */
     /* Hide Streamlit Footer and Main Menu, but keep Toolbar for sidebar toggle */
     /* Важно: эти стили применяются мгновенно, чтобы избежать мерцания */
