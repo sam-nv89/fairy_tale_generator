@@ -279,6 +279,21 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transition: transform 0.2s ease, color 0.2s ease !important;
     }}
     
+    /* Смещаем всю кнопку (контейнер) ниже - ровно по центру */
+    .st-key-btn_preview_sidebar {{
+        margin-top: 1.8rem !important;
+    }}
+    
+    /* Смещаем кнопку ниже - ровно по центру */
+    .st-key-btn_preview_sidebar {{
+        margin-top: 1.8rem !important;
+    }}
+    
+    /* Сдвигаем иконку внутри кнопки вправо */
+    .st-key-btn_preview_sidebar button {{
+        padding-left: 4px !important;
+    }}
+    
     .st-key-btn_preview_sidebar button p {{
         font-size: 24px !important;
         margin: 0 !important;
@@ -446,6 +461,44 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-color: #667eea !important;
         background: {'rgba(255,255,255,0.1)' if dark_mode else 'rgba(79, 70, 229, 0.15)'} !important;
         transform: translateY(-2px) !important;
+    }}
+    
+    /* Центрируем ВСЕ кнопки - и в сайдбаре, и в основном контенте */
+    div.stButton > button {{
+        justify-content: center !important;
+        text-align: center !important;
+        display: flex !important;
+    }}
+    
+    /* Для кнопки удаления (крестик) - убираем оболочку, оставляем только иконку */
+    .st-key-del_ button {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0.2rem 0.3rem !important;
+        min-width: auto !important;
+        width: auto !important;
+    }}
+    
+    .st-key-del_ button p {{
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+    
+    /* Конкретно для кнопки корзины - через p и span внутри */
+    div.stButton > button p,
+    div.stButton > button span {{
+        text-align: center !important;
+    }}
+    
+    /* Для кнопки корзины - принудительно */
+    button[kind="secondary"] {{
+        display: flex !important;
+        justify-content: center !important;
+    }}
+    button[kind="secondary"] p,
+    button[kind="secondary"] span {{
+        text-align: center !important;
     }}
 
     /* ========== FORM CONTAINER: Glassmorphism card ========== */
@@ -687,6 +740,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-weight: 700 !important;
         box-shadow: {'0 4px 15px rgba(16, 185, 129, 0.4)' if dark_mode else '0 4px 15px rgba(79, 70, 229, 0.35)'} !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }}
     /* Fix for stMarkdownContainer inside buttons - remove light background in dark theme only */
     section[data-testid="stSidebar"] div.stButton > button [data-testid="stMarkdownContainer"],

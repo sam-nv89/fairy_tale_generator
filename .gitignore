@@ -7,6 +7,7 @@ __pycache__/
 
 # Logs
 *.log
+app.log
 
 # Secrets
 .streamlit/secrets.toml
@@ -28,3 +29,6 @@ desktop.ini
 
 # Local Data
 stories.json
+
+# Temporary Files
+temp_original.py

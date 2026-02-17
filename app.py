@@ -81,7 +81,8 @@ if st.session_state.dark_mode:
     }
     
     /* Static state for story library buttons in dark theme - subtle button appearance */
-    section[data-testid="stSidebar"] div.stButton {
+    /* Исключаем кнопку удаления (del_) из общих стилей */
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) {
         background: rgba(255, 255, 255, 0.03) !important;
         border-radius: 14px !important;
         padding: 2px !important;
@@ -91,14 +92,55 @@ if st.session_state.dark_mode:
     }
     
     /* Hover effect for story library buttons in dark theme */
-    section[data-testid="stSidebar"] div.stButton:hover {
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]):hover {
         background: rgba(102, 126, 234, 0.15) !important;
         border-color: rgba(102, 126, 234, 0.4) !important;
         box-shadow: 0 0 12px rgba(102, 126, 234, 0.2) !important;
     }
     
-    section[data-testid="stSidebar"] div.stButton > button:hover {
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) > button:hover {
         box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+    }
+    
+    /* Кнопка удаления - только крестик без фона, красный при наведении */
+    section[data-testid="stSidebar"] [class*="del_"] {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        width: auto !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-width: unset !important;
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button:hover,
+    section[data-testid="stSidebar"] [class*="del_"] button:active,
+    section[data-testid="stSidebar"] [class*="del_"] button:focus {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button p {
+        color: rgba(255, 255, 255, 0.5) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        transition: color 0.2s ease !important;
+        line-height: 1 !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button:hover p {
+        color: #ef4444 !important;
     }
     
     /* Radio buttons fix for Firefox - Dark theme */
@@ -146,7 +188,8 @@ else:
     }
     
     /* Static state for story library buttons in light theme - subtle button appearance */
-    section[data-testid="stSidebar"] div.stButton {
+    /* Исключаем кнопку удаления (del_) из общих стилей */
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) {
         background: rgba(79, 70, 229, 0.05) !important;
         border-radius: 14px !important;
         padding: 2px !important;
@@ -156,14 +199,42 @@ else:
     }
     
     /* Hover effect for story library buttons in light theme */
-    section[data-testid="stSidebar"] div.stButton:hover {
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]):hover {
         background: rgba(102, 126, 234, 0.12) !important;
         border-color: rgba(102, 126, 234, 0.4) !important;
         box-shadow: 0 0 12px rgba(102, 126, 234, 0.15) !important;
     }
     
-    section[data-testid="stSidebar"] div.stButton > button:hover {
+    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) > button:hover {
         box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(79, 70, 229, 0.35) !important;
+    }
+    
+    /* Кнопка удаления - только крестик без фона */
+    section[data-testid="stSidebar"] [class*="del_"] {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        min-width: 24px !important;
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 50% !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button:hover {
+        background: rgba(239, 68, 68, 0.15) !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button p {
+        color: rgba(0, 0, 0, 0.4) !important;
+        font-size: 14px !important;
+    }
+    section[data-testid="stSidebar"] [class*="del_"] button:hover p {
+        color: #ef4444 !important;
     }
     
     /* Radio buttons fix for Firefox - Light theme */
@@ -601,16 +672,30 @@ with st.sidebar:
     # Ключ зависит от языка - это гарантирует сброс при смене языка
     voice_key = f"voice_select_{user_lang}"
     
-    voice_option = st.selectbox(
-        t('voice_label', user_lang),
-        options=list(voice_options.keys()),
-        index=0,
-        key=voice_key
-    )
+    # CSS для выравнивания контейнера с колонками
+    st.markdown("""
+    <style>
+        div[data-testid="stHorizontalBlock"] {
+            align-items: center !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Колонки с меньшим gap для более плотного размещения
+    col1, col2 = st.columns([4, 1], gap="small")
+    
+    with col1:
+        voice_option = st.selectbox(
+            t('voice_label', user_lang),
+            options=list(voice_options.keys()),
+            index=0,
+            key=voice_key
+        )
     selected_voice = voice_options[voice_option]
     
-    # Кнопка превью
-    preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
+    # Кнопка превью справа от выпадающего списка
+    with col2:
+        preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
 
     # Логика превью (внутри сайдбара)
     if preview_clicked:
@@ -639,6 +724,28 @@ with st.sidebar:
 
     st.divider()
     
+    st.markdown("""
+    <style>
+        /* Все кнопки с ключом начинающимся на del_ */
+        [data-testid="stButton"]:has(button[key^="del_"]) button {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0.1rem 0.2rem !important;
+            min-width: 20px !important;
+            width: auto !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Также убираем у всех tertiary кнопок в библиотеке */
+        section.main [data-testid="stButton"] button[kind="tertiary"] {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # 3. Личная библиотека
     st.markdown(f"### {t('library_title', user_lang)}")
     saved_stories = storage.load_stories()
@@ -658,7 +765,8 @@ with st.sidebar:
                     st.session_state['current_story'] = s
                     st.rerun()
             with tc2:
-                if st.button("🗑️", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
+                # Кнопка удаления
+                if st.button("✕", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
                     storage.delete_story(s['id'])
                     st.rerun()
     
