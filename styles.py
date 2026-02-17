@@ -258,63 +258,92 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: {t['input_text']} !important;
     }}
 
-    /* Voice Preview Button - CLEAN STYLE (Tertiary + Custom) */
-    .st-key-btn_preview_sidebar button {{
+    /* ========== VOICE PREVIEW BUTTON - FULL RESET ========== */
+    /* Offset container to align with voice selector */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] {{
+        margin-top: 1.8rem !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }}
+    
+    /* Reset stButton wrapper */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] [data-testid="stButton"],
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] div.stButton {{
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: auto !important;
         background: transparent !important;
-        background-color: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        
-        /* Shift content left: padding-right pushes center left */
-        padding-right: 5px !important; 
-        padding-left: 0 !important;
-        
+        padding: 0 !important;
         margin: 0 !important;
-        height: 38px !important;
-        width: 38px !important;
-        border-radius: 50% !important;
+    }}
+    
+    /* Nuclear reset for button itself */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] div.stButton > button,
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] div.stButton > button[kind="secondary"],
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] div.stButton > button[kind="tertiary"],
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button {{
+        all: unset !important;
+        cursor: pointer !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        transition: transform 0.2s ease, color 0.2s ease !important;
-    }}
-    
-    /* Смещаем всю кнопку (контейнер) ниже - ровно по центру */
-    .st-key-btn_preview_sidebar {{
-        margin-top: 1.8rem !important;
-    }}
-    
-    /* Смещаем кнопку ниже - ровно по центру */
-    .st-key-btn_preview_sidebar {{
-        margin-top: 1.8rem !important;
-    }}
-    
-    /* Сдвигаем иконку внутри кнопки вправо */
-    .st-key-btn_preview_sidebar button {{
-        padding-left: 4px !important;
-    }}
-    
-    .st-key-btn_preview_sidebar button p {{
-        font-size: 24px !important;
-        margin: 0 !important;
+        height: 38px !important;
+        width: 38px !important;
+        border-radius: 50% !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
         padding: 0 !important;
-        line-height: 1 !important;
-        /* Removed inner transform to rely on button padding */
+        margin: 0 !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease !important;
     }}
-
-    .st-key-btn_preview_sidebar button:hover {{
-        background-color: rgba(102, 126, 234, 0.1) !important;
+    
+    /* Hover: subtle highlight */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button:hover {{
+        background: none !important;
+        background-color: transparent !important;
         color: #667eea !important;
-        transform: scale(1.15);
+        transform: scale(1.15) !important;
     }}
-
-    .st-key-btn_preview_sidebar button:active {{
-        transform: scale(0.95);
+    
+    /* Active */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button:active {{
+        transform: scale(0.95) !important;
     }}
-
-    .st-key-btn_preview_sidebar button:focus:not(:focus-visible) {{
+    
+    /* Focus */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button:focus {{
         outline: none !important;
         box-shadow: none !important;
+        background: transparent !important;
+    }}
+    
+    /* Reset ALL children */
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button *,
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button p,
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button span,
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[class*="st-key-btn_preview_sidebar"] button [class*="st-emotion-cache"] {{
+        margin: 0 !important;
+        padding: 0 !important;
+        color: inherit !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        font-size: 24px !important;
+        line-height: 1 !important;
     }}
     
 
@@ -424,7 +453,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* Secondary button — BOLD, high-contrast, unmissable */
-    div.stButton > button:not([kind="primary"]) {{
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) {{
         background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
         color: white !important;
         border: none !important;
@@ -435,17 +464,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
         box-shadow: {'0 4px 15px rgba(16, 185, 129, 0.4)' if dark_mode else '0 4px 15px rgba(79, 70, 229, 0.35)'} !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }}
-    div.stButton > button:not([kind="primary"]) p,
-    div.stButton > button:not([kind="primary"]) span {{
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) p,
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) span {{
         color: white !important;
     }}
-    div.stButton > button:not([kind="primary"]):hover {{
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover {{
         background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
         transform: translateY(-3px) scale(1.02) !important;
         box-shadow: {'0 8px 25px rgba(16, 185, 129, 0.55)' if dark_mode else '0 8px 25px rgba(79, 70, 229, 0.5)'} !important;
     }}
-    div.stButton > button:not([kind="primary"]):hover p,
-    div.stButton > button:not([kind="primary"]):hover span {{
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover p,
+    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover span {{
         color: white !important;
     }}
 
@@ -470,19 +499,183 @@ def get_app_styles(dark_mode: bool = True) -> str:
         display: flex !important;
     }}
     
-    /* Для кнопки удаления (крестик) - убираем оболочку, оставляем только иконку */
-    .st-key-del_ button {{
+    /* ========== DELETE BUTTON (cross icon) - FULL RESET ========== */
+    /* Nuclear approach: reset ALL elements inside del_ wrapper */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] {{
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }}
+    
+    /* Reset stButton wrapper */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] [data-testid="stButton"],
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] div.stButton {{
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: auto !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        padding: 0.2rem 0.3rem !important;
-        min-width: auto !important;
-        width: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }}
     
-    .st-key-del_ button p {{
+    /* Reset button itself + ALL emotion-cache classes */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] div.stButton > button,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] div.stButton > button[kind="secondary"],
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button[class*="st-emotion-cache"] {{
+        all: unset !important;
+        cursor: pointer !important;
+        font-size: 1.1rem !important;
+        line-height: 1 !important;
+        color: #999 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: color 0.2s ease, transform 0.2s ease !important;
+        padding: 2px !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+    }}
+    
+    /* Hover */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button:hover {{
+        color: #ff4444 !important;
+        transform: scale(1.3) !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }}
+    
+    /* Focus/Active */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button:focus,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button:active {{
+        outline: none !important;
+        box-shadow: none !important;
+        background: none !important;
+        background-color: transparent !important;
+        border: none !important;
+    }}
+    
+    /* Reset ALL children inside the button: p, span, div, [data-testid], emotion-cache */
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button *,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button p,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button span,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button div,
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[class*="st-key-del_"] button [class*="st-emotion-cache"] {{
         margin: 0 !important;
         padding: 0 !important;
+        color: inherit !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }}
+    
+    /* ========== STORY LIST ITEMS (load_ buttons) - TEXT LIST STYLE ========== */
+    /* Numbering column - small, muted */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] ~ div [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] [data-testid="stMarkdownContainer"] p strong {{
+        font-size: 0.875rem !important;
+        line-height: 1.3 !important;
+    }}
+    
+    /* Container - align left */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] {{
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }}
+    
+    /* Reset stButton wrapper */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] [data-testid="stButton"],
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] div.stButton {{
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }}
+    
+    /* Nuclear reset for button — looks like plain text */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] div.stButton > button,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] div.stButton > button[kind="tertiary"],
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button {{
+        all: unset !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        width: 100% !important;
+        padding: 4px 2px !important;
+        font-size: 0.875rem !important;
+        font-weight: 400 !important;
+        line-height: 1.3 !important;
+        color: {'rgba(255,255,255,0.8)' if dark_mode else 'rgba(0,0,0,0.7)'} !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        min-height: 0 !important;
+        min-width: 0 !important;
+        transition: color 0.2s ease !important;
+    }}
+    
+    /* Hover: color highlight only */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button:hover {{
+        color: #667eea !important;
+        background: none !important;
+        background-color: transparent !important;
+    }}
+    
+    /* Focus/Active */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button:focus,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button:active {{
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }}
+    
+    /* Reset ALL children */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button *,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button p,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button span,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] button [class*="st-emotion-cache"] {{
+        margin: 0 !important;
+        padding: 0 !important;
+        color: inherit !important;
+        background: none !important;
+        background-color: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        text-align: left !important;
+        font-size: 0.875rem !important;
+        line-height: 1.3 !important;
     }}
     
     /* Конкретно для кнопки корзины - через p и span внутри */
@@ -731,8 +924,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
     
     /* Sidebar regular buttons (stButton) - Fix for dark theme contrast */
     /* Covers both default buttons and secondary buttons */
-    section[data-testid="stSidebar"] div.stButton > button,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] {{
+    /* Exclude delete buttons (.st-key-del_*) from gradient styling */
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] {{
         background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
         color: white !important;
         border: none !important;
@@ -745,27 +939,27 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: center !important;
     }}
     /* Fix for stMarkdownContainer inside buttons - remove light background in dark theme only */
-    section[data-testid="stSidebar"] div.stButton > button [data-testid="stMarkdownContainer"],
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] [data-testid="stMarkdownContainer"] {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] [data-testid="stMarkdownContainer"] {{
         background: {'transparent' if dark_mode else 'inherit'} !important;
         background-color: {'transparent' if dark_mode else 'inherit'} !important;
     }}
-    section[data-testid="stSidebar"] div.stButton > button p,
-    section[data-testid="stSidebar"] div.stButton > button span,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] p,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"] span {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button span,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] span {{
         color: white !important;
     }}
-    section[data-testid="stSidebar"] div.stButton > button:hover,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover {{
         background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
         transform: translateY(-2px) scale(1.02) !important;
         box-shadow: {'0 6px 20px rgba(16, 185, 129, 0.55)' if dark_mode else '0 6px 20px rgba(79, 70, 229, 0.5)'} !important;
     }}
-    section[data-testid="stSidebar"] div.stButton > button:hover p,
-    section[data-testid="stSidebar"] div.stButton > button:hover span,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover p,
-    section[data-testid="stSidebar"] div.stButton > button[kind="secondary"]:hover span {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover span,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover span {{
         color: white !important;
     }}
     

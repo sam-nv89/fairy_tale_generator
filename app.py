@@ -726,15 +726,39 @@ with st.sidebar:
     
     st.markdown("""
     <style>
-        /* Все кнопки с ключом начинающимся на del_ */
+        /* Стили для кнопок удаления (крестик) в библиотеке */
+        [data-testid="stButton"]:has(button[key^="del_"]) {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+        
         [data-testid="stButton"]:has(button[key^="del_"]) button {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            padding: 0.1rem 0.2rem !important;
-            min-width: 20px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-width: auto !important;
             width: auto !important;
-            border-radius: 4px !important;
+            height: auto !important;
+            border-radius: 0 !important;
+            font-size: 1.2rem !important;
+            line-height: 1 !important;
+            color: #999 !important;
+            transition: color 0.2s ease !important;
+        }
+        
+        [data-testid="stButton"]:has(button[key^="del_"]) button:hover {
+            background: transparent !important;
+            border: none !important;
+            color: #ff4444 !important;
+        }
+        
+        [data-testid="stButton"]:has(button[key^="del_"]) button:focus {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         
         /* Также убираем у всех tertiary кнопок в библиотеке */
@@ -753,19 +777,20 @@ with st.sidebar:
     if not saved_stories:
         st.caption(t('library_empty', user_lang))
     else:
-        for s in saved_stories:
-            tc1, tc2 = st.columns([5, 1], vertical_alignment="center")
+        for idx, s in enumerate(saved_stories, 1):
+            num_col, tc1, tc2 = st.columns([0.5, 5, 1], vertical_alignment="center")
+            with num_col:
+                st.markdown(f"**{idx}.**")
             with tc1:
-                # Truncate title
-                display_title = (s['title'][:22] + '..') if len(s['title']) > 22 else s['title']
+                display_title = s['title']
                 created_date = s.get('created_at', '')[:10]
-                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{t('load_help', user_lang)}\n{created_date}", use_container_width=True):
-                    # Добавляем поле audio при загрузке из библиотеки (там оно отсутствует)
+                save_labels = {'ru': 'Сохранено', 'en': 'Saved', 'es': 'Guardado', 'fr': 'Enregistré', 'pt': 'Salvo', 'hi': 'सहेजा गया', 'ar': 'تم الحفظ'}
+                save_label = save_labels.get(user_lang, 'Saved')
+                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{save_label}: {created_date}" if created_date else None, type="tertiary"):
                     s['audio'] = None
                     st.session_state['current_story'] = s
                     st.rerun()
             with tc2:
-                # Кнопка удаления
                 if st.button("✕", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
                     storage.delete_story(s['id'])
                     st.rerun()
@@ -1168,7 +1193,8 @@ if 'current_story' in st.session_state:
                 
             if clicked:
                 # Сразу меняем кнопку на неактивную с текстом БЕЗ точек, точки добавляет CSS
-                processing_text = "🎙️ Озвучиваем" if user_lang == 'ru' else "🎙️ Processing"
+                processing_texts = {'ru': '🎙️ Озвучиваем', 'en': '🎙️ Processing', 'es': '🎙️ Procesando', 'fr': '🎙️ Traitement', 'pt': '🎙️ Processando', 'hi': '🎙️ प्रोसेसिंग', 'ar': '🎙️ جاري المعالجة'}
+                processing_text = processing_texts.get(user_lang, '🎙️ Processing')
                 voice_btn_placeholder.button(processing_text, disabled=True, key="voice_gen_btn_processing")
                 
                 # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
