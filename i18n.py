@@ -38,7 +38,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'duration_long_hint': "💎 Длинные сказки лучше для детей от 7 лет.",
         'donate_title': "### Поддержать проект ☕",
         'donate_text': "Если вам нравятся наши сказки, вы можете угостить разработчика кофе!",
-        'donate_btn': "☕ Buy Me a Coffee",
+        'donate_btn': "☕ Поддержать проект",
         'language_label': "Язык",
         'version_label': "Версия",
         
