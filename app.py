@@ -659,15 +659,21 @@ with st.sidebar:
     st.divider()
     
     # 2. Длительность (Фаза 1)
+    # Переведённые варианты длительности
+    duration_options = [
+        t('duration_short', user_lang),
+        t('duration_medium', user_lang),
+        t('duration_long', user_lang)
+    ]
     story_length = st.radio(
         t('duration_label', user_lang),
-        options=list(STORY_LENGTH_MAP.keys()),
+        options=duration_options,
         index=1,
         horizontal=True,
         key="story_duration_radio"
     )
-    # Проверяем по индексу (2 = длинная сказка), т.к. ключи STORY_LENGTH_MAP на русском
-    if list(STORY_LENGTH_MAP.keys()).index(story_length) == 2:
+    # Проверяем по индексу (2 = длинная сказка)
+    if duration_options.index(story_length) == 2:
         st.info(t('duration_long_hint', user_lang))
         
     st.divider()
@@ -859,7 +865,15 @@ if submit_btn:
         used_model_name = ""
 
         # Определение длины из настроек сайдбара
-        target_word_count = STORY_LENGTH_MAP.get(story_length, DEFAULT_STORY_LENGTH)
+        # Воссоздаём список опций для маппинга
+        duration_options = [
+            t('duration_short', user_lang),
+            t('duration_medium', user_lang),
+            t('duration_long', user_lang)
+        ]
+        word_counts = [150, 300, 500]  # Короткая, Средняя, Длинная
+        length_index = duration_options.index(story_length) if story_length in duration_options else 1
+        target_word_count = word_counts[length_index]
 
         with st.spinner(t('generating', user_lang)):
             last_error = None
