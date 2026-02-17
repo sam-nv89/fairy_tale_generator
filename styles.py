@@ -43,6 +43,7 @@ LIGHT_THEME = {
 def get_rtl_styles() -> str:
     """Возвращает CSS для поддержки RTL (справа-налево) для арабского языка."""
     return """
+    <style>
     /* RTL Support for Arabic */
     [data-testid="stAppViewContainer"], 
     [data-testid="stSidebar"],
@@ -63,6 +64,7 @@ def get_rtl_styles() -> str:
     .stRadio > div[role="radiogroup"] {
         flex-direction: row-reverse;
     }
+    </style>
     """
 
 
