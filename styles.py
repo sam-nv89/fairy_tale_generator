@@ -44,25 +44,18 @@ def get_rtl_styles() -> str:
     """Возвращает CSS для поддержки RTL (справа-налево) для арабского языка."""
     return """
     <style>
-    /* RTL Support for Arabic */
-    [data-testid="stAppViewContainer"], 
-    [data-testid="stSidebar"],
-    .stRadio > div,
-    .stSelectbox > div,
-    .stTextInput > div,
-    .stTextArea > div {
+    /* RTL Support for Arabic - text only, not layout */
+    [data-testid="stMarkdownContainer"],
+    .stMarkdown p,
+    .stText p,
+    div[data-testid="stCaption"] {
         direction: rtl !important;
         text-align: right !important;
     }
     
-    /* Align icons and emojis in RTL */
-    .stMarkdown {
+    /* RTL for headers */
+    h1, h2, h3, h4, h5, h6 {
         direction: rtl;
-    }
-    
-    /* Fix for radio buttons in RTL */
-    .stRadio > div[role="radiogroup"] {
-        flex-direction: row-reverse;
     }
     </style>
     """
