@@ -540,6 +540,10 @@ with st.sidebar:
     # DEBUG: Логирование текущего языка
     logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
     logger.info(f"[DEBUG i18n] Sample translation 'app_title': {t('app_title', user_lang)}")
+    
+    # Отслеживаем предыдущий язык для сброса голоса
+    prev_lang = st.session_state.get('prev_lang', user_lang)
+    
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     selected_lang_display = st.selectbox(
         "🌐 Язык / Language",
@@ -551,7 +555,14 @@ with st.sidebar:
     selected_lang = [k for k, v in lang_options.items() if v == selected_lang_display][0]
     if selected_lang != user_lang:
         st.session_state.user_lang = selected_lang
+        st.session_state.prev_lang = selected_lang  # Обновляем предыдущий язык
+        # Удаляем голос при смене языка
+        if 'voice_select_sidebar' in st.session_state:
+            del st.session_state['voice_select_sidebar']
         st.rerun()
+    
+    # Сохраняем текущий язык как предыдущий для следующего раза
+    st.session_state.prev_lang = user_lang
     
     st.divider()
     
@@ -580,11 +591,15 @@ with st.sidebar:
     # 2. Выбор голоса (Перенесено из Хедера)
     # Используем голоса для текущего языка
     voice_options = TTS_VOICES_BY_LANGUAGE.get(user_lang, TTS_VOICES_BY_LANGUAGE['ru'])['options']
+    
+    # Ключ зависит от языка - это гарантирует сброс при смене языка
+    voice_key = f"voice_select_{user_lang}"
+    
     voice_option = st.selectbox(
         t('voice_label', user_lang),
         options=list(voice_options.keys()),
         index=0,
-        key="voice_select_sidebar"
+        key=voice_key
     )
     selected_voice = voice_options[voice_option]
     
@@ -598,7 +613,7 @@ with st.sidebar:
             return await generate_audio_stream(sample_text, selected_voice)
         
         try:
-            with st.spinner("..."):
+            with st.spinner(""):
                 sample_audio = asyncio.run(play_sample())
             # Используем мини-плеер или нативный, чтобы не загромождать сайдбар
             st.audio(sample_audio, format="audio/mp3", autoplay=True)
@@ -1014,7 +1029,7 @@ if 'current_story' in st.session_state:
                 
             if clicked:
                 # Сразу меняем кнопку на неактивную с текстом БЕЗ точек, точки добавляет CSS
-                processing_text = "🎙️ Озвучиваем" if user_lang == 'ru' else "🎙️ Processing..."
+                processing_text = "🎙️ Озвучиваем" if user_lang == 'ru' else "🎙️ Processing"
                 voice_btn_placeholder.button(processing_text, disabled=True, key="voice_gen_btn_processing")
                 
                 # Затем выполняем работу (без st.spinner, так как кнопка сама говорит о процессе)
