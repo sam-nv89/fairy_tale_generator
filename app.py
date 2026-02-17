@@ -531,15 +531,16 @@ with st.sidebar:
     
     # 0. Переключатель языка
     # Языки с флагами и названиями
+    # Используем country codes вместо emoji флагов для совместимости с Chrome
     lang_options = {
-        'ru': '🇷🇺 Русский',
-        'en': '🇬🇧 English',
-        'es': '🇪🇸 Español',
-        'fr': '🇫🇷 Français',
-        'pt': '🇧🇷 Português',
-        'zh-CN': '🇨🇳 中文',
-        'hi': '🇮🇳 हिन्दी',
-        'ar': '🇸🇦 العربية'
+        'ru': '[RU] Русский',
+        'en': '[EN] English',
+        'es': '[ES] Español',
+        'fr': '[FR] Français',
+        'pt': '[PT] Português',
+        'zh-CN': '[CN] 中文',
+        'hi': '[IN] हिन्दी',
+        'ar': '[SA] العربية'
     }
     # DEBUG: Логирование текущего языка
     logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
