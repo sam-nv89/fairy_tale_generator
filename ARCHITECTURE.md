@@ -103,14 +103,16 @@ Hybrid Rendering: HTML/CSS для визуалов + Streamlit для интер
 - Pricing, FAQ, Auth-формы
 
 ### 4. `styles.py` (Глобальный Дизайн)
-CSS-стили для интерфейса генератора (авторизованные пользователи):
+CSS-стили для интерфейса генератора (~1660 строк):
 - **Premium UI**: Glassmorphism inputs, анимированные градиентные кнопки (Gradient Shift), кастомные Selectbox и Sliders.
-- **Clean UI**: Полное скрытие стандартных элементов Streamlit (Footer, MainMenu, Toolbar) для эффекта "нативного" приложения.
-- **Sidebar Toggle**: Кастомная, стилизованная кнопка управления боковой панелью (заменяет стандартный Streamlit Toggle).
-- **Темы**: Полная поддержка Light/Dark режимов с адаптивными цветовыми палитрами.
+- **Clean UI**: Полное скрытие стандартных элементов Streamlit (Footer, MainMenu, Toolbar) для эффекта «нативного» приложения.
+- **Sidebar Toggle**: Кастомная, стилизованная кнопка управления боковой панелью.
+- **Темы**: Полная поддержка Light/Dark режимов (`DARK_THEME`, `LIGHT_THEME` словари).
 - **Анимации**: Hover-эффекты, Pulse, Glow для интерактивных элементов.
-- **Dropdown Fix**: JavaScript-фикс для корректного закрытия selectbox при повторном клике (внедряется через `st.components.v1.html()`).
-- `get_app_styles()` — основная функция генерации CSS.
+- **Toolbar-панель**: Glassmorphism-контейнер для кнопок действий (`toolbar_download`, `toolbar_voice`, `toolbar_save`) с вертикальными разделителями и hover-glow. CSS-специфичность override `(0,3,3)` перебивает глобальный secondary-стиль.
+- **RTL-поддержка**: `get_rtl_styles()` — стили для арабского языка (справа-налево).
+- **Dropdown Fix**: JavaScript-фикс для корректного закрытия selectbox при повторном клике.
+- `get_app_styles(dark_mode)` — основная функция генерации CSS (f-string с условными значениями).
 - `get_dropdown_fix_js()` — JavaScript для исправления поведения dropdown в формах.
 
 ### 5. `utils.py` (Утилиты)

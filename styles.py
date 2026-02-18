@@ -453,6 +453,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* Secondary button — BOLD, high-contrast, unmissable */
+    /* Exclude: delete buttons (st-key-del_) and toolbar buttons (st-key-toolbar_ is on parent stElementContainer) */
     div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) {{
         background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
         color: white !important;
@@ -476,6 +477,39 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover p,
     div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover span {{
         color: white !important;
+    }}
+
+    /* Override: Toolbar buttons must NOT get the secondary gradient — reset to transparent */
+    /* Specificity must exceed global secondary: div.stButton:not(…) > button:not(…) = (0,3,2) */
+    div[class*="st-key-toolbar_"] div.stButton > button,
+    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]) {{
+        background: transparent !important;
+        background-image: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: {t['text']} !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.01em !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    div[class*="st-key-toolbar_"] div.stButton > button p,
+    div[class*="st-key-toolbar_"] div.stButton > button span {{
+        color: {t['text']} !important;
+    }}
+    div[class*="st-key-toolbar_"] div.stButton > button:hover,
+    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]):hover {{
+        background: {'rgba(102, 126, 234, 0.12)' if dark_mode else 'rgba(102, 126, 234, 0.08)'} !important;
+        background-image: none !important;
+        color: #667eea !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px {'rgba(102, 126, 234, 0.15)' if dark_mode else 'rgba(102, 126, 234, 0.1)'} !important;
+    }}
+    div[class*="st-key-toolbar_"] div.stButton > button:hover p,
+    div[class*="st-key-toolbar_"] div.stButton > button:hover span {{
+        color: #667eea !important;
     }}
 
     /* Download button - Improved contrast for Light theme */
@@ -1071,6 +1105,86 @@ def get_app_styles(dark_mode: bool = True) -> str:
         width: 24px !important;
         height: 24px !important;
         color: {t['text']} !important;
+    }}
+
+    /* ========== TOOLBAR: Action Buttons Panel ========== */
+    
+    /* Toolbar container — glassmorphism panel wrapping all 3 columns */
+    [data-testid="stColumns"]:has(.st-key-toolbar_download, .st-key-toolbar_voice, .st-key-toolbar_save) {{
+        background: {'rgba(255, 255, 255, 0.03)' if dark_mode else 'rgba(79, 70, 229, 0.04)'};
+        border: 1px solid {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(0, 0, 0, 0.08)'};
+        border-radius: 16px;
+        padding: 6px 4px !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }}
+
+    [data-testid="stColumns"]:has(.st-key-toolbar_download, .st-key-toolbar_voice, .st-key-toolbar_save):hover {{
+        border-color: {'rgba(102, 126, 234, 0.25)' if dark_mode else 'rgba(102, 126, 234, 0.2)'};
+        box-shadow: 0 4px 20px {'rgba(102, 126, 234, 0.08)' if dark_mode else 'rgba(102, 126, 234, 0.06)'};
+    }}
+
+    /* Vertical separator between toolbar columns */
+    [data-testid="stColumns"]:has(.st-key-toolbar_download) > [data-testid="stColumn"]:not(:last-child) {{
+        border-right: 1px solid {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(0, 0, 0, 0.08)'};
+    }}
+
+    /* Base toolbar button style — all three buttons */
+    .st-key-toolbar_download button,
+    .st-key-toolbar_voice button,
+    .st-key-toolbar_save button,
+    .st-key-toolbar_voice_processing button,
+    .st-key-toolbar_voice_retry button {{
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: {t['text']} !important;
+        border-radius: 12px !important;
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        letter-spacing: 0.01em !important;
+    }}
+
+    /* Hover effect for toolbar buttons */
+    .st-key-toolbar_download button:hover,
+    .st-key-toolbar_voice button:hover,
+    .st-key-toolbar_save button:hover,
+    .st-key-toolbar_voice_retry button:hover {{
+        background: {'rgba(102, 126, 234, 0.12)' if dark_mode else 'rgba(102, 126, 234, 0.08)'} !important;
+        color: #667eea !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px {'rgba(102, 126, 234, 0.15)' if dark_mode else 'rgba(102, 126, 234, 0.1)'} !important;
+    }}
+
+    /* Processing state — pulsing animation */
+    .st-key-toolbar_voice_processing button {{
+        color: {'rgba(255, 255, 255, 0.5)' if dark_mode else 'rgba(0, 0, 0, 0.4)'} !important;
+        animation: toolbar-pulse 1.5s ease-in-out infinite !important;
+    }}
+
+    @keyframes toolbar-pulse {{
+        0%, 100% {{ opacity: 0.5; }}
+        50% {{ opacity: 1; }}
+    }}
+
+    /* Focus state cleanup */
+    .st-key-toolbar_download button:focus,
+    .st-key-toolbar_voice button:focus,
+    .st-key-toolbar_save button:focus {{
+        box-shadow: none !important;
+        outline: none !important;
+    }}
+
+    /* Active press state */
+    .st-key-toolbar_download button:active,
+    .st-key-toolbar_voice button:active,
+    .st-key-toolbar_save button:active {{
+        transform: scale(0.97) !important;
     }}
 
     /* ========== DROPDOWN TOGGLE FIX ========== */

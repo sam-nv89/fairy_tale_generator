@@ -1,5 +1,43 @@
 # Журнал разработки (Dev Log)
 
+## 18.02.2026 (вт, Update 18)
+### 🎨 UI: Toolbar-панель кнопок действий (Вариант 3)
+**Статус**: Выполнено
+
+#### Проблема
+Кнопки действий после генерации сказки были разбросаны: «Скачать текст» стоял отдельным `st.download_button` сверху, «Озвучить» и «В библиотеку» ниже в `st.columns([1,1,2])`. Кнопка «В библиотеку» была **нечитаема** в тёмной теме (белый фон, серый текст). Текст кнопок был частично захардкожен, без i18n.
+
+#### Решение — Toolbar-панель
+Реализован **Вариант 3 (Toolbar)**: все три кнопки в единой горизонтальной панели.
+
+##### Изменения в `app.py` (строки 1168-1222):
+- `st.download_button` + `st.columns([1,1,2])` → единый `st.columns(3, gap="small")`
+- Ключи кнопок: `toolbar_download`, `toolbar_voice`, `toolbar_save`
+- Все тексты через i18n-словари (8 языков)
+- `use_container_width=True` для одинаковой ширины
+- `type="primary"` убран с кнопки «Озвучить» для единообразия панели
+
+##### Изменения в `styles.py` (~120 строк CSS):
+- **Glassmorphism-контейнер**: `background: rgba(255,255,255,0.03)`, `border-radius: 16px`, `backdrop-filter: blur(10px)`
+- **Вертикальные разделители** между колонками через `border-right`
+- **Hover-эффекты**: `translateY(-1px)`, фиолетовый glow `rgba(102,126,234,0.12)` фон
+- **Анимация processing**: `toolbar-pulse` — пульсирующая прозрачность
+- **Active state**: `scale(0.97)` для тактильной обратной связи
+- Все стили адаптивны: разные значения для dark/light тем
+
+##### Фикс CSS-специфичности (унификация кнопок):
+Глобальный secondary-стиль (`div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"])`, специфичность **0,3,2**) перебивал toolbar-стили, т.к. класс `st-key-toolbar_voice` находится на `div.stElementContainer` (родитель `div.stButton`), а не на самом `div.stButton`.
+
+**Решение** — override с повышенной специфичностью **(0,3,3)**:
+```css
+div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]) {
+    background: transparent !important;
+    background-image: none !important;
+}
+```
+Подтверждено через `getComputedStyle()`: `backgroundImage: "none"`. Все три кнопки теперь **идентичны**.
+
+
 ## 17.02.2026 (пн, Update 17)
 ### 🎨 UI: Полная переработка раздела "Мои сказки" + i18n исправления
 **Статус**: Выполнено
