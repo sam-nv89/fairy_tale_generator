@@ -479,10 +479,14 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: white !important;
     }}
 
-    /* Override: Toolbar buttons must NOT get the secondary gradient — reset to transparent */
-    /* Specificity must exceed global secondary: div.stButton:not(…) > button:not(…) = (0,3,2) */
+    /* ========== TOOLBAR BUTTONS — Unified style for all 3 buttons ========== */
+    /* Covers: toolbar_save (st.button), toolbar_voice (st.empty→button), toolbar_download (st.popover) */
     div[class*="st-key-toolbar_"] div.stButton > button,
-    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]) {{
+    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]),
+    div[class*="st-key-toolbar_voice"] button,
+    div[class*="st-key-toolbar_voice"] div.stButton > button,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] > div > button {{
         background: transparent !important;
         background-image: none !important;
         border: none !important;
@@ -494,21 +498,33 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-weight: 500 !important;
         letter-spacing: 0.01em !important;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        justify-content: center !important;
+        display: flex !important;
     }}
     div[class*="st-key-toolbar_"] div.stButton > button p,
-    div[class*="st-key-toolbar_"] div.stButton > button span {{
+    div[class*="st-key-toolbar_"] div.stButton > button span,
+    div[class*="st-key-toolbar_voice"] button p,
+    div[class*="st-key-toolbar_voice"] button span,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button p,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button span {{
         color: {t['text']} !important;
     }}
     div[class*="st-key-toolbar_"] div.stButton > button:hover,
-    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]):hover {{
+    div[class*="st-key-toolbar_"] div.stButton > button:not([kind="primary"]):hover,
+    div[class*="st-key-toolbar_voice"] button:hover,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button:hover {{
         background: {'rgba(102, 126, 234, 0.12)' if dark_mode else 'rgba(102, 126, 234, 0.08)'} !important;
         background-image: none !important;
         color: #667eea !important;
-        transform: translateY(-1px);
+        transform: translateY(-1px) !important;
         box-shadow: 0 4px 12px {'rgba(102, 126, 234, 0.15)' if dark_mode else 'rgba(102, 126, 234, 0.1)'} !important;
     }}
     div[class*="st-key-toolbar_"] div.stButton > button:hover p,
-    div[class*="st-key-toolbar_"] div.stButton > button:hover span {{
+    div[class*="st-key-toolbar_"] div.stButton > button:hover span,
+    div[class*="st-key-toolbar_voice"] button:hover p,
+    div[class*="st-key-toolbar_voice"] button:hover span,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button:hover p,
+    div[class*="st-key-toolbar_"] [data-testid="stPopover"] button:hover span {{
         color: #667eea !important;
     }}
 
