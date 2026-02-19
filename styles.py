@@ -108,6 +108,10 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] p {{
         color: var(--text-color) !important;
         font-family: 'Inter', sans-serif !important;
+        text-align: left !important; /* Force text alignment left on everything */
+        margin: 0 !important;
+        padding: 0 !important;
+        line-height: 1.2 !important;
     }}
 
     /* Style buttons inside to look like Minimalist List Items */
@@ -117,7 +121,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         
         /* Text Color: Softer Dark for Day, White for Night via opacity/var */
         color: var(--text-color) !important; 
-        opacity: 0.85 !important; /* Makes text slightly 'lighter' visually */
+        opacity: 0.85 !important; 
 
         font-size: 0.75rem !important; /* Tiny font */
         font-weight: 400 !important;
@@ -128,8 +132,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: flex-start !important; /* Align content to start */
         align-items: center !important;
         
-        padding: 1px 0px !important; /* removed horizontal padding for strict left adjust if needed, or keep small */
-        padding-left: 0px !important; 
+        padding: 2px 4px !important; /* Minimal padding for touch target */
+        padding-left: 0px !important; /* Flush left */
         
         width: 100% !important;
         border-radius: 4px !important;
@@ -146,7 +150,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: rgba(120, 120, 120, 0.1) !important;
         opacity: 1 !important; /* Full opacity on hover */
         transform: none !important;
-        padding-left: 4px !important; /* Slight shift */
+        padding-left: 4px !important; /* Slight shift gives feedback */
     }}
 
     /* Active State */
