@@ -108,10 +108,10 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: transparent !important;
         border: none !important;
         color: #E2E8F0 !important;
-        font-size: 0.8rem !important; /* Smaller than main button (usually 1rem) */
+        font-size: 0.75rem !important; /* Tiny font (12px) */
         font-weight: 400 !important;
         text-align: left !important;
-        padding: 4px 8px !important; /* Ultra-compact padding */
+        padding: 2px 6px !important; /* Minimal padding */
         width: 100% !important;
         border-radius: 4px !important;
         transition: background 0.1s ease !important;
@@ -121,7 +121,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         margin-bottom: 0px !important; /* No margin */
         position: relative !important;
         box-shadow: none !important;
-        min-height: 24px !important; /* Force smaller height */
+        min-height: 20px !important; /* Force tiny height */
         line-height: 1.2 !important;
     }}
 
@@ -130,7 +130,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: rgba(255, 255, 255, 0.08) !important;
         color: #FFFFFF !important;
         transform: none !important;
-        padding-left: 8px !important; /* No movement */
+        padding-left: 6px !important; /* No movement */
         box-shadow: none !important;
     }}
 
