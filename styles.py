@@ -103,38 +103,38 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-family: 'Inter', sans-serif !important;
     }}
 
-    /* Style buttons inside to look like Premium Cards */
+    /* Style buttons inside to look like Minimalist List Items */
     div[data-testid="stPopoverBody"] button {{
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: transparent !important;
+        border: none !important;
         color: #E2E8F0 !important;
-        font-size: 1rem !important;
-        font-weight: 500 !important;
+        font-size: 0.85rem !important; /* Smaller font */
+        font-weight: 400 !important;
         text-align: left !important;
-        padding: 12px 16px !important;
+        padding: 6px 12px !important; /* Minimal padding */
         width: 100% !important;
-        border-radius: 12px !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-radius: 6px !important;
+        transition: background 0.2s ease !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        margin-bottom: 8px !important;
+        margin-bottom: 2px !important; /* Minimal margin */
         position: relative !important;
-        overflow: hidden !important;
+        box-shadow: none !important; /* No shadow */
     }}
 
-    /* Hover effect: Light up and move */
+    /* Hover effect: Subtle background change */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%) !important;
-        border-color: rgba(168, 85, 247, 0.4) !important; /* Purple border */
+        background: rgba(255, 255, 255, 0.08) !important;
         color: #FFFFFF !important;
-        padding-left: 20px !important; /* Move text right */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        transform: none !important; /* No movement */
+        padding-left: 12px !important; /* No movement */
+        box-shadow: none !important;
     }}
 
     /* Active State */
     div[data-testid="stPopoverBody"] button:active {{
-        transform: scale(0.98) !important;
+        background: rgba(255, 255, 255, 0.12) !important;
     }}
 
     /* Disabled State */

@@ -457,26 +457,6 @@ def generate_html(title: str, body: str, lang: str = 'ru') -> bytes:
 # ---------------------------------------------------------------------------
 
 EXPORT_FORMATS: dict[str, dict] = {
-    'txt': {
-        'label':     {'ru': '📄 TXT', 'en': '📄 TXT'},
-        'mime':      'text/plain',
-        'ext':       'txt',
-        'generator': generate_txt,
-        'help': {
-            'ru': 'Простой текст — читается везде',
-            'en': 'Plain text — works everywhere',
-        },
-    },
-    'pdf': {
-        'label':     {'ru': '📕 PDF', 'en': '📕 PDF'},
-        'mime':      'application/pdf',
-        'ext':       'pdf',
-        'generator': generate_pdf,
-        'help': {
-            'ru': 'Для печати и чтения на ПК',
-            'en': 'For printing and reading on PC',
-        },
-    },
     'epub': {
         'label':     {'ru': '📗 EPUB', 'en': '📗 EPUB'},
         'mime':      'application/epub+zip',
@@ -505,6 +485,26 @@ EXPORT_FORMATS: dict[str, dict] = {
         'help': {
             'ru': 'Красивый файл для любого браузера',
             'en': 'Beautiful file for any browser',
+        },
+    },
+    'pdf': {
+        'label':     {'ru': '📕 PDF', 'en': '📕 PDF'},
+        'mime':      'application/pdf',
+        'ext':       'pdf',
+        'generator': generate_pdf,
+        'help': {
+            'ru': 'Для печати и чтения на ПК',
+            'en': 'For printing and reading on PC',
+        },
+    },
+    'txt': {
+        'label':     {'ru': '📄 TXT', 'en': '📄 TXT'},
+        'mime':      'text/plain',
+        'ext':       'txt',
+        'generator': generate_txt,
+        'help': {
+            'ru': 'Простой текст — читается везде',
+            'en': 'Plain text — works everywhere',
         },
     },
 }
