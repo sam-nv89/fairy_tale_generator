@@ -1288,6 +1288,9 @@ if 'current_story' in st.session_state:
             player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
             display_audio_player(st.session_state['current_story']['audio'], player_label)
             
+        # SPACER HACK: Добавляем пустое пространство внизу, чтобы popover мог открываться вниз
+        st.markdown("<div style='height: 300px; pointer-events: none;'></div>", unsafe_allow_html=True)
+            
     except Exception as e_render:
         logger.error(f"Error rendering story result: {e_render}")
         st.error(f"⚠️ Ошибка отображения истории: {e_render}" if user_lang == 'ru' else f"⚠️ Error rendering story: {e_render}")
