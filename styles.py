@@ -91,18 +91,22 @@ def get_app_styles(dark_mode: bool = True) -> str:
         max-width: 160px !important;
     }}
 
+    /* FIXED: Remove default Streamlit gap between buttons in the popover */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {{
+        gap: 0rem !important;
+        padding: 0 !important;
+    }}
+
     /* FIXED: Override the white background of the immediate child */
     div[data-testid="stPopoverBody"] > div {{
         background-color: transparent !important;
         color: inherit !important;
     }}
 
-    /* Force text to use theme color (Dark on Light, Light on Dark) */
+    /* Force text to use theme color */
     div[data-testid="stPopoverBody"] *, 
-    div[data-testid="stPopoverBody"] p,
-    div[data-testid="stPopoverBody"] span,
-    div[data-testid="stPopoverBody"] div {{
-        color: var(--text-color) !important; /* Adaptive color for Day/Night themes */
+    div[data-testid="stPopoverBody"] p {{
+        color: var(--text-color) !important;
         font-family: 'Inter', sans-serif !important;
     }}
 
@@ -110,30 +114,39 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] button {{
         background: transparent !important;
         border: none !important;
-        color: var(--text-color) !important; /* Use theme text color */
-        font-size: 0.75rem !important; /* Tiny font (12px) */
-        font-weight: 500 !important; /* Slightly bolder for readability on small size */
+        
+        /* Text Color: Softer Dark for Day, White for Night via opacity/var */
+        color: var(--text-color) !important; 
+        opacity: 0.85 !important; /* Makes text slightly 'lighter' visually */
+
+        font-size: 0.75rem !important; /* Tiny font */
+        font-weight: 400 !important;
+        
+        /* Alignment: Strictly Left */
         text-align: left !important;
-        padding: 2px 6px !important; /* Minimal padding */
+        display: flex !important;
+        justify-content: flex-start !important; /* Align content to start */
+        align-items: center !important;
+        
+        padding: 1px 0px !important; /* removed horizontal padding for strict left adjust if needed, or keep small */
+        padding-left: 0px !important; 
+        
         width: 100% !important;
         border-radius: 4px !important;
         transition: background 0.1s ease !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        margin: 0px !important; /* ABSOLUTELY NO MARGIN */
+        margin: 0px !important; /* No margin */
         position: relative !important;
         box-shadow: none !important;
-        min-height: 20px !important; /* Force tiny height */
+        min-height: 20px !important;
         line-height: 1.2 !important;
     }}
 
-    /* Hover effect: Subtle background change */
+    /* Hover effect */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: rgba(120, 120, 120, 0.1) !important; /* Neutral hover */
+        background: rgba(120, 120, 120, 0.1) !important;
+        opacity: 1 !important; /* Full opacity on hover */
         transform: none !important;
-        padding-left: 6px !important; /* No movement */
-        box-shadow: none !important;
+        padding-left: 4px !important; /* Slight shift */
     }}
 
     /* Active State */
