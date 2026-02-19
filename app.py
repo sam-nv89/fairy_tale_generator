@@ -693,6 +693,7 @@ with st.sidebar:
     
     with col1:
         st.markdown(f"<p class='sidebar-header'>{t('voice_label', user_lang)}</p>", unsafe_allow_html=True)
+        # Label moved up
         voice_option = st.selectbox(
             "hidden_voice_label",
             options=list(voice_options.keys()),
@@ -703,7 +704,16 @@ with st.sidebar:
     selected_voice = voice_options[voice_option]
     
     # Кнопка превью справа от выпадающего списка
+    # TWEAK: Вертикальное положение кнопки динамика (вниз в пикселях)
+    # ИСПОЛЬЗУЙТЕ ТОЛЬКО ПОЛОЖИТЕЛЬНЫЕ ЧИСЛА: "15px", "20px", "30px"
+    # Это добавит пустое пространство над кнопкой, опустив её ниже.
+    button_offset_y = "15px"  # <--- ПОПРОБУЙТЕ МЕНЯТЬ ЭТУ ЦИФРУ
+    
     with col2:
+        # ДОБАВЛЯЕМ ОТСТУП СВЕРХУ (Spacer)
+        if button_offset_y and button_offset_y != "0px":
+             st.markdown(f'<div style="margin-bottom: {button_offset_y}; font-size: 0;"></div>', unsafe_allow_html=True)
+        
         preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
 
     # Логика превью (внутри сайдбара)
