@@ -82,11 +82,12 @@ def get_app_styles(dark_mode: bool = True) -> str:
         font-family: "Source Sans Pro", sans-serif !important;
         font-weight: 600 !important;
         font-size: 1.1rem !important;
-        margin-top: 1rem !important;
-        margin-bottom: 0.3rem !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.7rem !important;
         color: {t['text']} !important;
         letter-spacing: 0.02em !important;
         line-height: 1.4 !important;
+        text-align: center !important;
     }}
 
     /* ========== UNIFIED SIDEBAR TEXT ========== */
