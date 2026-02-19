@@ -108,27 +108,29 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: transparent !important;
         border: none !important;
         color: #E2E8F0 !important;
-        font-size: 0.85rem !important; /* Smaller font */
+        font-size: 0.8rem !important; /* Smaller than main button (usually 1rem) */
         font-weight: 400 !important;
         text-align: left !important;
-        padding: 6px 12px !important; /* Minimal padding */
+        padding: 4px 8px !important; /* Ultra-compact padding */
         width: 100% !important;
-        border-radius: 6px !important;
-        transition: background 0.2s ease !important;
+        border-radius: 4px !important;
+        transition: background 0.1s ease !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        margin-bottom: 2px !important; /* Minimal margin */
+        margin-bottom: 0px !important; /* No margin */
         position: relative !important;
-        box-shadow: none !important; /* No shadow */
+        box-shadow: none !important;
+        min-height: 24px !important; /* Force smaller height */
+        line-height: 1.2 !important;
     }}
 
     /* Hover effect: Subtle background change */
     div[data-testid="stPopoverBody"] button:hover {{
         background: rgba(255, 255, 255, 0.08) !important;
         color: #FFFFFF !important;
-        transform: none !important; /* No movement */
-        padding-left: 12px !important; /* No movement */
+        transform: none !important;
+        padding-left: 8px !important; /* No movement */
         box-shadow: none !important;
     }}
 
