@@ -111,37 +111,38 @@ def get_app_styles(dark_mode: bool = True) -> str:
         text-align: left !important;
         margin: 0 !important;
         padding: 0 !important;
-        line-height: 1.2 !important;
+        line-height: 1.4 !important; /* Slightly more varied line-height for readability */
     }}
 
     /* Style buttons inside to look like Minimalist List Items */
     div[data-testid="stPopoverBody"] button {{
         background: transparent !important;
         border: none !important;
+        
+        /* ADAPTIVE COLOR & FULL OPACITY */
         color: var(--text-color) !important; 
-        opacity: 0.85 !important; 
+        opacity: 1 !important; /* Maximum readability */
 
         font-size: 0.75rem !important;
-        font-weight: 400 !important;
+        font-weight: 500 !important; /* Medium weight for better legibility */
         
         /* AGGRESSIVE LEFT ALIGNMENT */
         text-align: left !important;
         display: flex !important;
-        flex-direction: row !important; /* Ensure row layout */
-        justify-content: flex-start !important; /* Align start */
+        flex-direction: row !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         
-        padding: 1px 0px !important;
+        padding: 2px 4px !important; /* Slightly more vertical padding for breathing room */
         padding-left: 0px !important;
         margin: 0px !important;
         
         width: 100% !important;
         border-radius: 4px !important;
-        transition: background 0.1s ease !important;
+        transition: background 0.1s ease, transform 0.1s ease !important;
         position: relative !important;
         box-shadow: none !important;
-        min-height: 20px !important;
-        line-height: 1.2 !important;
+        min-height: 24px !important; /* Restore 24px for tap target size */
     }}
 
     /* Force all children of the button to align left and remove margins */
@@ -150,20 +151,21 @@ def get_app_styles(dark_mode: bool = True) -> str:
         text-align: left !important;
         margin-left: 0 !important;
         padding-left: 0 !important;
-        flex-grow: 0 !important; /* Prevent taking up extra space */
+        flex-grow: 0 !important;
     }}
 
     /* Hover effect */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: rgba(120, 120, 120, 0.1) !important;
-        opacity: 1 !important; 
-        transform: none !important;
-        padding-left: 4px !important; 
+        background: rgba(150, 150, 150, 0.15) !important; /* Neutral gray hover for both themes */
+        color: var(--text-color) !important; /* Keep adaptive text color on hover! */
+        transform: translateX(2px) !important; /* Restore subtle shift */
+        padding-left: 0px !important; /* Don't change padding, use transform */
+        font-weight: 600 !important; /* Slight bold on hover */
     }}
 
     /* Active State */
     div[data-testid="stPopoverBody"] button:active {{
-        background: rgba(120, 120, 120, 0.15) !important;
+        background: rgba(150, 150, 150, 0.25) !important;
     }}
 
     /* Disabled State */
