@@ -80,12 +80,15 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* ========== PREMIUM DARK DOWNLOAD POPOVER STYLE ========== */
     /* Target the popover container with high specificity */
     div[data-testid="stPopoverBody"] {{
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
-        border: 1px solid rgba(99, 102, 241, 0.2) !important; /* Indigo border */
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.1) !important; /* Glow */
-        border-radius: 16px !important;
-        padding: 12px !important;
-        min-width: 240px !important;
+        background: rgba(15, 23, 42, 0.6) !important; /* Semi-transparent dark slate */
+        backdrop-filter: blur(12px) !important; /* Strong blur */
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        border-radius: 8px !important;
+        padding: 4px !important; /* Minimal padding container */
+        min-width: 120px !important; /* Much narrower (was 240px) */
+        max-width: 160px !important;
     }}
 
     /* FIXED: Override the white background of the immediate child */
@@ -99,7 +102,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] p,
     div[data-testid="stPopoverBody"] span,
     div[data-testid="stPopoverBody"] div {{
-        color: #F1F5F9 !important; /* Slate-100 */
+        color: #F8FAFC !important; /* Slate-50 */
         font-family: 'Inter', sans-serif !important;
     }}
 
