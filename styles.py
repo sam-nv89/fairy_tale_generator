@@ -1836,10 +1836,16 @@ def get_dropdown_fix_js() -> str:
                     closeTime: 0,
                     openPopover: null 
                 };
+
+                // --- 1. Track Interactions (For Gravity Enforcer) ---
+                window.addEventListener('mousedown', (e) => {
+                    const btn = e.target.closest('button') || e.target;
+                    window.__lastTriggerRect = btn.getBoundingClientRect();
+                    window.__lastClickTime = Date.now();
+                }, true);
                 
                 // --- Helpers ---
                 function isPopoverOpen() {
-                    // Check standard Streamlit/BaseWeb popovers
                     const popovers = document.querySelectorAll('[data-baseweb="popover"]');
                     for (const p of popovers) {
                         const style = getComputedStyle(p);
@@ -1852,17 +1858,12 @@ def get_dropdown_fix_js() -> str:
                 
                 function closePopover() {
                     if (isPopoverOpen()) {
-                        // Simulate interaction outside to trigger close
-                        document.body.dispatchEvent(new MouseEvent('mousedown', {
-                            bubbles: true,
-                            cancelable: true,
-                            view: window
-                        }));
+                        document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
                         document.body.click();
                     }
                 }
 
-                // --- 1. Prevent Re-opening (Double-Click Fix) ---
+                // --- 2. Observer: prevent reopen & FORCE GRAVITY ---
                 const popoverObserver = new MutationObserver(function(mutations) {
                     const state = window.__dropdownState;
                     const openPopover = isPopoverOpen();
@@ -1873,14 +1874,43 @@ def get_dropdown_fix_js() -> str:
                         setTimeout(() => { state.justClosed = false; }, 400);
                     }
                     state.openPopover = openPopover;
+
+                    // FORCE DOWNWARD GRAVITY
+                    mutations.forEach((mutation) => {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === 1 && node.getAttribute('data-baseweb') === 'popover') {
+                                setTimeout(() => {
+                                    const content = node.querySelector('div');
+                                    if (!content || !window.__lastTriggerRect) return;
+                                    if (Date.now() - window.__lastClickTime > 1000) return; // Only valid for recent clicks
+                                    
+                                    const popoverRect = content.getBoundingClientRect();
+                                    const triggerRect = window.__lastTriggerRect;
+                                    
+                                    // If popover center is ABOVE trigger center -> Force Down
+                                    if ((popoverRect.top + popoverRect.height/2) < (triggerRect.top + triggerRect.height/2)) {
+                                        const newTop = triggerRect.bottom + 6; // 6px gap
+                                        const currentLeft = popoverRect.left;
+                                        
+                                        // Hard override
+                                        content.style.position = 'fixed';
+                                        content.style.top = newTop + 'px';
+                                        content.style.left = currentLeft + 'px';
+                                        content.style.bottom = 'auto';
+                                        content.style.transform = 'none'; // Disable library positioning
+                                        content.style.marginTop = '0'; // Clear animation margin if conflicts
+                                    }
+                                }, 50);
+                            }
+                        });
+                    });
                 });
                 
                 if (document.body) {
-                    popoverObserver.observe(document.body, {
-                        childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']
-                    });
+                    popoverObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
                 }
                 
+                // --- 3. Prevent Double-Click Reopen ---
                 document.addEventListener('click', function(e) {
                     const target = e.target;
                     const selectbox = target.closest('[data-baseweb="select"]');
@@ -1891,23 +1921,14 @@ def get_dropdown_fix_js() -> str:
                     }
                 }, true);
 
-                // --- 2. Close on Scroll (Fix for Floating Menu) ---
-                // We need to attach to the actual scrollable container in Streamlit
-                const scrollContainer = document.querySelector('[data-testid="stAppViewContainer"]');
-                const mainContainer = document.querySelector('.stMain');
-                
-                const handleScroll = function() {
-                    // Immediate close on any scroll
-                    closePopover();
-                };
-
-                // Attach to likely scroll targets
+                // --- 4. Close on Scroll ---
+                const handleScroll = function() { closePopover(); };
                 window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-                if (scrollContainer) scrollContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-                if (mainContainer) mainContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
-                
-                // Also listen for resize (mobile keyboard / rotation)
                 window.addEventListener('resize', handleScroll, { passive: true });
+                const scrollContainer = document.querySelector('[data-testid="stAppViewContainer"]');
+                if (scrollContainer) scrollContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+                const mainContainer = document.querySelector('.stMain');
+                if (mainContainer) mainContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
             })();
         `;
         
