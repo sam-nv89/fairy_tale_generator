@@ -458,53 +458,93 @@ def generate_html(title: str, body: str, lang: str = 'ru') -> bytes:
 
 EXPORT_FORMATS: dict[str, dict] = {
     'epub': {
-        'label':     {'ru': '📗 EPUB', 'en': '📗 EPUB'},
+        'label': {
+            'ru': '📗 EPUB', 'en': '📗 EPUB', 'es': '📗 EPUB', 'fr': '📗 EPUB', 'pt': '📗 EPUB', 'zh-CN': '📗 EPUB', 'hi': '📗 EPUB', 'ar': '📗 EPUB'
+        },
         'mime':      'application/epub+zip',
         'ext':       'epub',
         'generator': generate_epub,
         'help': {
             'ru': 'Kindle, Kobo, PocketBook, Apple Books',
             'en': 'Kindle, Kobo, PocketBook, Apple Books',
+            'es': 'Kindle, Kobo, PocketBook, Apple Books',
+            'fr': 'Kindle, Kobo, PocketBook, Apple Books',
+            'pt': 'Kindle, Kobo, PocketBook, Apple Books',
+            'zh-CN': 'Kindle, Kobo, PocketBook, Apple Books',
+            'hi': 'Kindle, Kobo, PocketBook, Apple Books',
+            'ar': 'Kindle, Kobo, PocketBook, Apple Books',
         },
     },
     'fb2': {
-        'label':     {'ru': '📘 FB2', 'en': '📘 FB2'},
+        'label': {
+            'ru': '📘 FB2', 'en': '📘 FB2', 'es': '📘 FB2', 'fr': '📘 FB2', 'pt': '📘 FB2', 'zh-CN': '📘 FB2', 'hi': '📘 FB2', 'ar': '📘 FB2'
+        },
         'mime':      'application/xml',
         'ext':       'fb2',
         'generator': generate_fb2,
         'help': {
             'ru': 'PocketBook, FBReader, Bookmate (СНГ)',
             'en': 'PocketBook, FBReader, Bookmate',
+            'es': 'PocketBook, FBReader, Bookmate',
+            'fr': 'PocketBook, FBReader, Bookmate',
+            'pt': 'PocketBook, FBReader, Bookmate',
+            'zh-CN': 'PocketBook, FBReader, Bookmate',
+            'hi': 'PocketBook, FBReader, Bookmate',
+            'ar': 'PocketBook, FBReader, Bookmate',
         },
     },
     'html': {
-        'label':     {'ru': '🌐 HTML', 'en': '🌐 HTML'},
+        'label': {
+            'ru': '🌐 HTML', 'en': '🌐 HTML', 'es': '🌐 HTML', 'fr': '🌐 HTML', 'pt': '🌐 HTML', 'zh-CN': '🌐 HTML', 'hi': '🌐 HTML', 'ar': '🌐 HTML'
+        },
         'mime':      'text/html',
         'ext':       'html',
         'generator': generate_html,
         'help': {
             'ru': 'Красивый файл для любого браузера',
             'en': 'Beautiful file for any browser',
+            'es': 'Hermoso archivo para cualquier navegador',
+            'fr': 'Beau fichier pour tout navigateur',
+            'pt': 'Arquivo bonito para qualquer navegador',
+            'zh-CN': '适用于任何浏览器的精美文件',
+            'hi': 'किसी भी ब्राउज़र के लिए सुंदर फ़ाइल',
+            'ar': 'ملف جميل لأي متصفح',
         },
     },
     'pdf': {
-        'label':     {'ru': '📕 PDF', 'en': '📕 PDF'},
+        'label': {
+            'ru': '📕 PDF', 'en': '📕 PDF', 'es': '📕 PDF', 'fr': '📕 PDF', 'pt': '📕 PDF', 'zh-CN': '📕 PDF', 'hi': '📕 PDF', 'ar': '📕 PDF'
+        },
         'mime':      'application/pdf',
         'ext':       'pdf',
         'generator': generate_pdf,
         'help': {
             'ru': 'Для печати и чтения на ПК',
             'en': 'For printing and reading on PC',
+            'es': 'Para imprimir y leer en PC',
+            'fr': 'Pour impression et lecture sur PC',
+            'pt': 'Para impressão e leitura no PC',
+            'zh-CN': '用于打印和在PC上阅读',
+            'hi': 'पीसी पर प्रिंट करने और पढ़ने के लिए',
+            'ar': 'للطباعة والقراءة على الكمبيوتر',
         },
     },
     'txt': {
-        'label':     {'ru': '📄 TXT', 'en': '📄 TXT'},
+        'label': {
+            'ru': '📄 TXT', 'en': '📄 TXT', 'es': '📄 TXT', 'fr': '📄 TXT', 'pt': '📄 TXT', 'zh-CN': '📄 TXT', 'hi': '📄 TXT', 'ar': '📄 TXT'
+        },
         'mime':      'text/plain',
         'ext':       'txt',
         'generator': generate_txt,
         'help': {
             'ru': 'Простой текст — читается везде',
             'en': 'Plain text — works everywhere',
+            'es': 'Texto plano — funciona en todas partes',
+            'fr': 'Texte brut — fonctionne partout',
+            'pt': 'Texto simples — funciona em qualquer lugar',
+            'zh-CN': '纯文本 — 随处可用',
+            'hi': 'सादा पाठ — हर जगह काम करता है',
+            'ar': 'نص عادي — يعمل في كل مكان',
         },
     },
 }
