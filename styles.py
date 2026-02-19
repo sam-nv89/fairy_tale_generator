@@ -108,7 +108,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] p {{
         color: var(--text-color) !important;
         font-family: 'Inter', sans-serif !important;
-        text-align: left !important; /* Force text alignment left on everything */
+        text-align: left !important;
         margin: 0 !important;
         padding: 0 !important;
         line-height: 1.2 !important;
@@ -118,39 +118,47 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] button {{
         background: transparent !important;
         border: none !important;
-        
-        /* Text Color: Softer Dark for Day, White for Night via opacity/var */
         color: var(--text-color) !important; 
         opacity: 0.85 !important; 
 
-        font-size: 0.75rem !important; /* Tiny font */
+        font-size: 0.75rem !important;
         font-weight: 400 !important;
         
-        /* Alignment: Strictly Left */
+        /* AGGRESSIVE LEFT ALIGNMENT */
         text-align: left !important;
         display: flex !important;
-        justify-content: flex-start !important; /* Align content to start */
+        flex-direction: row !important; /* Ensure row layout */
+        justify-content: flex-start !important; /* Align start */
         align-items: center !important;
         
-        padding: 2px 4px !important; /* Minimal padding for touch target */
-        padding-left: 0px !important; /* Flush left */
+        padding: 1px 0px !important;
+        padding-left: 0px !important;
+        margin: 0px !important;
         
         width: 100% !important;
         border-radius: 4px !important;
         transition: background 0.1s ease !important;
-        margin: 0px !important; /* No margin */
         position: relative !important;
         box-shadow: none !important;
         min-height: 20px !important;
         line-height: 1.2 !important;
     }}
 
+    /* Force all children of the button to align left and remove margins */
+    div[data-testid="stPopoverBody"] button * {{
+        justify-content: flex-start !important;
+        text-align: left !important;
+        margin-left: 0 !important;
+        padding-left: 0 !important;
+        flex-grow: 0 !important; /* Prevent taking up extra space */
+    }}
+
     /* Hover effect */
     div[data-testid="stPopoverBody"] button:hover {{
         background: rgba(120, 120, 120, 0.1) !important;
-        opacity: 1 !important; /* Full opacity on hover */
+        opacity: 1 !important; 
         transform: none !important;
-        padding-left: 4px !important; /* Slight shift gives feedback */
+        padding-left: 4px !important; 
     }}
 
     /* Active State */
