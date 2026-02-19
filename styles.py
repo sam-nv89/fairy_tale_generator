@@ -76,6 +76,38 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: {t['bg']} !important;
         background-attachment: fixed !important;
     }}
+
+    /* ========== SIDEBAR HEADERS (Unified Style) ========== */
+    .sidebar-header {{
+        font-family: "Source Sans Pro", sans-serif !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.3rem !important;
+        color: {t['text']} !important;
+        letter-spacing: 0.02em !important;
+        line-height: 1.4 !important;
+    }}
+
+    /* ========== UNIFIED SIDEBAR TEXT ========== */
+    .sidebar-text {{
+        font-family: "Source Sans Pro", sans-serif !important;
+        font-size: 0.95rem !important;
+        color: {t['text']} !important;
+        opacity: 0.9 !important;
+        margin-bottom: 0.5rem !important;
+        line-height: 1.5 !important;
+    }}
+
+    /* Override Streamlit widget text in sidebar to match */
+    section[data-testid="stSidebar"] div[data-baseweb="select"] > div,
+    section[data-testid="stSidebar"] div[data-baseweb="base-input"] > input, 
+    section[data-testid="stSidebar"] label[data-baseweb="radio"] p,
+    section[data-testid="stSidebar"] label[data-baseweb="checkbox"] p {{
+        font-family: "Source Sans Pro", sans-serif !important;
+        font-size: 0.95rem !important;
+        color: {t['text']} !important;
+    }}
     
     /* ========== UI CLEANUP ========== */
     /* Hide Streamlit Footer and Main Menu, but keep Toolbar for sidebar toggle */

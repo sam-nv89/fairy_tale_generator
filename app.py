@@ -625,11 +625,13 @@ with st.sidebar:
     current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
     # Language selector - show only "Language" for English, show "Язык / Language" for others
     lang_label = f"{t('language_label', user_lang)}" if user_lang == 'en' else f"{t('language_label', user_lang)} / Language"
+    st.markdown(f"<p class='sidebar-header'>{lang_label}</p>", unsafe_allow_html=True)
     selected_lang_display = st.selectbox(
-        lang_label,
+        "hidden_lang_label",
         options=list(lang_options.values()),
         index=current_lang_index,
-        key="lang_select"
+        key="lang_select",
+        label_visibility="collapsed"
     )
     # Обновляем язык при изменении
     selected_lang = [k for k, v in lang_options.items() if v == selected_lang_display][0]
@@ -651,12 +653,14 @@ with st.sidebar:
     # Определяем индекс на основе сохранённого состояния
     current_dark_mode = st.session_state.get('dark_mode', True)
     theme_index = 1 if current_dark_mode else 0
+    st.markdown(f"<p class='sidebar-header'>{t('theme_label', user_lang)}</p>", unsafe_allow_html=True)
     theme_choice = st.radio(
-        t('theme_label', user_lang),
+        "hidden_theme_label",
         options=[t('theme_day', user_lang), t('theme_night', user_lang)],
         index=theme_index,
         horizontal=True,
-        key="theme_radio"
+        key="theme_radio",
+        label_visibility="collapsed"
     )
     # Сохраняем выбор в session_state
     new_dark_mode = (theme_choice == t('theme_night', user_lang))
@@ -688,11 +692,13 @@ with st.sidebar:
     col1, col2 = st.columns([4, 1], gap="small")
     
     with col1:
+        st.markdown(f"<p class='sidebar-header'>{t('voice_label', user_lang)}</p>", unsafe_allow_html=True)
         voice_option = st.selectbox(
-            t('voice_label', user_lang),
+            "hidden_voice_label",
             options=list(voice_options.keys()),
             index=0,
-            key=voice_key
+            key=voice_key,
+            label_visibility="collapsed"
         )
     selected_voice = voice_options[voice_option]
     
@@ -774,11 +780,11 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     # 3. Личная библиотека
-    st.markdown(f"### {t('library_title', user_lang)}")
+    st.markdown(f"<p class='sidebar-header'>{t('library_title', user_lang)}</p>", unsafe_allow_html=True)
     saved_stories = storage.load_stories()
     
     if not saved_stories:
-        st.caption(t('library_empty', user_lang))
+        st.markdown(f"<p class='sidebar-text'>{t('library_empty', user_lang)}</p>", unsafe_allow_html=True)
     else:
         for idx, s in enumerate(saved_stories, 1):
             num_col, tc1, tc2 = st.columns([0.5, 5, 1], vertical_alignment="center")
@@ -807,12 +813,14 @@ with st.sidebar:
         t('duration_medium', user_lang),
         t('duration_long', user_lang)
     ]
+    st.markdown(f"<p class='sidebar-header'>{t('duration_label', user_lang)}</p>", unsafe_allow_html=True)
     story_length = st.radio(
-        t('duration_label', user_lang),
+        "hidden_duration_label",
         options=duration_options,
         index=1,
         horizontal=True,
-        key="story_duration_radio"
+        key="story_duration_radio",
+        label_visibility="collapsed"
     )
     # Проверяем по индексу (2 = длинная сказка)
     if duration_options.index(story_length) == 2:
@@ -821,8 +829,8 @@ with st.sidebar:
     st.divider()
     
     # 3. Донаты (Фаза 1)
-    st.markdown(t('donate_title', user_lang))
-    st.caption(t('donate_text', user_lang))
+    st.markdown(f"<p class='sidebar-header'>{t('donate_title', user_lang)}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p class='sidebar-text'>{t('donate_text', user_lang)}</p>", unsafe_allow_html=True)
     st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com") # TODO: Реальная ссылка
     
     st.divider()
