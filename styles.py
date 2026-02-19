@@ -90,15 +90,14 @@ def get_app_styles(dark_mode: bool = True) -> str:
         to   {{ background-position: 200% center; }}
     }}
 
-    /* --- Container: Frosted Glass Panel --- */
+    /* --- Container: Frosted Glass Panel (Theme-Adaptive) --- */
     div[data-testid="stPopoverBody"] {{
-        background: rgba(15, 23, 42, 0.82) !important;
+        background: {'rgba(15, 23, 42, 0.82)' if dark_mode else 'rgba(255, 255, 255, 0.88)'} !important;
         backdrop-filter: blur(24px) saturate(1.8) !important;
         -webkit-backdrop-filter: blur(24px) saturate(1.8) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid {'rgba(255, 255, 255, 0.12)' if dark_mode else 'rgba(0, 0, 0, 0.08)'} !important;
         box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+            {'0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset' if dark_mode else '0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04) inset'} !important;
         border-radius: 16px !important;
         padding: 8px !important;
         min-width: 220px !important;
@@ -118,10 +117,10 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: inherit !important;
     }}
 
-    /* --- Base text styling --- */
+    /* --- Base text styling (Theme-Adaptive) --- */
     div[data-testid="stPopoverBody"] *, 
     div[data-testid="stPopoverBody"] p {{
-        color: #E2E8F0 !important;
+        color: {t['text']} !important;
         font-family: 'Inter', -apple-system, sans-serif !important;
         text-align: left !important;
         margin: 0 !important;
@@ -129,16 +128,16 @@ def get_app_styles(dark_mode: bool = True) -> str:
         line-height: 1.5 !important;
     }}
 
-    /* --- Card Buttons: Each format as a premium card row --- */
+    /* --- Card Buttons (Theme-Adaptive) --- */
     div[data-testid="stPopoverBody"] button {{
         /* Card surface */
-        background: rgba(255, 255, 255, 0.04) !important;
+        background: {'rgba(255, 255, 255, 0.04)' if dark_mode else 'rgba(0, 0, 0, 0.03)'} !important;
         border: none !important;
-        border-left: 3px solid rgba(255, 255, 255, 0.15) !important;
+        border-left: 3px solid {'rgba(255, 255, 255, 0.15)' if dark_mode else 'rgba(0, 0, 0, 0.1)'} !important;
         border-radius: 10px !important;
         
         /* Color & Typography */
-        color: #E2E8F0 !important;
+        color: {t['text']} !important;
         opacity: 1 !important;
         font-size: 0.82rem !important;
         font-weight: 500 !important;
@@ -167,23 +166,23 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* --- Colored Accent Borders per Format (nth-child) --- */
     /* EPUB — Green */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(1) button {{
-        border-left-color: #4ade80 !important;
+        border-left-color: {'#4ade80' if dark_mode else '#22c55e'} !important;
     }}
     /* FB2 — Blue */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {{
-        border-left-color: #60a5fa !important;
+        border-left-color: {'#60a5fa' if dark_mode else '#3b82f6'} !important;
     }}
     /* HTML — Amber */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(3) button {{
-        border-left-color: #fbbf24 !important;
+        border-left-color: {'#fbbf24' if dark_mode else '#f59e0b'} !important;
     }}
     /* PDF — Red */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(4) button {{
-        border-left-color: #f87171 !important;
+        border-left-color: {'#f87171' if dark_mode else '#ef4444'} !important;
     }}
     /* TXT — Violet */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(5) button {{
-        border-left-color: #a78bfa !important;
+        border-left-color: {'#a78bfa' if dark_mode else '#8b5cf6'} !important;
     }}
 
     /* --- Force children to align left --- */
@@ -195,42 +194,37 @@ def get_app_styles(dark_mode: bool = True) -> str:
         flex-grow: 0 !important;
     }}
 
-    /* --- Hover: Gradient Sweep + Glow --- */
+    /* --- Hover: Gradient Sweep + Glow (Theme-Adaptive) --- */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: linear-gradient(
-            90deg,
-            rgba(102, 126, 234, 0.15) 0%,
-            rgba(118, 75, 162, 0.1) 50%,
-            rgba(102, 126, 234, 0.05) 100%
-        ) !important;
+        background: {'linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 50%, rgba(102, 126, 234, 0.05) 100%)' if dark_mode else 'linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.06) 50%, rgba(99, 102, 241, 0.03) 100%)'} !important;
         border-left-width: 4px !important;
         transform: translateX(3px) !important;
-        color: #F8FAFC !important;
+        color: {t['text']} !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15) !important;
+        box-shadow: {'0 2px 12px rgba(102, 126, 234, 0.15)' if dark_mode else '0 2px 8px rgba(99, 102, 241, 0.1)'} !important;
     }}
     
     /* --- Hover accent glow per format --- */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(1) button:hover {{
-        box-shadow: 0 2px 12px rgba(74, 222, 128, 0.2) !important;
+        box-shadow: {'0 2px 12px rgba(74, 222, 128, 0.2)' if dark_mode else '0 2px 8px rgba(34, 197, 94, 0.15)'} !important;
     }}
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(2) button:hover {{
-        box-shadow: 0 2px 12px rgba(96, 165, 250, 0.2) !important;
+        box-shadow: {'0 2px 12px rgba(96, 165, 250, 0.2)' if dark_mode else '0 2px 8px rgba(59, 130, 246, 0.15)'} !important;
     }}
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(3) button:hover {{
-        box-shadow: 0 2px 12px rgba(251, 191, 36, 0.2) !important;
+        box-shadow: {'0 2px 12px rgba(251, 191, 36, 0.2)' if dark_mode else '0 2px 8px rgba(245, 158, 11, 0.15)'} !important;
     }}
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(4) button:hover {{
-        box-shadow: 0 2px 12px rgba(248, 113, 113, 0.2) !important;
+        box-shadow: {'0 2px 12px rgba(248, 113, 113, 0.2)' if dark_mode else '0 2px 8px rgba(239, 68, 68, 0.15)'} !important;
     }}
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(5) button:hover {{
-        box-shadow: 0 2px 12px rgba(167, 139, 250, 0.2) !important;
+        box-shadow: {'0 2px 12px rgba(167, 139, 250, 0.2)' if dark_mode else '0 2px 8px rgba(139, 92, 246, 0.15)'} !important;
     }}
 
     /* --- Active: Press feedback --- */
     div[data-testid="stPopoverBody"] button:active {{
         transform: translateX(1px) scale(0.98) !important;
-        background: rgba(102, 126, 234, 0.2) !important;
+        background: {'rgba(102, 126, 234, 0.2)' if dark_mode else 'rgba(99, 102, 241, 0.12)'} !important;
     }}
 
     /* --- Disabled State --- */
@@ -238,7 +232,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         opacity: 0.4 !important;
         cursor: not-allowed !important;
         pointer-events: none !important;
-        border-left-color: rgba(255, 255, 255, 0.08) !important;
+        border-left-color: {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(0, 0, 0, 0.06)'} !important;
     }}
 
     /* --- Scrollbar (micro) --- */
@@ -246,7 +240,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         width: 3px !important;
     }}
     div[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {{
-        background: rgba(255, 255, 255, 0.08) !important;
+        background: {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(0, 0, 0, 0.1)'} !important;
         border-radius: 4px !important;
     }}
 
@@ -1899,6 +1893,22 @@ def get_dropdown_fix_js() -> str:
                         }
                     }
                 }, true); // capture phase
+                
+                // Close popover on scroll (fixes floating menu issue)
+                const mainSection = document.querySelector('.stMain');
+                if (mainSection) {
+                    let scrollTimeout;
+                    mainSection.addEventListener('scroll', function() {
+                        clearTimeout(scrollTimeout);
+                        scrollTimeout = setTimeout(function() {
+                            const openPop = isPopoverOpen();
+                            if (openPop) {
+                                // Simulate click outside to close popover
+                                document.body.click();
+                            }
+                        }, 50); // Small debounce to avoid closing during tiny scrolls
+                    }, { passive: true });
+                }
             })();
         `;
         
