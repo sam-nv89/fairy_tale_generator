@@ -81,8 +81,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
     
     /* --- Entrance Animation --- */
     @keyframes popoverSlideIn {{
-        from {{ opacity: 0; transform: translateY(-8px) scale(0.96); }}
-        to   {{ opacity: 1; transform: translateY(0) scale(1); }}
+        from {{ opacity: 0; margin-top: -10px; }}
+        to   {{ opacity: 1; margin-top: 0; }}
     }}
     
     @keyframes gradientSweep {{
@@ -102,7 +102,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         padding: 8px !important;
         min-width: 220px !important;
         max-width: 280px !important;
-        animation: popoverSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+        animation: popoverSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) both !important;
     }}
 
     /* --- Remove Streamlit gap between cards --- */
