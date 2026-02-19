@@ -76,6 +76,84 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background: {t['bg']} !important;
         background-attachment: fixed !important;
     }}
+    
+    /* ========== PREMIUM DARK DOWNLOAD POPOVER STYLE ========== */
+    /* Target the popover container with high specificity */
+    div[data-testid="stPopoverBody"] {{
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important; /* Indigo border */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.1) !important; /* Glow */
+        border-radius: 16px !important;
+        padding: 12px !important;
+        min-width: 240px !important;
+    }}
+
+    /* FIXED: Override the white background of the immediate child */
+    div[data-testid="stPopoverBody"] > div {{
+        background-color: transparent !important;
+        color: #F1F5F9 !important;
+    }}
+
+    /* Force all text inside popover to be white/light */
+    div[data-testid="stPopoverBody"] *, 
+    div[data-testid="stPopoverBody"] p,
+    div[data-testid="stPopoverBody"] span,
+    div[data-testid="stPopoverBody"] div {{
+        color: #F1F5F9 !important; /* Slate-100 */
+        font-family: 'Inter', sans-serif !important;
+    }}
+
+    /* Style buttons inside to look like Premium Cards */
+    div[data-testid="stPopoverBody"] button {{
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        color: #E2E8F0 !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        text-align: left !important;
+        padding: 12px 16px !important;
+        width: 100% !important;
+        border-radius: 12px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        margin-bottom: 8px !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }}
+
+    /* Hover effect: Light up and move */
+    div[data-testid="stPopoverBody"] button:hover {{
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.4) !important; /* Purple border */
+        color: #FFFFFF !important;
+        padding-left: 20px !important; /* Move text right */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }}
+
+    /* Active State */
+    div[data-testid="stPopoverBody"] button:active {{
+        transform: scale(0.98) !important;
+    }}
+
+    /* Disabled State */
+    div[data-testid="stPopoverBody"] button:disabled {{
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }}
+
+    /* Hide default scrollbars if any */
+    div[data-testid="stPopoverBody"]::-webkit-scrollbar {{
+        width: 4px !important;
+    }}
+    div[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {{
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 4px !important;
+    }}
+
+    /* Sidebar headers (Unified Style) */
 
     /* ========== SIDEBAR HEADERS (Unified Style) ========== */
     .sidebar-header {{
