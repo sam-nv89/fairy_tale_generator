@@ -501,10 +501,12 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: center !important;
         display: flex !important;
     }}
-    div[class*="st-key-toolbar_"] div.stButton > button p,
-    div[class*="st-key-toolbar_"] div.stButton > button span,
-    div[class*="st-key-toolbar_voice"] button p,
-    div[class*="st-key-toolbar_voice"] button span,
+    /* High specificity to override global secondary button white text */
+    div[class*="st-key-toolbar_"] div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) p,
+    div[class*="st-key-toolbar_"] div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) span,
+    div[class*="st-key-toolbar_voice"] div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) p,
+    div[class*="st-key-toolbar_voice"] div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) span,
+    /* Keep the popover rules as they were working */
     div[class*="st-key-toolbar_"] [data-testid="stPopover"] button p,
     div[class*="st-key-toolbar_"] [data-testid="stPopover"] button span {{
         color: {t['text']} !important;
@@ -526,6 +528,21 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[class*="st-key-toolbar_"] [data-testid="stPopover"] button:hover p,
     div[class*="st-key-toolbar_"] [data-testid="stPopover"] button:hover span {{
         color: #667eea !important;
+    }}
+
+    /* Hide the built-in popover chevron (Material Icon ▼) on toolbar download button */
+    div[class*="st-key-toolbar_download"] [data-testid="stPopoverButton"] [data-testid="stIconMaterial"] {{
+        display: none !important;
+    }}
+    div[class*="st-key-toolbar_download"] [data-testid="stPopoverButton"] .e1jdirsb1 {{
+        display: none !important;
+    }}
+
+    /* Prevent hover color change for Download button - High Specificity Override */
+    div[class*="st-key-toolbar_download"] [data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover,
+    div[class*="st-key-toolbar_download"] [data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover p,
+    div[class*="st-key-toolbar_download"] [data-testid="stPopover"] button[data-testid="stPopoverButton"]:hover span {{
+        color: {t['text']} !important;
     }}
 
     /* Download button - Improved contrast for Light theme */

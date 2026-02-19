@@ -30,7 +30,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'preview_help': "Прослушать пример",
         'load_help': "Нажмите, чтобы прочитать",
         'delete_help': "Удалить сказку",
-        'save_help': "Сохранить сказку в Мои сказки",
+        'save_help': "Добавить сказку в библиотеку",
         'duration_label': "⏱️ Длительность сказки",
         'duration_short': "🐇 Короткая (~1 мин)",
         'duration_medium': "⭐ Средняя (~3 мин)",
@@ -65,9 +65,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'name_invalid': "⚠️ Имя может содержать только буквы, пробелы и дефисы.",
         'generating': "🪄 Сочиняем волшебную историю",
         'processing_audio': "🎧 Создаем аудио...",
-        'save_btn': "💾 Сохранить в библиотеку",
+        'save_btn': "💾 Сохранить",
         'saved_success': "✅ Сказка сохранена!",
         'download_txt': "📄 Скачать текст",
+        'location': "📍",
         'logout_btn': "🚪 Выйти",
         
         # Жанры

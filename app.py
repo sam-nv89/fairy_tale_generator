@@ -1258,7 +1258,7 @@ if 'current_story' in st.session_state:
 
         with toolbar_cols[2]:
             # Сохранение в библиотеку
-            save_labels = {'ru': '💾 В библиотеку', 'en': '💾 Save', 'es': '💾 Guardar', 'fr': '💾 Sauver', 'pt': '💾 Salvar', 'zh-CN': '💾 保存', 'hi': '💾 सेव', 'ar': '💾 حفظ'}
+            save_labels = {'ru': '💾 Сохранить', 'en': '💾 Save', 'es': '💾 Guardar', 'fr': '💾 Sauver', 'pt': '💾 Salvar', 'zh-CN': '💾 保存', 'hi': '💾 सेव', 'ar': '💾 حفظ'}
             save_btn_text = save_labels.get(user_lang, '💾 Save')
             if st.button(save_btn_text, key="toolbar_save", help=t('save_help', user_lang), use_container_width=True):
                 storage.save_story(story)
