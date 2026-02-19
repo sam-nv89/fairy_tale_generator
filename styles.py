@@ -1830,15 +1830,16 @@ def get_dropdown_fix_js() -> str:
         const script = document.createElement('script');
         script.textContent = `
             (function() {
-                // Global state to track dropdown open/close
+                // --- Global state ---
                 window.__dropdownState = window.__dropdownState || { 
                     justClosed: false, 
                     closeTime: 0,
                     openPopover: null 
                 };
                 
-                // Function to check if popover is open
+                // --- Helpers ---
                 function isPopoverOpen() {
+                    // Check standard Streamlit/BaseWeb popovers
                     const popovers = document.querySelectorAll('[data-baseweb="popover"]');
                     for (const p of popovers) {
                         const style = getComputedStyle(p);
@@ -1849,70 +1850,68 @@ def get_dropdown_fix_js() -> str:
                     return null;
                 }
                 
-                // Track popover state changes
+                function closePopover() {
+                    if (isPopoverOpen()) {
+                        // Simulate interaction outside to trigger close
+                        document.body.dispatchEvent(new MouseEvent('mousedown', {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window
+                        }));
+                        document.body.click();
+                    }
+                }
+
+                // --- 1. Prevent Re-opening (Double-Click Fix) ---
                 const popoverObserver = new MutationObserver(function(mutations) {
                     const state = window.__dropdownState;
                     const openPopover = isPopoverOpen();
                     
                     if (!openPopover && state.openPopover) {
-                        // Popover was just closed
                         state.justClosed = true;
                         state.closeTime = Date.now();
-                        setTimeout(() => {
-                            state.justClosed = false;
-                        }, 400);
+                        setTimeout(() => { state.justClosed = false; }, 400);
                     }
-                    
                     state.openPopover = openPopover;
                 });
                 
-                // Start observing
                 if (document.body) {
                     popoverObserver.observe(document.body, {
-                        childList: true,
-                        subtree: true,
-                        attributes: true,
-                        attributeFilter: ['style', 'class', 'aria-hidden']
+                        childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']
                     });
                 }
                 
-                // Intercept clicks on selectbox triggers
                 document.addEventListener('click', function(e) {
                     const target = e.target;
                     const selectbox = target.closest('[data-baseweb="select"]');
                     const state = window.__dropdownState;
-                    const now = Date.now();
-                    
-                    if (selectbox) {
-                        // If we just closed this dropdown, prevent reopening
-                        if (state.justClosed && (now - state.closeTime) < 400) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            e.stopImmediatePropagation();
-                            return false;
-                        }
+                    if (selectbox && state.justClosed && (Date.now() - state.closeTime) < 400) {
+                        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                        return false;
                     }
-                }, true); // capture phase
+                }, true);
+
+                // --- 2. Close on Scroll (Fix for Floating Menu) ---
+                // We need to attach to the actual scrollable container in Streamlit
+                const scrollContainer = document.querySelector('[data-testid="stAppViewContainer"]');
+                const mainContainer = document.querySelector('.stMain');
                 
-                // Close popover on scroll (fixes floating menu issue)
-                const mainSection = document.querySelector('.stMain');
-                if (mainSection) {
-                    let scrollTimeout;
-                    mainSection.addEventListener('scroll', function() {
-                        clearTimeout(scrollTimeout);
-                        scrollTimeout = setTimeout(function() {
-                            const openPop = isPopoverOpen();
-                            if (openPop) {
-                                // Simulate click outside to close popover
-                                document.body.click();
-                            }
-                        }, 50); // Small debounce to avoid closing during tiny scrolls
-                    }, { passive: true });
-                }
+                const handleScroll = function() {
+                    // Immediate close on any scroll
+                    closePopover();
+                };
+
+                // Attach to likely scroll targets
+                window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+                if (scrollContainer) scrollContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+                if (mainContainer) mainContainer.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+                
+                // Also listen for resize (mobile keyboard / rotation)
+                window.addEventListener('resize', handleScroll, { passive: true });
             })();
         `;
         
-        // Try to inject into parent document
+        // Try to inject into parent document (where the main app lives)
         try {
             if (window.parent && window.parent.document && window.parent.document.body) {
                 window.parent.document.body.appendChild(script);
