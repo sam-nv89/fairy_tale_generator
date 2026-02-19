@@ -459,7 +459,14 @@ def generate_html(title: str, body: str, lang: str = 'ru') -> bytes:
 EXPORT_FORMATS: dict[str, dict] = {
     'epub': {
         'label': {
-            'ru': '📗 EPUB', 'en': '📗 EPUB', 'es': '📗 EPUB', 'fr': '📗 EPUB', 'pt': '📗 EPUB', 'zh-CN': '📗 EPUB', 'hi': '📗 EPUB', 'ar': '📗 EPUB'
+            'ru': '📗 EPUB  ·  E-readers',
+            'en': '📗 EPUB  ·  E-readers',
+            'es': '📗 EPUB  ·  E-readers',
+            'fr': '📗 EPUB  ·  Liseuses',
+            'pt': '📗 EPUB  ·  E-readers',
+            'zh-CN': '📗 EPUB  ·  电子书',
+            'hi': '📗 EPUB  ·  ई-रीडर',
+            'ar': '📗 EPUB  ·  القارئ الإلكتروني',
         },
         'mime':      'application/epub+zip',
         'ext':       'epub',
@@ -477,7 +484,14 @@ EXPORT_FORMATS: dict[str, dict] = {
     },
     'fb2': {
         'label': {
-            'ru': '📘 FB2', 'en': '📘 FB2', 'es': '📘 FB2', 'fr': '📘 FB2', 'pt': '📘 FB2', 'zh-CN': '📘 FB2', 'hi': '📘 FB2', 'ar': '📘 FB2'
+            'ru': '📘 FB2  ·  PocketBook',
+            'en': '📘 FB2  ·  PocketBook',
+            'es': '📘 FB2  ·  PocketBook',
+            'fr': '📘 FB2  ·  PocketBook',
+            'pt': '📘 FB2  ·  PocketBook',
+            'zh-CN': '📘 FB2  ·  PocketBook',
+            'hi': '📘 FB2  ·  PocketBook',
+            'ar': '📘 FB2  ·  PocketBook',
         },
         'mime':      'application/xml',
         'ext':       'fb2',
@@ -495,7 +509,14 @@ EXPORT_FORMATS: dict[str, dict] = {
     },
     'html': {
         'label': {
-            'ru': '🌐 HTML', 'en': '🌐 HTML', 'es': '🌐 HTML', 'fr': '🌐 HTML', 'pt': '🌐 HTML', 'zh-CN': '🌐 HTML', 'hi': '🌐 HTML', 'ar': '🌐 HTML'
+            'ru': '🌐 HTML  ·  Браузер',
+            'en': '🌐 HTML  ·  Browser',
+            'es': '🌐 HTML  ·  Navegador',
+            'fr': '🌐 HTML  ·  Navigateur',
+            'pt': '🌐 HTML  ·  Navegador',
+            'zh-CN': '🌐 HTML  ·  浏览器',
+            'hi': '🌐 HTML  ·  ब्राउज़र',
+            'ar': '🌐 HTML  ·  المتصفح',
         },
         'mime':      'text/html',
         'ext':       'html',
@@ -513,7 +534,14 @@ EXPORT_FORMATS: dict[str, dict] = {
     },
     'pdf': {
         'label': {
-            'ru': '📕 PDF', 'en': '📕 PDF', 'es': '📕 PDF', 'fr': '📕 PDF', 'pt': '📕 PDF', 'zh-CN': '📕 PDF', 'hi': '📕 PDF', 'ar': '📕 PDF'
+            'ru': '📕 PDF  ·  Печать',
+            'en': '📕 PDF  ·  Print',
+            'es': '📕 PDF  ·  Imprimir',
+            'fr': '📕 PDF  ·  Impression',
+            'pt': '📕 PDF  ·  Impressão',
+            'zh-CN': '📕 PDF  ·  打印',
+            'hi': '📕 PDF  ·  प्रिंट',
+            'ar': '📕 PDF  ·  طباعة',
         },
         'mime':      'application/pdf',
         'ext':       'pdf',
@@ -531,7 +559,14 @@ EXPORT_FORMATS: dict[str, dict] = {
     },
     'txt': {
         'label': {
-            'ru': '📄 TXT', 'en': '📄 TXT', 'es': '📄 TXT', 'fr': '📄 TXT', 'pt': '📄 TXT', 'zh-CN': '📄 TXT', 'hi': '📄 TXT', 'ar': '📄 TXT'
+            'ru': '📄 TXT  ·  Текст',
+            'en': '📄 TXT  ·  Plain text',
+            'es': '📄 TXT  ·  Texto',
+            'fr': '📄 TXT  ·  Texte',
+            'pt': '📄 TXT  ·  Texto',
+            'zh-CN': '📄 TXT  ·  文本',
+            'hi': '📄 TXT  ·  पाठ',
+            'ar': '📄 TXT  ·  نص',
         },
         'mime':      'text/plain',
         'ext':       'txt',

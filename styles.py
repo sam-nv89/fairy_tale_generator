@@ -77,75 +77,116 @@ def get_app_styles(dark_mode: bool = True) -> str:
         background-attachment: fixed !important;
     }}
     
-    /* ========== PREMIUM DARK DOWNLOAD POPOVER STYLE ========== */
-    /* Target the popover container with high specificity */
-    div[data-testid="stPopoverBody"] {{
-        background: rgba(15, 23, 42, 0.2) !important; /* Semi-transparent dark slate */
-        backdrop-filter: blur(8px) !important; /* Strong blur */
-        -webkit-backdrop-filter: blur(12px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-        border-radius: 8px !important;
-        padding: 4px !important; /* Minimal padding container */
-        min-width: 120px !important; /* Much narrower (was 240px) */
-        max-width: 160px !important;
+    /* ========== GLASSMORPHISM DOWNLOAD MENU (Concept A) ========== */
+    
+    /* --- Entrance Animation --- */
+    @keyframes popoverSlideIn {{
+        from {{ opacity: 0; transform: translateY(-8px) scale(0.96); }}
+        to   {{ opacity: 1; transform: translateY(0) scale(1); }}
+    }}
+    
+    @keyframes gradientSweep {{
+        from {{ background-position: -200% center; }}
+        to   {{ background-position: 200% center; }}
     }}
 
-    /* FIXED: Remove default Streamlit gap between buttons in the popover */
+    /* --- Container: Frosted Glass Panel --- */
+    div[data-testid="stPopoverBody"] {{
+        background: rgba(15, 23, 42, 0.82) !important;
+        backdrop-filter: blur(24px) saturate(1.8) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.8) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+        border-radius: 16px !important;
+        padding: 8px !important;
+        min-width: 220px !important;
+        max-width: 280px !important;
+        animation: popoverSlideIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }}
+
+    /* --- Remove Streamlit gap between cards --- */
     div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {{
-        gap: 0rem !important;
+        gap: 4px !important;
         padding: 0 !important;
     }}
 
-    /* FIXED: Override the white background of the immediate child */
+    /* --- Override white background of immediate child --- */
     div[data-testid="stPopoverBody"] > div {{
         background-color: transparent !important;
         color: inherit !important;
     }}
 
-    /* Force text to use theme color */
+    /* --- Base text styling --- */
     div[data-testid="stPopoverBody"] *, 
     div[data-testid="stPopoverBody"] p {{
-        color: var(--text-color) !important;
-        font-family: 'Inter', sans-serif !important;
+        color: #E2E8F0 !important;
+        font-family: 'Inter', -apple-system, sans-serif !important;
         text-align: left !important;
         margin: 0 !important;
         padding: 0 !important;
-        line-height: 1.4 !important; /* Slightly more varied line-height for readability */
+        line-height: 1.5 !important;
     }}
 
-    /* Style buttons inside to look like Minimalist List Items */
+    /* --- Card Buttons: Each format as a premium card row --- */
     div[data-testid="stPopoverBody"] button {{
-        background: transparent !important;
+        /* Card surface */
+        background: rgba(255, 255, 255, 0.04) !important;
         border: none !important;
+        border-left: 3px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 10px !important;
         
-        /* ADAPTIVE COLOR & FULL OPACITY */
-        color: var(--text-color) !important; 
-        opacity: 1 !important; /* Maximum readability */
-
-        font-size: 0.75rem !important;
-        font-weight: 500 !important; /* Medium weight for better legibility */
+        /* Color & Typography */
+        color: #E2E8F0 !important;
+        opacity: 1 !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.01em !important;
         
-        /* AGGRESSIVE LEFT ALIGNMENT */
+        /* Layout */
         text-align: left !important;
         display: flex !important;
         flex-direction: row !important;
         justify-content: flex-start !important;
         align-items: center !important;
         
-        padding: 2px 4px !important; /* Slightly more vertical padding for breathing room */
-        padding-left: 0px !important;
-        margin: 0px !important;
-        
+        /* Spacing */
+        padding: 10px 14px !important;
+        margin: 0 !important;
         width: 100% !important;
-        border-radius: 4px !important;
-        transition: background 0.1s ease, transform 0.1s ease !important;
+        min-height: 40px !important;
+        
+        /* Effects */
         position: relative !important;
         box-shadow: none !important;
-        min-height: 24px !important; /* Restore 24px for tap target size */
+        overflow: hidden !important;
+        transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    }}
+    
+    /* --- Colored Accent Borders per Format (nth-child) --- */
+    /* EPUB — Green */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(1) button {{
+        border-left-color: #4ade80 !important;
+    }}
+    /* FB2 — Blue */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(2) button {{
+        border-left-color: #60a5fa !important;
+    }}
+    /* HTML — Amber */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(3) button {{
+        border-left-color: #fbbf24 !important;
+    }}
+    /* PDF — Red */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(4) button {{
+        border-left-color: #f87171 !important;
+    }}
+    /* TXT — Violet */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(5) button {{
+        border-left-color: #a78bfa !important;
     }}
 
-    /* Force all children of the button to align left and remove margins */
+    /* --- Force children to align left --- */
     div[data-testid="stPopoverBody"] button * {{
         justify-content: flex-start !important;
         text-align: left !important;
@@ -154,33 +195,58 @@ def get_app_styles(dark_mode: bool = True) -> str:
         flex-grow: 0 !important;
     }}
 
-    /* Hover effect */
+    /* --- Hover: Gradient Sweep + Glow --- */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: rgba(150, 150, 150, 0.15) !important; /* Neutral gray hover for both themes */
-        color: var(--text-color) !important; /* Keep adaptive text color on hover! */
-        transform: translateX(2px) !important; /* Restore subtle shift */
-        padding-left: 0px !important; /* Don't change padding, use transform */
-        font-weight: 600 !important; /* Slight bold on hover */
+        background: linear-gradient(
+            90deg,
+            rgba(102, 126, 234, 0.15) 0%,
+            rgba(118, 75, 162, 0.1) 50%,
+            rgba(102, 126, 234, 0.05) 100%
+        ) !important;
+        border-left-width: 4px !important;
+        transform: translateX(3px) !important;
+        color: #F8FAFC !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 12px rgba(102, 126, 234, 0.15) !important;
+    }}
+    
+    /* --- Hover accent glow per format --- */
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(1) button:hover {{
+        box-shadow: 0 2px 12px rgba(74, 222, 128, 0.2) !important;
+    }}
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(2) button:hover {{
+        box-shadow: 0 2px 12px rgba(96, 165, 250, 0.2) !important;
+    }}
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(3) button:hover {{
+        box-shadow: 0 2px 12px rgba(251, 191, 36, 0.2) !important;
+    }}
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(4) button:hover {{
+        box-shadow: 0 2px 12px rgba(248, 113, 113, 0.2) !important;
+    }}
+    div[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] > div:nth-child(5) button:hover {{
+        box-shadow: 0 2px 12px rgba(167, 139, 250, 0.2) !important;
     }}
 
-    /* Active State */
+    /* --- Active: Press feedback --- */
     div[data-testid="stPopoverBody"] button:active {{
-        background: rgba(150, 150, 150, 0.25) !important;
+        transform: translateX(1px) scale(0.98) !important;
+        background: rgba(102, 126, 234, 0.2) !important;
     }}
 
-    /* Disabled State */
+    /* --- Disabled State --- */
     div[data-testid="stPopoverBody"] button:disabled {{
-        opacity: 0.5 !important;
+        opacity: 0.4 !important;
         cursor: not-allowed !important;
         pointer-events: none !important;
+        border-left-color: rgba(255, 255, 255, 0.08) !important;
     }}
 
-    /* Hide default scrollbars if any */
+    /* --- Scrollbar (micro) --- */
     div[data-testid="stPopoverBody"]::-webkit-scrollbar {{
-        width: 4px !important;
+        width: 3px !important;
     }}
     div[data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {{
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
         border-radius: 4px !important;
     }}
 
