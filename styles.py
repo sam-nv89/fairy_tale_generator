@@ -80,8 +80,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* ========== PREMIUM DARK DOWNLOAD POPOVER STYLE ========== */
     /* Target the popover container with high specificity */
     div[data-testid="stPopoverBody"] {{
-        background: rgba(15, 23, 42, 0.6) !important; /* Semi-transparent dark slate */
-        backdrop-filter: blur(12px) !important; /* Strong blur */
+        background: rgba(15, 23, 42, 0.2) !important; /* Semi-transparent dark slate */
+        backdrop-filter: blur(8px) !important; /* Strong blur */
         -webkit-backdrop-filter: blur(12px) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
@@ -94,15 +94,15 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* FIXED: Override the white background of the immediate child */
     div[data-testid="stPopoverBody"] > div {{
         background-color: transparent !important;
-        color: #F1F5F9 !important;
+        color: inherit !important;
     }}
 
-    /* Force all text inside popover to be white/light */
+    /* Force text to use theme color (Dark on Light, Light on Dark) */
     div[data-testid="stPopoverBody"] *, 
     div[data-testid="stPopoverBody"] p,
     div[data-testid="stPopoverBody"] span,
     div[data-testid="stPopoverBody"] div {{
-        color: #F8FAFC !important; /* Slate-50 */
+        color: var(--text-color) !important; /* Adaptive color for Day/Night themes */
         font-family: 'Inter', sans-serif !important;
     }}
 
@@ -110,9 +110,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stPopoverBody"] button {{
         background: transparent !important;
         border: none !important;
-        color: #E2E8F0 !important;
+        color: var(--text-color) !important; /* Use theme text color */
         font-size: 0.75rem !important; /* Tiny font (12px) */
-        font-weight: 400 !important;
+        font-weight: 500 !important; /* Slightly bolder for readability on small size */
         text-align: left !important;
         padding: 2px 6px !important; /* Minimal padding */
         width: 100% !important;
@@ -121,7 +121,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        margin-bottom: 0px !important; /* No margin */
+        margin: 0px !important; /* ABSOLUTELY NO MARGIN */
         position: relative !important;
         box-shadow: none !important;
         min-height: 20px !important; /* Force tiny height */
@@ -130,8 +130,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
 
     /* Hover effect: Subtle background change */
     div[data-testid="stPopoverBody"] button:hover {{
-        background: rgba(255, 255, 255, 0.08) !important;
-        color: #FFFFFF !important;
+        background: rgba(120, 120, 120, 0.1) !important; /* Neutral hover */
         transform: none !important;
         padding-left: 6px !important; /* No movement */
         box-shadow: none !important;
@@ -139,7 +138,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
 
     /* Active State */
     div[data-testid="stPopoverBody"] button:active {{
-        background: rgba(255, 255, 255, 0.12) !important;
+        background: rgba(120, 120, 120, 0.15) !important;
     }}
 
     /* Disabled State */
