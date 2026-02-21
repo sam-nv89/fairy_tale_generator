@@ -159,6 +159,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_btn': "💾 Save to Library",
         'saved_success': "✅ Story saved!",
         'download_txt': "📄 Download Text",
+        'location': "📍",
         'logout_btn': "🚪 Logout",
         
         # Genres

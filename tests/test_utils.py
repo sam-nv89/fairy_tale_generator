@@ -155,8 +155,8 @@ def test_get_user_language_missing_country(monkeypatch):
 
 def test_get_user_language_unsupported_country(monkeypatch):
     """Проверка fallback для страны с неподдерживаемым языком"""
-    # Например, Япония - язык не поддерживается
-    dummy = DummyResponse({'country_code': 'JP'}, status_code=200)
+    # Например, Антарктида - язык точно не в маппинге
+    dummy = DummyResponse({'country_code': 'AQ'}, status_code=200)
     
     def fake_get(*args, **kwargs):
         return dummy

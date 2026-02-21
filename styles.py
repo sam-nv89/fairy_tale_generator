@@ -1422,8 +1422,30 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transform: scale(0.97) !important;
     }}
 
-    /* ========== DROPDOWN TOGGLE FIX ========== */
-    /* Fix for dropdown reopening on second click instead of closing */
+    /* ========== TOAST NOTIFICATIONS ========== */
+    [data-testid="stToast"] {{
+        background: {'rgba(20, 20, 30, 0.95)' if dark_mode else 'rgba(255, 255, 255, 0.95)'} !important;
+        border-left: 4px solid #10b981 !important;
+        border-radius: 12px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        min-height: auto !important;
+    }}
+    
+    [data-testid="stToast"] > div {{
+        color: {t['text']} !important;
+    }}
+    
+    [data-testid="stToast"] [data-testid="stMarkdownContainer"] p {{
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        color: {t['text']} !important;
+        margin: 0 !important;
+        line-height: 1.4 !important;
+        white-space: normal !important;
+    }}
     </style>
     """
 

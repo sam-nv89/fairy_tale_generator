@@ -312,7 +312,7 @@ if not _SUPABASE_AVAILABLE:
     # Не показываем st.warning на экране, чтобы не засорять UI
 
 # --- Функция для создания красивого плеера ---
-def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False):
+def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3"):
     """Профессиональный аудио-плеер с полным набором функций"""
     import uuid
     
@@ -414,7 +414,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
         </button>
         <button class="speed-btn" id="speedBtn_{player_id}" title="Скорость воспроизведения">1x</button>
-        <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="skazka.mp3" title="Скачать MP3">
+        <a class="download-link" href="data:audio/mp3;base64,{audio_base64}" download="{file_name}" title="Скачать MP3">
             <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
         </a>
     </div>
@@ -1208,7 +1208,10 @@ if 'current_story' in st.session_state:
                 'ar': '⬇️ تحميل',
             }.get(user_lang, '⬇️ Download')
 
-            base_name = 'skazka' if user_lang == 'ru' else 'story'
+            raw_title = story.get('title', '')
+            # Удаляем недопустимые для файловых систем символы
+            safe_title = re.sub(r'[\\/*?:"<>|]', "", raw_title).strip()
+            base_name = safe_title if safe_title else ('skazka' if user_lang == 'ru' else 'story')
 
             with st.container(key="toolbar_download"):
                 with st.popover(download_title, use_container_width=True):
@@ -1286,7 +1289,7 @@ if 'current_story' in st.session_state:
         if st.session_state['current_story'].get('audio'):
             st.success("Аудио готово! ⬇️" if user_lang == 'ru' else "Audio ready! ⬇️")
             player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
-            display_audio_player(st.session_state['current_story']['audio'], player_label)
+            display_audio_player(st.session_state['current_story']['audio'], player_label, file_name=f"{base_name}.mp3")
             
         # SPACER HACK: Добавляем БОЛЬШОЕ пустое пространство внизу (600px), чтобы popover ВСЕГДА открывался вниз
         st.markdown("<div style='height: 600px; pointer-events: none;'></div>", unsafe_allow_html=True)
