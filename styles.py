@@ -1430,7 +1430,12 @@ def get_app_styles(dark_mode: bool = True) -> str:
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
-        min-height: auto !important;
+    }}
+    
+    /* Сбрасываем overflow-hidden на всех внутренних контейнерах Toast, 
+       чтобы компенсировать отрицательные margin Streamlit */
+    [data-testid="stToast"] * {{
+        overflow: visible !important;
     }}
     
     [data-testid="stToast"] > div {{
@@ -1445,6 +1450,7 @@ def get_app_styles(dark_mode: bool = True) -> str:
         margin: 0 !important;
         line-height: 1.4 !important;
         white-space: normal !important;
+        padding-bottom: 22px !important; /* Увеличиваем нижний отступ, чтобы компенсировать отсечение */
     }}
     </style>
     """
