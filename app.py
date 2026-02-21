@@ -312,7 +312,7 @@ if not _SUPABASE_AVAILABLE:
     # Не показываем st.warning на экране, чтобы не засорять UI
 
 # --- Функция для создания красивого плеера ---
-def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3"):
+def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3", sync_text_id=None):
     """Профессиональный аудио-плеер с полным набором функций"""
     import uuid
     
@@ -480,6 +480,44 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 updateProgress(progress, 0, audio.duration);
                 updateVolumeProgress();
                 if ({autoplay_js}) audio.play().catch(e => {{}});
+                
+                // === КАРАОКЕ ИНИЦИАЛИЗАЦИЯ ===
+                const syncId = "{sync_text_id if sync_text_id else ''}";
+                if (syncId) {{
+                    const textContainer = window.parent.document.getElementById(syncId) || document.getElementById(syncId);
+                    if (textContainer && !textContainer.dataset.karaokeInited) {{
+                        // Разбиваем текст на слова, сохраняя HTML (например, <strong>)
+                        const walker = document.createTreeWalker(textContainer, NodeFilter.SHOW_TEXT, null, false);
+                        const textNodes = [];
+                        let node;
+                        while(node = walker.nextNode()) {{
+                            if (node.nodeValue.trim() !== '') textNodes.push(node);
+                        }}
+                        
+                        textNodes.forEach(textNode => {{
+                            const parent = textNode.parentNode;
+                            // Пропускаем, если уже обернуто
+                            if (parent.classList && parent.classList.contains('tts-word')) return;
+                            
+                            const words = textNode.nodeValue.split(/(\\s+)/);
+                            const fragment = document.createDocumentFragment();
+                            
+                            words.forEach(word => {{
+                                if (word.trim() === '') {{
+                                    fragment.appendChild(document.createTextNode(word));
+                                }} else {{
+                                    const span = document.createElement('span');
+                                    span.className = 'tts-word';
+                                    span.textContent = word;
+                                    span.style.transition = 'color 0.2s, text-shadow 0.2s';
+                                    fragment.appendChild(span);
+                                }}
+                            }});
+                            parent.replaceChild(fragment, textNode);
+                        }});
+                        textContainer.dataset.karaokeInited = 'true';
+                    }}
+                }}
             }};
             
             audio.ondurationchange = () => {{
@@ -498,6 +536,30 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 }}
                 updateTimeDisplay();
                 updateProgress(progress, audio.currentTime, audio.duration);
+                
+                // === КАРАОКЕ ОБНОВЛЕНИЕ ===
+                const syncId = "{sync_text_id if sync_text_id else ''}";
+                if (syncId && isFinite(audio.duration) && audio.duration > 0) {{
+                    const textContainer = window.parent.document.getElementById(syncId) || document.getElementById(syncId);
+                    if (textContainer) {{
+                        const words = textContainer.querySelectorAll('.tts-word');
+                        if (words.length > 0) {{
+                            const progressRatio = audio.currentTime / audio.duration;
+                            // Рассчитываем, сколько слов должно быть подсвечено
+                            const targetWordIndex = Math.floor(progressRatio * words.length);
+                            
+                            words.forEach((word, index) => {{
+                                if (index <= targetWordIndex) {{
+                                    word.style.color = '#ffd700'; // Золотой цвет
+                                    word.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.4)';
+                                }} else {{
+                                    word.style.color = ''; // Возврат к оригинальному цвету
+                                    word.style.textShadow = 'none';
+                                }}
+                            }});
+                        }}
+                    }}
+                }}
             }};
             
             progress.oninput = () => {{
@@ -1174,7 +1236,7 @@ if 'current_story' in st.session_state:
         
         st.markdown(
             f"""
-            <div style="
+            <div id="story_text_karaoke" style="
                 background: rgba(255,255,255,0.05); 
                 padding: 30px; 
                 border-radius: 12px; 
@@ -1289,7 +1351,7 @@ if 'current_story' in st.session_state:
         if st.session_state['current_story'].get('audio'):
             st.success("Аудио готово! ⬇️" if user_lang == 'ru' else "Audio ready! ⬇️")
             player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
-            display_audio_player(st.session_state['current_story']['audio'], player_label, file_name=f"{base_name}.mp3")
+            display_audio_player(st.session_state['current_story']['audio'], player_label, file_name=f"{base_name}.mp3", sync_text_id="story_text_karaoke")
             
         # SPACER HACK: Добавляем БОЛЬШОЕ пустое пространство внизу (600px), чтобы popover ВСЕГДА открывался вниз
         st.markdown("<div style='height: 600px; pointer-events: none;'></div>", unsafe_allow_html=True)
