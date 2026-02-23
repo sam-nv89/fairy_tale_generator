@@ -1334,6 +1334,7 @@ if 'current_story' in st.session_state:
                     try:
                         audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
                         st.session_state['current_story']['audio'] = audio_fp
+                        st.session_state['show_audio_toast'] = True
                         st.rerun()
                     except Exception as e_tts:
                         st.error(f"Ошибка озвучки: {e_tts}" if user_lang == 'ru' else f"Narration error: {e_tts}")
@@ -1349,7 +1350,11 @@ if 'current_story' in st.session_state:
 
         # Показываем плеер
         if st.session_state['current_story'].get('audio'):
-            st.success("Аудио готово! ⬇️" if user_lang == 'ru' else "Audio ready! ⬇️")
+            # Отображаем toast один раз при первой загрузке аудио
+            if st.session_state.get('show_audio_toast'):
+                st.toast(t('audio_ready', user_lang))
+                st.session_state['show_audio_toast'] = False
+                
             player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
             display_audio_player(st.session_state['current_story']['audio'], player_label, file_name=f"{base_name}.mp3", sync_text_id="story_text_karaoke")
             

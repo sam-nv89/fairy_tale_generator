@@ -67,6 +67,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 Создаем аудио...",
         'save_btn': "💾 Сохранить",
         'saved_success': "✅ Сказка сохранена!",
+        'audio_ready': "Аудио готово! 🎧",
         'download_txt': "📄 Скачать текст",
         'location': "📍",
         'logout_btn': "🚪 Выйти",
@@ -158,6 +159,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 Creating audio...",
         'save_btn': "💾 Save to Library",
         'saved_success': "✅ Story saved!",
+        'audio_ready': "Audio ready! 🎧",
         'download_txt': "📄 Download Text",
         'location': "📍",
         'logout_btn': "🚪 Logout",
@@ -250,6 +252,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 Creando audio...",
         'save_btn': "💾 Guardar en la Biblioteca",
         'saved_success': "✅ Cuento guardado.",
+        'audio_ready': "¡Audio listo! 🎧",
         'download_txt': "📄 Descargar Texto",
         'logout_btn': "🚪 Salir",
         
@@ -341,6 +344,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 Création de l'audio...",
         'save_btn': "💾 Sauvegarder dans la Bibliothèque",
         'saved_success': "✅ Conte sauvegardé.",
+        'audio_ready': "Audio prêt ! 🎧",
         'download_txt': "📄 Télécharger le Texte",
         'logout_btn': "🚪 Déconnexion",
         
@@ -432,6 +436,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 Criando áudio...",
         'save_btn': "💾 Salvar na Biblioteca",
         'saved_success': "✅ Conto salvo.",
+        'audio_ready': "Áudio pronto! 🎧",
         'download_txt': "📄 Baixar Texto",
         'logout_btn': "🚪 Sair",
         
@@ -523,6 +528,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 正在创建音频...",
         'save_btn': "💾 保存到图书馆",
         'saved_success': "✅ 故事已保存。",
+        'audio_ready': "音频已准备好！ 🎧",
         'download_txt': "📄 下载文本",
         'logout_btn': "🚪 退出",
         
@@ -614,6 +620,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 ऑडियो बनाया जा रहा है...",
         'save_btn': "💾 लाइब्रेरी में सेव करें",
         'saved_success': "✅ कहानी सेव हो गई।",
+        'audio_ready': "ऑडियो तैयार है! 🎧",
         'download_txt': "📄 टेक्स्ट डाउनलोड करें",
         'logout_btn': "🚪 लॉगआउट",
         
@@ -705,6 +712,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'processing_audio': "🎧 جاري إنشاء الصوت...",
         'save_btn': "💾 حفظ في المكتبة",
         'saved_success': "✅ تم حفظ القصة.",
+        'audio_ready': "الصوت جاهز! 🎧",
         'download_txt': "📄 تحميل النص",
         'logout_btn': "🚪 تسجيل الخروج",
         
