@@ -312,33 +312,79 @@ if not _SUPABASE_AVAILABLE:
     # Не показываем st.warning на экране, чтобы не засорять UI
 
 # --- Функция для создания красивого плеера ---
-def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3", sync_text_id=None):
-    """Профессиональный аудио-плеер с полным набором функций"""
+def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3", sync_text_id=None, story_html=None, word_boundaries=None):
     import uuid
+    import base64
+    import json
     
     audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode()
     player_id = uuid.uuid4().hex[:8]
     autoplay_js = "true" if autoplay else "false"
+    word_boundaries_json = json.dumps(word_boundaries) if word_boundaries else "null"
     
-    st.markdown(f"**{label}**")
+    # Read theme to style the player appropriately
+    dark_mode = st.session_state.get('dark_mode', True)
+    
+    # Theme-aware colors
+    player_bg = "rgba(255, 255, 255, 0.03)" if dark_mode else "rgba(255, 255, 255, 0.6)"
+    player_border = "rgba(255, 255, 255, 0.08)" if dark_mode else "rgba(0, 0, 0, 0.08)"
+    text_color = "#e8eaed" if dark_mode else "#1a1a1a"
+    icon_fill = "rgba(255, 255, 255, 0.7)" if dark_mode else "#666"
+    icon_hover = "#a78bfa" if dark_mode else "#667eea"
+    btn_hover_bg = "rgba(255, 255, 255, 0.1)" if dark_mode else "rgba(0, 0, 0, 0.06)"
+    text_bg = "transparent"
+    
+    # Karaoke colors
+    karaoke_past = "#a78bfa" if dark_mode else "#667eea"      # Read text (Brand purple)
+    karaoke_active = "#d8b4fe" if dark_mode else "#818cf8"    # Currently reading (Brighter purple)
+    karaoke_glow = "rgba(167, 139, 250, 0.6)" if dark_mode else "rgba(102, 126, 234, 0.4)"
+    
+    if label:
+        st.markdown(f"**{label}**")
+        
+    # Текст сказки теперь рендерится прямо в основном окне Streamlit (отвязываем от iframe)
+    if story_html:
+        story_text_html = f"""
+        <div id="integrated_story_text_{player_id}" style="
+            background: {text_bg}; 
+            padding: 20px 30px; 
+            border-radius: 12px; 
+            font-family: 'Georgia', 'Times New Roman', serif; 
+            font-size: 1.15em; 
+            line-height: 1.6; 
+            color: {text_color};
+            margin-top: 10px;
+            margin-bottom: 1.5rem; /* Отступ для плеера убран, теперь он в самом низу страницы */
+            transition: all 0.3s ease;
+        ">
+        {story_html}
+        </div>
+        """
+        st.markdown(story_text_html, unsafe_allow_html=True)
+        sync_text_id = f"integrated_story_text_{player_id}"
     
     html_code = f"""
-    <div id="player_{player_id}">
+    <div id="player_{player_id}" style="
+        background: {player_bg}; 
+        border-radius: 14px; 
+        border: 1px solid {player_border}; 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.1); 
+        margin: 0; 
+        width: 100%;
+    ">
     <style>
         /* Scoped to #player_{player_id} to avoid leaking styles */
         #player_{player_id} * {{ box-sizing: border-box; }}
         #player_{player_id} {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }}
-        #player_{player_id} .player {{
+        
+        #player_{player_id} .player-controls-container {{
             display: flex;
             align-items: center;
-            background: #ffffff;
             padding: 10px 14px;
-            border-radius: 14px;
             gap: 6px;
-            border: 1px solid #e5e5e5;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             max-width: 100%;
-            margin: 10px auto 0 auto;
         }}
         #player_{player_id} .btn {{
             width: 36px;
@@ -349,45 +395,47 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.15s;
+            transition: all 0.2s ease;
             background: transparent;
             flex-shrink: 0;
         }}
-        #player_{player_id} .btn svg {{ width: 16px; height: 16px; fill: #666; }}
-        #player_{player_id} .btn:hover {{ background: rgba(0,0,0,0.06); }}
-        #player_{player_id} .btn:hover svg {{ fill: #3390ec; }}
+        #player_{player_id} .btn svg {{ width: 16px; height: 16px; fill: {icon_fill}; transition: fill 0.2s; }}
+        #player_{player_id} .btn:hover {{ background: {btn_hover_bg}; }}
+        #player_{player_id} .btn:hover svg {{ fill: {icon_hover}; }}
         #player_{player_id} .btn-skip {{ width: 38px; height: 38px; }}
-        #player_{player_id} .btn-skip svg {{ width: 20px; height: 20px; fill: #555; }}
+        #player_{player_id} .btn-skip svg {{ width: 20px; height: 20px; fill: {icon_fill}; }}
         #player_{player_id} .btn-play {{
             width: 38px;
             height: 38px;
-            background: #3390ec;
-            box-shadow: 0 2px 6px rgba(51,144,236,0.35);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }}
         #player_{player_id} .btn-play svg {{ width: 20px; height: 20px; fill: white; margin-left: 2px; }}
-        #player_{player_id} .btn-play:hover {{ background: #2080dd; transform: scale(1.05); }}
+        #player_{player_id} .btn-play:hover {{ background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); transform: scale(1.05); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }}
         #player_{player_id} .btn-play:hover svg {{ fill: white; }}
-        #player_{player_id} .btn-active svg {{ fill: #3390ec; }}
+        #player_{player_id} .btn-active svg {{ fill: {icon_hover}; }}
         #player_{player_id} .btn-repeat svg {{ width: 20px; height: 20px; stroke-width: 1px; }}
         #player_{player_id} .center {{ flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }}
-        #player_{player_id} .progress-bar {{ -webkit-appearance: none; width: 100%; height: 4px; background: #e8e8e8; border-radius: 2px; cursor: pointer; outline: none; }}
-        #player_{player_id} .time-display {{ font-size: 12px; color: #606060; font-weight: 500; white-space: nowrap; margin-left: 8px; }}
+        #player_{player_id} .progress-bar {{ -webkit-appearance: none; width: 100%; height: 4px; background: rgba(128,128,128,0.2); border-radius: 2px; cursor: pointer; outline: none; }}
+        #player_{player_id} .time-display {{ font-size: 12px; color: {icon_fill}; font-weight: 500; white-space: nowrap; margin-left: 8px; }}
         #player_{player_id} .volume-control {{ display: flex; align-items: center; height: 36px; padding: 0 4px; border-radius: 18px; transition: all 0.2s ease; }}
         #player_{player_id} .volume-btn {{ width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }}
-        #player_{player_id} .volume-btn svg {{ width: 18px; height: 18px; fill: #606060; }}
+        #player_{player_id} .volume-btn svg {{ width: 18px; height: 18px; fill: {icon_fill}; }}
         #player_{player_id} .volume-slider-wrap {{ width: 0; height: 100%; overflow: hidden; transition: width 0.2s ease; display: flex; align-items: center; }}
         #player_{player_id} .volume-control:hover .volume-slider-wrap {{ width: 76px; margin-left: 4px; }}
-        #player_{player_id} .volume-slider {{ -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 52px !important; height: 4px !important; background: #e8e8e8 !important; border-radius: 2px !important; cursor: pointer !important; outline: none !important; border: none !important; margin: 0 12px !important; padding: 0 !important; }}
-        #player_{player_id} .volume-slider::-webkit-slider-thumb {{ -webkit-appearance: none !important; width: 14px !important; height: 14px !important; background: #3390ec !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; margin-top: -5px !important; }}
-        #player_{player_id} .volume-slider::-moz-range-thumb {{ width: 14px !important; height: 14px !important; background: #3390ec !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; }}
-        #player_{player_id} .download-link {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: all 0.15s; text-decoration: none; }}
-        #player_{player_id} .download-link svg {{ fill: #666; width: 16px; height: 16px; }}
-        #player_{player_id} .download-link:hover {{ background: rgba(0,0,0,0.06); }}
-        #player_{player_id} .download-link:hover svg {{ fill: #3390ec; }}
+        #player_{player_id} .volume-slider {{ -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; width: 52px !important; height: 4px !important; background: rgba(128,128,128,0.2) !important; border-radius: 2px !important; cursor: pointer !important; outline: none !important; border: none !important; margin: 0 12px !important; padding: 0 !important; pointer-events: auto !important; }}
+        #player_{player_id} .volume-slider::-webkit-slider-thumb {{ -webkit-appearance: none !important; width: 14px !important; height: 14px !important; background: #667eea !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; margin-top: -5px !important; pointer-events: auto !important; }}
+        #player_{player_id} .volume-slider::-moz-range-thumb {{ width: 14px !important; height: 14px !important; background: #667eea !important; border-radius: 50% !important; cursor: pointer !important; border: none !important; pointer-events: auto !important; }}
+        #player_{player_id} .download-link {{ display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; transition: all 0.2s ease; text-decoration: none; }}
+        #player_{player_id} .download-link svg {{ fill: {icon_fill}; width: 16px; height: 16px; transition: fill 0.2s; }}
+        #player_{player_id} .download-link:hover {{ background: {btn_hover_bg}; }}
+        #player_{player_id} .download-link:hover svg {{ fill: {icon_hover}; }}
+        #player_{player_id} .speed-btn {{ width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: {icon_fill}; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }}
+        #player_{player_id} .speed-btn:hover {{ background: {btn_hover_bg}; color: {icon_hover}; }}
     </style>
 
-    <div class="player" id="player_{player_id}">
-        <!-- Control buttons removed for brevity, kept structure -->
+    <div class="player-controls-container">
+        <!-- Control buttons -->
         <button class="btn btn-skip" id="skipBack_{player_id}" title="Назад 10 сек">
             <svg viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
         </button>
@@ -477,46 +525,85 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                     totalDuration = 0;
                 }}
                 updateTimeDisplay();
-                updateProgress(progress, 0, audio.duration);
                 updateVolumeProgress();
                 if ({autoplay_js}) audio.play().catch(e => {{}});
                 
                 // === КАРАОКЕ ИНИЦИАЛИЗАЦИЯ ===
                 const syncId = "{sync_text_id if sync_text_id else ''}";
                 if (syncId) {{
-                    const textContainer = window.parent.document.getElementById(syncId) || document.getElementById(syncId);
-                    if (textContainer && !textContainer.dataset.karaokeInited) {{
-                        // Разбиваем текст на слова, сохраняя HTML (например, <strong>)
-                        const walker = document.createTreeWalker(textContainer, NodeFilter.SHOW_TEXT, null, false);
-                        const textNodes = [];
-                        let node;
-                        while(node = walker.nextNode()) {{
-                            if (node.nodeValue.trim() !== '') textNodes.push(node);
+                    let attempts = 0;
+                    const initKaraoke = () => {{
+                        attempts++;
+                        let textContainer = null;
+                        try {{
+                            textContainer = window.parent.document.getElementById(syncId);
+                        }} catch(e) {{}}
+
+                        if (!textContainer) {{
+                            if (attempts < 50) setTimeout(initKaraoke, 100);
+                            return;
                         }}
-                        
-                        textNodes.forEach(textNode => {{
-                            const parent = textNode.parentNode;
-                            // Пропускаем, если уже обернуто
-                            if (parent.classList && parent.classList.contains('tts-word')) return;
+
+                        if (textContainer && !textContainer.dataset.karaokeInited) {{
+                            textContainer.dataset.karaokeInited = 'true';
                             
-                            const words = textNode.nodeValue.split(/(\\s+)/);
-                            const fragment = document.createDocumentFragment();
-                            
-                            words.forEach(word => {{
-                                if (word.trim() === '') {{
-                                    fragment.appendChild(document.createTextNode(word));
-                                }} else {{
-                                    const span = document.createElement('span');
-                                    span.className = 'tts-word';
-                                    span.textContent = word;
-                                    span.style.transition = 'color 0.2s, text-shadow 0.2s';
-                                    fragment.appendChild(span);
+                            // Добавляем глобальные стили караоке в родительский документ Streamlit
+                            try {{
+                                const doc = window.parent.document;
+                                if (!doc.getElementById('karaoke-styles-{player_id}')) {{
+                                    const styleNode = doc.createElement('style');
+                                    styleNode.id = 'karaoke-styles-{player_id}';
+                                    styleNode.innerHTML = `
+                                        .tts-word {{ transition: color 0.1s ease, text-shadow 0.1s ease; }}
+                                        .tts-word.karaoke-active {{ color: {karaoke_active} !important; text-shadow: 0 0 12px {karaoke_glow} !important; font-weight: bold; }}
+                                        .tts-word.karaoke-past {{ color: {karaoke_past} !important; text-shadow: none !important; }}
+                                    `;
+                                    doc.head.appendChild(styleNode);
                                 }}
-                            }});
-                            parent.replaceChild(fragment, textNode);
-                        }});
-                        textContainer.dataset.karaokeInited = 'true';
-                    }}
+                            }} catch(err) {{
+                                console.log('Cannot inject styles: ', err);
+                            }}
+                            
+                            try {{
+                                const doc = window.parent.document;
+                                // 4 = NodeFilter.SHOW_TEXT
+                                const walker = doc.createTreeWalker(textContainer, 4, null, false);
+                                const textNodes = [];
+                                let node;
+                                while(node = walker.nextNode()) {{
+                                    if (node.nodeValue.trim() !== '') textNodes.push(node);
+                                }}
+                                
+                                if (textNodes.length === 0) {{
+                                    // Fallback if TreeWalker fails to pick up text
+                                    textContainer.innerHTML = textContainer.innerHTML.split(/(\\s+)/).map(w => w.trim() === '' ? w : `<span class="tts-word">${{w}}</span>`).join('');
+                                }} else {{
+                                    textNodes.forEach(textNode => {{
+                                        const parent = textNode.parentNode;
+                                        if (parent.classList && parent.classList.contains('tts-word')) return;
+                                        
+                                        const words = textNode.nodeValue.split(/(\\s+)/);
+                                        const fragment = doc.createDocumentFragment();
+                                        
+                                        words.forEach(word => {{
+                                            if (word.trim() === '') {{
+                                                fragment.appendChild(doc.createTextNode(word));
+                                            }} else {{
+                                                const span = doc.createElement('span');
+                                                span.className = 'tts-word';
+                                                span.textContent = word;
+                                                fragment.appendChild(span);
+                                            }}
+                                        }});
+                                        parent.replaceChild(fragment, textNode);
+                                    }});
+                                }}
+                            }} catch(err) {{
+                                console.log("Karaoke init error", err);
+                            }}
+                        }}
+                    }};
+                    initKaraoke();
                 }}
             }};
             
@@ -528,35 +615,87 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 }}
             }};
             
+            
+            let isDragging = false;
+            
+            progress.addEventListener('mousedown', () => isDragging = true);
+            progress.addEventListener('mouseup', () => isDragging = false);
+            progress.addEventListener('touchstart', () => isDragging = true);
+            progress.addEventListener('touchend', () => isDragging = false);
+            
             audio.ontimeupdate = () => {{
-                progress.value = audio.currentTime;
+                if (!isDragging) {{
+                    progress.value = audio.currentTime;
+                    updateProgress(progress, audio.currentTime, audio.duration);
+                }}
                 if (isFinite(audio.duration) && audio.duration > 0 && totalDuration !== audio.duration) {{
                     totalDuration = audio.duration;
                     progress.max = audio.duration;
                 }}
                 updateTimeDisplay();
-                updateProgress(progress, audio.currentTime, audio.duration);
                 
                 // === КАРАОКЕ ОБНОВЛЕНИЕ ===
                 const syncId = "{sync_text_id if sync_text_id else ''}";
                 if (syncId && isFinite(audio.duration) && audio.duration > 0) {{
-                    const textContainer = window.parent.document.getElementById(syncId) || document.getElementById(syncId);
+                    let textContainer = null;
+                    try {{ textContainer = window.parent.document.getElementById(syncId); }} catch(e) {{}}
+                    
                     if (textContainer) {{
                         const words = textContainer.querySelectorAll('.tts-word');
                         if (words.length > 0) {{
-                            const progressRatio = audio.currentTime / audio.duration;
-                            // Рассчитываем, сколько слов должно быть подсвечено
-                            const targetWordIndex = Math.floor(progressRatio * words.length);
+                            const wordBoundaries = {word_boundaries_json};
+                            let targetWordIndex = -1;
                             
-                            words.forEach((word, index) => {{
-                                if (index <= targetWordIndex) {{
-                                    word.style.color = '#ffd700'; // Золотой цвет
-                                    word.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.4)';
-                                }} else {{
-                                    word.style.color = ''; // Возврат к оригинальному цвету
-                                    word.style.textShadow = 'none';
+                            if (wordBoundaries && wordBoundaries.length > 0) {{
+                                // Идеальная синхронизация на основе реальных таймкодов от TTS
+                                // Увеличиваем искусственное опережение до 500ms (максимальная компенсация задержки)
+                                const syncLookahead = 0.50;
+                                const currentTime = audio.currentTime + syncLookahead;
+                                
+                                for (let i = 0; i < wordBoundaries.length; i++) {{
+                                    const wb = wordBoundaries[i];
+                                    if (currentTime >= wb.offset && currentTime <= wb.offset + wb.duration) {{
+                                        targetWordIndex = i;
+                                        break;
+                                    }} else if (currentTime < wb.offset && targetWordIndex === -1) {{
+                                        targetWordIndex = i - 1; 
+                                        break;
+                                    }}
                                 }}
-                            }});
+                                
+                                if (targetWordIndex === -1 && currentTime >= wordBoundaries[wordBoundaries.length - 1].offset) {{
+                                    targetWordIndex = wordBoundaries.length - 1;
+                                }}
+                            }} else {{
+                                // Fallback: пропорциональная синхронизация для старых записей
+                                const startOffset = 0.25; 
+                                const endOffset = 0.5;    
+                                const activeDuration = Math.max(0.1, audio.duration - startOffset - endOffset);
+                                
+                                let progressRatio = 0;
+                                if (audio.currentTime > startOffset) {{
+                                    progressRatio = Math.min(1.0, (audio.currentTime - startOffset) / activeDuration);
+                                    progressRatio = Math.pow(progressRatio, 0.95);
+                                }}
+                                targetWordIndex = Math.floor(progressRatio * words.length);
+                            }}
+                            
+                            // Осторожно мапим индекс на реальное количество DOM-узлов
+                            const safeTargetIndex = Math.min(Math.max(-1, targetWordIndex), words.length - 1);
+                            
+                            // Оптимизация: меняем классы только если индекс изменился
+                            if (window.lastKaraokeIndex !== safeTargetIndex) {{
+                                window.lastKaraokeIndex = safeTargetIndex;
+                                words.forEach((word, index) => {{
+                                    if (index === safeTargetIndex) {{
+                                        word.className = 'tts-word karaoke-active';
+                                    }} else if (index < safeTargetIndex) {{
+                                        word.className = 'tts-word karaoke-past';
+                                    }} else {{
+                                        word.className = 'tts-word';
+                                    }}
+                                }});
+                            }}
                         }}
                     }}
                 }}
@@ -626,34 +765,92 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                 audio.playbackRate = speeds[speedIndex];
                 speedBtn.textContent = speeds[speedIndex] + 'x';
             }};
+            // Хак: Идеальное размещение плеера снизу страницы, поверх всех кнопок
+            try {{
+                const parentIframe = window.frameElement;
+                if (parentIframe) {{
+                    const stContainer = parentIframe.closest('.element-container') || parentIframe.parentElement;
+                    if (stContainer) {{
+                        stContainer.style.position = 'fixed';
+                        stContainer.style.bottom = '15px';
+                        stContainer.style.zIndex = '999999';
+                        stContainer.style.padding = '0';
+                        stContainer.style.background = 'transparent';
+                        stContainer.style.height = '62px';
+                        stContainer.style.overflow = 'visible';
+                        
+                        // Динамическое выравнивание и подгонка ширины под контентную колонку (с учетом сайдбара)
+                        const updateLayout = () => {{
+                            const column = stContainer.parentElement;
+                            if (column) {{
+                                const rect = column.getBoundingClientRect();
+                                stContainer.style.left = rect.left + 'px';
+                                stContainer.style.width = rect.width + 'px';
+                            }}
+                        }};
+                        updateLayout();
+                        window.addEventListener('resize', updateLayout);
+                        setInterval(updateLayout, 500); // Следим за открытием/закрытием сайдбара
+                        
+                        // Убираем у самого iframe белые рамки и лишние тени
+                        parentIframe.style.background = 'transparent';
+                        parentIframe.style.border = 'none';
+                        parentIframe.style.boxShadow = 'none';
+                        parentIframe.style.margin = '0';
+                        parentIframe.style.padding = '0';
+                        parentIframe.style.overflow = 'visible';
+                        parentIframe.style.width = '100%';
+                        parentIframe.style.height = '62px'; // Идеально под размер плеера без лишнего пространства
+                    }}
+                }}
+            }} catch(e) {{
+                console.log("Cannot hook parent", e);
+            }}
         }})();
         </script>
+    </div>
     """
-    st.components.v1.html(html_code, height=90)
+    
+    # Так как мы вынесли текст в основной документ и сделали позиционирование через JS absolute/fixed,
+    # iframe плеера должен иметь высоту 0 в потоке DOM, чтобы не отодвигать нижние элементы!
+    component_height = 0
+        
+    st.components.v1.html(html_code, height=component_height, scrolling=False)
 
 # --- Вспомогательная функция для озвучки (Text-to-Speech) ---
-async def generate_audio_stream(text: str, voice: str) -> io.BytesIO:
+from typing import Union, Tuple
+
+async def generate_audio_stream(text: str, voice: str, return_boundaries: bool = False) -> Union[io.BytesIO, Tuple[io.BytesIO, list]]:
     """
     Генерирует аудиопоток из текста с использованием Edge TTS.
     
     Args:
         text: Текст для озвучки.
         voice: Идентификатор голоса (например, 'ru-RU-DmitryNeural').
+        return_boundaries: Если True, возвращает кортеж (audio_bytes, word_boundaries)
     
     Returns:
         io.BytesIO: Буфер с аудиоданными в формате MP3.
-    
-    Raises:
-        Exception: При ошибке генерации аудио.
+        list: (опционально) массив границ слов (с таймкодами)
     """
     logger.info(f"Starting audio generation for voice: {voice}")
     try:
         communicate = edge_tts.Communicate(text, voice)
         audio_data = b""
+        word_boundaries = []
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":
                 audio_data += chunk["data"]
-        logger.info(f"Audio generation successful, size: {len(audio_data)} bytes")
+            elif chunk["type"] == "WordBoundary":
+                word_boundaries.append({
+                    "offset": chunk["offset"] / 10000000.0,
+                    "duration": chunk["duration"] / 10000000.0,
+                    "text": chunk["text"]
+                })
+                
+        logger.info(f"Audio generation successful, size: {len(audio_data)} bytes, boundaries: {len(word_boundaries)}")
+        if return_boundaries:
+            return io.BytesIO(audio_data), word_boundaries
         return io.BytesIO(audio_data)
     except Exception as e:
         logger.error(f"Audio generation failed: {e}")
@@ -870,6 +1067,7 @@ with st.sidebar:
                 if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{save_label}: {created_date}" if created_date else None, type="tertiary"):
                     s['audio'] = None
                     st.session_state['current_story'] = s
+                    st.session_state['show_loaded_toast'] = True
                     st.rerun()
             with tc2:
                 if st.button("✕", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
@@ -1223,6 +1421,21 @@ if 'current_story' in st.session_state:
     try:
         story = st.session_state['current_story']
         
+        # Уведомление о загрузке из библиотеки
+        if st.session_state.get('show_loaded_toast'):
+            success_msg = {
+                'ru': 'Сказка успешно загружена! 📚', 
+                'en': 'Story loaded successfully! 📚',
+                'es': '¡Cuento cargado con éxito! 📚',
+                'fr': 'Histoire chargée avec succès ! 📚',
+                'pt': 'História carregada com sucesso! 📚',
+                'zh-CN': '故事加载成功！ 📚',
+                'hi': 'कहानी सफलतापूर्वक लोड हो गई! 📚',
+                'ar': 'تم تحميل القصة بنجاح! 📚'
+            }
+            st.toast(success_msg.get(user_lang, 'Story loaded successfully! 📚'))
+            st.session_state['show_loaded_toast'] = False
+            
         st.divider()
         st.markdown(f"<h2 style='text-align: center; margin-bottom: 1rem;'>{story['title']}</h2>", unsafe_allow_html=True)
         
@@ -1234,23 +1447,45 @@ if 'current_story' in st.session_state:
 
         formatted_body = "".join([format_paragraph(para) for para in story['body'].split('\n') if para.strip()])
         
-        st.markdown(
-            f"""
-            <div id="story_text_karaoke" style="
-                background: rgba(255,255,255,0.05); 
-                padding: 30px; 
-                border-radius: 12px; 
-                font-family: 'Georgia', 'Times New Roman', serif; 
-                font-size: 1.15em; 
-                line-height: 1.6; 
-                color: #e8eaed;
-                margin-bottom: 1.5rem;
-            ">
-            {formatted_body}
-            </div>
-            """, 
-            unsafe_allow_html=True
-        )
+        raw_title = story.get('title', '')
+        # Удаляем недопустимые для файловых систем символы
+        safe_title = re.sub(r'[\\/*?:"<>|]', "", raw_title).strip()
+        base_name = safe_title if safe_title else ('skazka' if user_lang == 'ru' else 'story')
+
+        # === АУДИО И ТЕКСТ СКАЗКИ ===
+        # Если аудио уже готово, показываем текст внутри аудио-плеера (Караоке)
+        if st.session_state['current_story'].get('audio'):
+            # Отображаем toast один раз при первой загрузке аудио
+            if st.session_state.get('show_audio_toast'):
+                st.toast(t('audio_ready', user_lang))
+                st.session_state['show_audio_toast'] = False
+                
+            display_audio_player(
+                st.session_state['current_story']['audio'], 
+                label="", 
+                file_name=f"{base_name}.mp3", 
+                story_html=formatted_body,
+                word_boundaries=st.session_state['current_story'].get('word_boundaries')
+            )
+        else:
+            # Если аудио еще нет, показываем отдельный блок текста (классический вид)
+            st.markdown(
+                f"""
+                <div style="
+                    background: rgba(255,255,255,0.05); 
+                    padding: 30px; 
+                    border-radius: 12px; 
+                    font-family: 'Georgia', 'Times New Roman', serif; 
+                    font-size: 1.15em; 
+                    line-height: 1.6; 
+                    color: #e8eaed;
+                    margin-bottom: 1.5rem;
+                ">
+                {formatted_body}
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
 
         # === TOOLBAR: Панель действий ===
         # Toolbar container
@@ -1269,11 +1504,6 @@ if 'current_story' in st.session_state:
                 'hi': '⬇️ डाउनलोड',
                 'ar': '⬇️ تحميل',
             }.get(user_lang, '⬇️ Download')
-
-            raw_title = story.get('title', '')
-            # Удаляем недопустимые для файловых систем символы
-            safe_title = re.sub(r'[\\/*?:"<>|]', "", raw_title).strip()
-            base_name = safe_title if safe_title else ('skazka' if user_lang == 'ru' else 'story')
 
             with st.container(key="toolbar_download"):
                 with st.popover(download_title, use_container_width=True):
@@ -1332,8 +1562,9 @@ if 'current_story' in st.session_state:
                     logger.info(f"[DEBUG TTS] audio_text preview (first 100 chars): {audio_text[:100] if audio_text else 'EMPTY'}")
 
                     try:
-                        audio_fp = asyncio.run(generate_audio_stream(audio_text, selected_voice))
+                        audio_fp, word_boundaries = asyncio.run(generate_audio_stream(audio_text, selected_voice, return_boundaries=True))
                         st.session_state['current_story']['audio'] = audio_fp
+                        st.session_state['current_story']['word_boundaries'] = word_boundaries
                         st.session_state['show_audio_toast'] = True
                         st.rerun()
                     except Exception as e_tts:
@@ -1348,15 +1579,7 @@ if 'current_story' in st.session_state:
                 storage.save_story(story)
                 st.toast(t('saved_success', user_lang) + " 📚")
 
-        # Показываем плеер
-        if st.session_state['current_story'].get('audio'):
-            # Отображаем toast один раз при первой загрузке аудио
-            if st.session_state.get('show_audio_toast'):
-                st.toast(t('audio_ready', user_lang))
-                st.session_state['show_audio_toast'] = False
-                
-            player_label = "🎧 Плеер (MP3 можно скачать в плеере)" if user_lang == 'ru' else "🎧 Player (MP3 downloadable in player)"
-            display_audio_player(st.session_state['current_story']['audio'], player_label, file_name=f"{base_name}.mp3", sync_text_id="story_text_karaoke")
+        # В нижней части больше нет плеера, он рендерится теперь ВЫШЕ тулбара
             
         # SPACER HACK: Добавляем БОЛЬШОЕ пустое пространство внизу (600px), чтобы popover ВСЕГДА открывался вниз
         st.markdown("<div style='height: 600px; pointer-events: none;'></div>", unsafe_allow_html=True)
