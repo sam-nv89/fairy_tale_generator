@@ -587,7 +587,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
         border-radius: 12px !important;
         backdrop-filter: blur(16px) !important;
         box-shadow: 0 8px 32px rgba(0,0,0,0.35) !important;
-        overflow: hidden !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
     }}
     [data-baseweb="menu"] li,
     ul[role="listbox"] li {{
@@ -1062,12 +1063,16 @@ def get_app_styles(dark_mode: bool = True) -> str:
 
     /* ========== THEME RADIO: Animated pill selector ========== */
     div[data-testid="stRadio"][aria-label*="Тема"] > div,
-    div[data-testid="stRadio"][aria-label*="Theme"] > div {{
+    div[data-testid="stRadio"][aria-label*="Theme"] > div,
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] > div {{
         gap: 0.5rem !important;
         justify-content: center !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] label,
-    div[data-testid="stRadio"][aria-label*="Theme"] label {{
+    div[data-testid="stRadio"][aria-label*="Theme"] label,
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] label {{
         background: {t['form_bg']} !important;
         border: 1px solid {t['input_border']} !important;
         border-radius: 14px !important;
@@ -1079,9 +1084,11 @@ def get_app_styles(dark_mode: bool = True) -> str:
         letter-spacing: 0.02em !important;
         position: relative !important;
         overflow: hidden !important;
+        white-space: nowrap !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] label::before,
-    div[data-testid="stRadio"][aria-label*="Theme"] label::before {{
+    div[data-testid="stRadio"][aria-label*="Theme"] label::before,
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] label::before {{
         content: '' !important;
         position: absolute !important;
         top: 0 !important;
@@ -1094,7 +1101,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
         z-index: -1 !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] label:hover,
-    div[data-testid="stRadio"][aria-label*="Theme"] label:hover {{
+    div[data-testid="stRadio"][aria-label*="Theme"] label:hover,
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] label:hover {{
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
     }}
@@ -1102,7 +1110,9 @@ def get_app_styles(dark_mode: bool = True) -> str:
     div[data-testid="stRadio"][aria-label*="Тема"] label[data-checked="true"],
     div[data-testid="stRadio"][aria-label*="Тема"] label:has(input:checked),
     div[data-testid="stRadio"][aria-label*="Theme"] label[data-checked="true"],
-    div[data-testid="stRadio"][aria-label*="Theme"] label:has(input:checked) {{
+    div[data-testid="stRadio"][aria-label*="Theme"] label:has(input:checked),
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] label[data-checked="true"],
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] label:has(input:checked) {{
         background: linear-gradient(135deg, #667eea, #764ba2) !important;
         border-color: transparent !important;
         color: #ffffff !important;
@@ -1111,7 +1121,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
         transform: scale(1.02) !important;
     }}
     div[data-testid="stRadio"][aria-label*="Тема"] input[type="radio"],
-    div[data-testid="stRadio"][aria-label*="Theme"] input[type="radio"] {{
+    div[data-testid="stRadio"][aria-label*="Theme"] input[type="radio"],
+    div[data-testid="stRadio"][aria-label*="hidden_theme_label"] input[type="radio"] {{
         display: none !important;
     }}
 
@@ -1179,6 +1190,16 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: {t['text']} !important;
     }}
     /* Sidebar button - Improved contrast for Light theme */
+    section[data-testid="stSidebar"] [data-testid="stLinkButton"] {{
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }}
+    section[data-testid="stSidebar"] div.stElementContainer:has([data-testid="stLinkButton"]) {{
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }}
     section[data-testid="stSidebar"] [data-testid="stLinkButton"] a {{
         color: {t['btn_secondary_text']} !important;
         border: 1px solid {'rgba(255, 255, 255, 0.3)' if dark_mode else 'rgba(79, 70, 229, 0.3)'} !important;
@@ -1950,7 +1971,15 @@ def get_dropdown_fix_js() -> str:
                 }, true);
 
                 // --- 4. Close on Scroll ---
-                const handleScroll = function() { closePopover(); };
+                const handleScroll = function(e) { 
+                    if (e && e.target && typeof e.target.closest === 'function') {
+                        // Если скролл происходит внутри самого меню, не закрываем его
+                        if (e.target.closest('[data-baseweb="popover"]') || e.target.closest('[data-baseweb="menu"]') || e.target.closest('ul[role="listbox"]')) {
+                            return;
+                        }
+                    }
+                    closePopover(); 
+                };
                 window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
                 window.addEventListener('resize', handleScroll, { passive: true });
                 const scrollContainer = document.querySelector('[data-testid="stAppViewContainer"]');

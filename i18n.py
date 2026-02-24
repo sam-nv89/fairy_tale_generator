@@ -89,7 +89,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "Мистика",
             'cyberpunk': "Киберпанк",
             'philosophical': "Философская притча",
-            'romance': "Романтика"
+            'romance': "Романтика",
+            'poem': "Стихотворение"
         },
         
         # Возрастные группы
@@ -185,7 +186,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "Mystery",
             'cyberpunk': "Cyberpunk",
             'philosophical': "Philosophical Parable",
-            'romance': "Romance"
+            'romance': "Romance",
+            'poem': "Poem"
         },
         
         # Age ranges
@@ -281,7 +283,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "Misterio",
             'cyberpunk': "Cyberpunk",
             'philosophical': "Parabola Filosofica",
-            'romance': "Romance"
+            'romance': "Romance",
+            'poem': "Poema"
         },
         
         # Age ranges
@@ -377,7 +380,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "Mystere",
             'cyberpunk': "Cyberpunk",
             'philosophical': "Parabole Philosophique",
-            'romance': "Romance"
+            'romance': "Romance",
+            'poem': "Poème"
         },
         
         # Age ranges
@@ -473,7 +477,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "Misterio",
             'cyberpunk': "Cyberpunk",
             'philosophical': "Parabola Filosofica",
-            'romance': "Romance"
+            'romance': "Romance",
+            'poem': "Poema"
         },
         
         # Age ranges
@@ -569,7 +574,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "悬疑",
             'cyberpunk': "赛博朋克",
             'philosophical': "哲学寓言",
-            'romance': "浪漫"
+            'romance': "浪漫",
+            'poem': "诗歌"
         },
         
         # Age ranges
@@ -665,7 +671,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "रहस्य",
             'cyberpunk': "साइबरपंक",
             'philosophical': "दार्शनिक कथा",
-            'romance': "रोमांस"
+            'romance': "रोमांस",
+            'poem': "कविता"
         },
         
         # Age ranges
@@ -761,7 +768,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'mystery': "غموض",
             'cyberpunk': "سايبربانك",
             'philosophical': "قصة فلسفية",
-            'romance': "رومانسية"
+            'romance': "رومانسية",
+            'poem': "قصيدة"
         },
         
         # Age ranges

@@ -860,7 +860,7 @@ async def generate_audio_stream(text: str, voice: str, return_boundaries: bool =
 
 # --- САЙДБАР: НАСТРОЙКИ (Фаза 1 Реализации) ---
 with st.sidebar:
-    st.title(t('settings_title', user_lang))
+    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: -2rem;'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
     
     # 0. Переключатель языка
     # Языки с флагами и названиями
