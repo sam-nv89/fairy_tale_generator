@@ -33,8 +33,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "Добавить сказку в библиотеку",
         'duration_label': "⏱️ Длительность сказки",
         'duration_short': "🐇 Короткая (~1 мин)",
-        'duration_medium': "⭐ Средняя (~3 мин)",
-        'duration_long': "🐢 Длинная (~5 мин)",
+        'duration_medium': "⭐ Средняя (~5 мин)",
+        'duration_long': "🐢 Длинная (~15 мин)",
         'duration_long_hint': "💎 Длинные сказки лучше для детей от 7 лет.",
         'donate_title': "Поддержать проект ☕",
         'donate_text': "Если вам нравятся наши сказки, вы можете угостить разработчика кофе!",
@@ -71,6 +71,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'download_txt': "📄 Скачать текст",
         'location': "📍",
         'logout_btn': "🚪 Выйти",
+        'translate_prompt': "🌍 Язык этой сказки (видимо) отличается от языка приложения. Хотите перевести её?",
+        'translate_btn': "🔄 Перевести сказку",
+        'translating': "🔄 Перевожу сказку",
+        'translation_error': "❌ Ошибка перевода: {0}",
         
         # Жанры
         'genres': {
@@ -125,8 +129,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "Save story to My Stories",
         'duration_label': "⏱️ Story Duration",
         'duration_short': "🐇 Short (~1 min)",
-        'duration_medium': "⭐ Medium (~3 min)",
-        'duration_long': "🐢 Long (~5 min)",
+        'duration_medium': "⭐ Medium (~5 min)",
+        'duration_long': "🐢 Long (~15 min)",
         'duration_long_hint': "💎 Long stories are better for kids 7+.",
         'donate_title': "Support the Project ☕",
         'donate_text': "If you enjoy our fairy tales, you can buy the developer a coffee!",
@@ -163,6 +167,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'download_txt': "📄 Download Text",
         'location': "📍",
         'logout_btn': "🚪 Logout",
+        'translate_prompt': "🌍 The language of this story differs from the app language. Do you want to translate it?",
+        'translate_btn': "🔄 Translate story",
+        'translating': "🔄 Translating story",
+        'translation_error': "❌ Translation error: {0}",
         
         # Genres
         'genres': {
@@ -218,8 +226,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "Guardar cuento en Mis Cuentos",
         'duration_label': "⏱️ Duración del Cuento",
         'duration_short': "🐇 Corto (~1 min)",
-        'duration_medium': "⭐ Medio (~3 min)",
-        'duration_long': "🐢 Largo (~5 min)",
+        'duration_medium': "⭐ Medio (~5 min)",
+        'duration_long': "🐢 Largo (~15 min)",
         'duration_long_hint': "💎 Los cuentos largos son mejores para niños de 7+ años.",
         'donate_title': "Apoyar el Proyecto ☕",
         'donate_text': "Si te gustan nuestros cuentos, puedes invitar al desarrollador a un café.",
@@ -255,6 +263,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "¡Audio listo! 🎧",
         'download_txt': "📄 Descargar Texto",
         'logout_btn': "🚪 Salir",
+        'translate_prompt': "🌍 El idioma de este cuento difiere del idioma de la aplicación. ¿Deseas traducirlo?",
+        'translate_btn': "🔄 Traducir cuento",
+        'translating': "🔄 Traduciendo cuento",
+        'translation_error': "❌ Error de traducción: {0}",
         
         # Genres
         'genres': {
@@ -310,8 +322,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "Enregistrer le conte dans Mes Contes",
         'duration_label': "⏱️ Durée du Conte",
         'duration_short': "🐇 Court (~1 min)",
-        'duration_medium': "⭐ Moyen (~3 min)",
-        'duration_long': "🐢 Long (~5 min)",
+        'duration_medium': "⭐ Moyen (~5 min)",
+        'duration_long': "🐢 Long (~15 min)",
         'duration_long_hint': "💎 Les contes longs sont meilleurs pour les enfants de 7+ ans.",
         'donate_title': "Soutenir le Projet ☕",
         'donate_text': "Si vous aimez nos contes, vous pouvez offrir un café au développeur.",
@@ -347,6 +359,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "Audio prêt ! 🎧",
         'download_txt': "📄 Télécharger le Texte",
         'logout_btn': "🚪 Déconnexion",
+        'translate_prompt': "🌍 La langue de ce conte diffère de celle de l'application. Voulez-vous le traduire ?",
+        'translate_btn': "🔄 Traduire le conte",
+        'translating': "🔄 Traduction du conte en cours",
+        'translation_error': "❌ Erreur de traduction : {0}",
         
         # Genres
         'genres': {
@@ -402,8 +418,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': 'Salvar conto em Meus Contos',
         'duration_label': "⏱️ Duração do Conto",
         'duration_short': "🐇 Curto (~1 min)",
-        'duration_medium': "⭐ Médio (~3 min)",
-        'duration_long': "🐢 Longo (~5 min)",
+        'duration_medium': "⭐ Médio (~5 min)",
+        'duration_long': "🐢 Longo (~15 min)",
         'duration_long_hint': "💎 Contos longos são melhores para crianças de 7+ anos.",
         'donate_title': "Apoiar o Projeto ☕",
         'donate_text': "Se você gosta de nossos contos, pode oferecer um café ao desenvolvedor.",
@@ -439,6 +455,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "Áudio pronto! 🎧",
         'download_txt': "📄 Baixar Texto",
         'logout_btn': "🚪 Sair",
+        'translate_prompt': "🌍 O idioma deste conto difere do idioma do aplicativo. Você quer traduzi-lo?",
+        'translate_btn': "🔄 Traduzir conto",
+        'translating': "🔄 Traduzindo conto",
+        'translation_error': "❌ Erro de tradução: {0}",
         
         # Genres
         'genres': {
@@ -494,8 +514,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "保存到我的故事",
         'duration_label': "⏱️ 故事时长",
         'duration_short': "🐇 短 (~1 分钟)",
-        'duration_medium': "⭐ 中等 (~3 分钟)",
-        'duration_long': "🐢 长 (~5 分钟)",
+        'duration_medium': "⭐ 中等 (~5 分钟)",
+        'duration_long': "🐢 长 (~15 分钟)",
         'duration_long_hint': "💎 长篇故事更适合7岁以上的孩子。",
         'donate_title': "支持项目 ☕",
         'donate_text': "如果您喜欢我们的故事，可以请开发者喝杯咖啡。",
@@ -531,6 +551,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "音频已准备好！ 🎧",
         'download_txt': "📄 下载文本",
         'logout_btn': "🚪 退出",
+        'translate_prompt': "🌍 这个故事的语言与应用语言不同。你想翻译它吗？",
+        'translate_btn': "🔄 翻译故事",
+        'translating': "🔄 正在翻译故事",
+        'translation_error': "❌ 翻译错误：{0}",
         
         # Genres
         'genres': {
@@ -586,8 +610,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "कहानी को मेरी कहानियों में सेव करें",
         'duration_label': "⏱️ कहानी की अवधि",
         'duration_short': "🐇 छोटी (~1 मिनट)",
-        'duration_medium': "⭐ मध्यम (~3 मिनट)",
-        'duration_long': "🐢 लंबी (~5 मिनट)",
+        'duration_medium': "⭐ मध्यम (~5 मिनट)",
+        'duration_long': "🐢 लंबी (~15 मिनट)",
         'duration_long_hint': "💎 लंबी कहानियाँ 7+ साल के बच्चों के लिए बेहतर हैं।",
         'donate_title': "परियोजना का समर्थन करें ☕",
         'donate_text': "अगर आप हमारी कहानियों का आनंद लेते हैं, तो आप डेवलपर को कॉफी पिला सकते हैं।",
@@ -623,6 +647,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "ऑडियो तैयार है! 🎧",
         'download_txt': "📄 टेक्स्ट डाउनलोड करें",
         'logout_btn': "🚪 लॉगआउट",
+        'translate_prompt': "🌍 इस कहानी की भाषा ऐप की भाषा से भिन्न है। क्या आप इसका अनुवाद करना चाहते हैं?",
+        'translate_btn': "🔄 कहानी का अनुवाद करें",
+        'translating': "🔄 कहानी का अनुवाद हो रहा है",
+        'translation_error': "❌ अनुवाद त्रुटि: {0}",
         
         # Genres
         'genres': {
@@ -678,8 +706,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_help': "حفظ القصة في قصصي",
         'duration_label': "⏱️ مدة القصة",
         'duration_short': "🐇 قصيرة (~1 دقيقة)",
-        'duration_medium': "⭐ متوسطة (~3 دقائق)",
-        'duration_long': "🐢 طويلة (~5 دقائق)",
+        'duration_medium': "⭐ متوسطة (~5 دقائق)",
+        'duration_long': "🐢 طويلة (~15 دقيقة)",
         'duration_long_hint': "💎 القصص الطويلة أفضل للأطفال من 7 سنوات فما فوق.",
         'donate_title': "دعم المشروع ☕",
         'donate_text': "إذا استمتعت بقصصنا، يمكنك دعوة المطور لقهوة.",
@@ -715,6 +743,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "الصوت جاهز! 🎧",
         'download_txt': "📄 تحميل النص",
         'logout_btn': "🚪 تسجيل الخروج",
+        'translate_prompt': "🌍 لغة هذه القصة تختلف عن لغة التطبيق. هل ترغب في ترجمتها؟",
+        'translate_btn': "🔄 ترجمة القصة",
+        'translating': "🔄 جاري ترجمة القصة",
+        'translation_error': "❌ خطأ في الترجمة: {0}",
         
         # Genres
         'genres': {

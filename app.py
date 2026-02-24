@@ -555,7 +555,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
                                     styleNode.id = 'karaoke-styles-{player_id}';
                                     styleNode.innerHTML = `
                                         .tts-word {{ transition: color 0.1s ease, text-shadow 0.1s ease; }}
-                                        .tts-word.karaoke-active {{ color: {karaoke_active} !important; text-shadow: 0 0 12px {karaoke_glow} !important; font-weight: bold; }}
+                                        .tts-word.karaoke-active {{ color: {karaoke_active} !important; text-shadow: 0 0 12px {karaoke_glow} !important; }}
                                         .tts-word.karaoke-past {{ color: {karaoke_past} !important; text-shadow: none !important; }}
                                     `;
                                     doc.head.appendChild(styleNode);
@@ -909,23 +909,25 @@ with st.sidebar:
     
     # 1. Dark Mode
     # 1. Theme Switch (pill toggle)
-    # Определяем индекс на основе сохранённого состояния
-    current_dark_mode = st.session_state.get('dark_mode', True)
-    theme_index = 1 if current_dark_mode else 0
     st.markdown(f"<p class='sidebar-header'>{t('theme_label', user_lang)}</p>", unsafe_allow_html=True)
-    theme_choice = st.radio(
+    
+    # Init if needed
+    if "theme_radio" not in st.session_state:
+        # Define index based on dark_mode boolean (defaults to True, index 1)
+        st.session_state["theme_radio"] = t('theme_night', user_lang) if st.session_state.get('dark_mode', True) else t('theme_day', user_lang)
+    
+    # Callback to update dark_mode flag when radio changes
+    def update_theme():
+        st.session_state.dark_mode = (st.session_state.theme_radio == t('theme_night', user_lang))
+
+    st.radio(
         "hidden_theme_label",
         options=[t('theme_day', user_lang), t('theme_night', user_lang)],
-        index=theme_index,
         horizontal=True,
         key="theme_radio",
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        on_change=update_theme
     )
-    # Сохраняем выбор в session_state
-    new_dark_mode = (theme_choice == t('theme_night', user_lang))
-    if new_dark_mode != current_dark_mode:
-        st.session_state.dark_mode = new_dark_mode
-        st.rerun()
     
     dark_mode = st.session_state.dark_mode
 
@@ -1104,7 +1106,12 @@ with st.sidebar:
     st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com") # TODO: Реальная ссылка
     
     st.divider()
-    st.caption(f"{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}")
+    st.markdown(
+        f"<p style='text-align: center; color: var(--text-color); opacity: 0.6; font-size: 0.8rem; margin-top: 1rem;'>"
+        f"{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}"
+        f"</p>", 
+        unsafe_allow_html=True
+    )
 
 # --- СТИЛИ ПЕРЕНЕСЕНЫ В НАЧАЛО ФАЙЛА ---
 
@@ -1291,7 +1298,7 @@ if submit_btn:
             t('duration_medium', user_lang),
             t('duration_long', user_lang)
         ]
-        word_counts = [150, 300, 500]  # Короткая, Средняя, Длинная
+        word_counts = [150, 700, 2000]  # Короткая, Средняя, Длинная
         length_index = duration_options.index(story_length) if story_length in duration_options else 1
         target_word_count = word_counts[length_index]
 
@@ -1403,7 +1410,8 @@ if submit_btn:
             st.session_state['current_story'] = {
                 'title': title,
                 'body': story_body,
-                'audio': None
+                'audio': None,
+                'language': user_lang
             }
             # Сбрасываем кэш экспорта — новая сказка требует новых файлов
             for fmt_key in EXPORT_FORMATS:
@@ -1436,6 +1444,85 @@ if 'current_story' in st.session_state:
             st.toast(success_msg.get(user_lang, 'Story loaded successfully! 📚'))
             st.session_state['show_loaded_toast'] = False
             
+        # --- Language Check & Translation Proposal ---
+        story_lang = story.get('language')
+        if not story_lang:
+            # Naive language detection for older stories that lack the language metatag
+            text = story.get('body', '')[:100]
+            if re.search(r'[А-Яа-яЁё]', text): story_lang = 'ru'
+            elif re.search(r'[\u4e00-\u9fff]', text): story_lang = 'zh-CN'
+            elif re.search(r'[\u0600-\u06FF]', text): story_lang = 'ar'
+            elif re.search(r'[\u0900-\u097F]', text): story_lang = 'hi'
+            else: story_lang = 'en' # Fallback to Latin proxy
+            
+        if story_lang != user_lang:
+            # Стилизуем карточку предложения о переводе
+            with st.container(border=True):
+                st.markdown(f"**{t('translate_prompt', user_lang)}**")
+                if st.button(t('translate_btn', user_lang), key="btn_translate_story", type="primary"):
+                    # Хак: Принудительно "гасим" кнопку "Скачать" на время перевода, 
+                    # чтобы она не выделялась (Streamlit не затемняет popover по умолчанию)
+                    st.markdown("""<style>
+                    .st-key-toolbar_download {
+                        opacity: 0.5 !important;
+                        pointer-events: none !important;
+                    }
+                    </style>""", unsafe_allow_html=True)
+                    
+                    with st.spinner(t('translating', user_lang)):
+                        last_error = None
+                        full_txt = ""
+                        for model_name in GEMINI_MODEL_CASCADE:
+                            try:
+                                logger.info(f"Attempting translation with model: {model_name}")
+                                model = genai.GenerativeModel(model_name)
+                                target_lang_name = get_language_name(user_lang)
+                                
+                                prompt = (
+                                    f"Translate the following children's fairy tale into {target_lang_name}. "
+                                    f"Maintain the original tone, magic, and formatting. "
+                                    f"Return the result in this exact format with NO other text:\n"
+                                    f"Title\n\nBody\n\n"
+                                    f"Here is the story to translate:\n\n{story['title']}\n\n{story['body']}"
+                                )
+                                
+                                response = model.generate_content(prompt)
+                                full_txt = response.text.strip()
+                                break
+                            except Exception as e:
+                                logger.exception(f"Translation with model {model_name} failed: {e}")
+                                last_error = e
+                                continue
+                                
+                        if not full_txt:
+                            if last_error and "429" in str(last_error):
+                                st.error("⏳ " + ("Лимит запросов исчерпан. Попробуйте позже." if user_lang == 'ru' else "Rate limit exceeded. Please try again later."))
+                            else:
+                                st.error(t('translation_error', user_lang).format(last_error))
+                        else:
+                            if '\n' in full_txt:
+                                new_title, new_body = full_txt.split('\n', 1)
+                                new_title = new_title.strip().lstrip('#').replace('*', '').strip()
+                                new_body = new_body.strip()
+                            else:
+                                new_title = story['title']
+                                new_body = full_txt
+                                
+                            # Update current story: reset ID to treat it as a new distinct story
+                            st.session_state['current_story']['title'] = new_title
+                            st.session_state['current_story']['body'] = new_body
+                            st.session_state['current_story']['audio'] = None
+                            st.session_state['current_story']['language'] = user_lang
+                            
+                            st.session_state['current_story'].pop('id', None)
+                            st.session_state['current_story'].pop('created_at', None)
+                            
+                            # Clean exports cache
+                            for fmt_key in EXPORT_FORMATS:
+                                st.session_state.pop(f"export_cache_{fmt_key}", None)
+                                
+                            st.rerun()
+                            
         st.divider()
         st.markdown(f"<h2 style='text-align: center; margin-bottom: 1rem;'>{story['title']}</h2>", unsafe_allow_html=True)
         
@@ -1553,6 +1640,16 @@ if 'current_story' in st.session_state:
                 clicked = voice_btn_placeholder.button(voice_btn_text, key="toolbar_voice_btn", use_container_width=True)
 
                 if clicked:
+                    # Хак: Streamlit автоматически вешает disabled и opacity: 0.5 на кнопку "Сохранить",
+                    # но не делает это для "Скачать" (st.popover). Чтобы они выглядели абсолютно 
+                    # идентично, мы точечно гасим только "Скачать" на время озвучки.
+                    st.markdown("""<style>
+                    .st-key-toolbar_download {
+                        opacity: 0.5 !important;
+                        pointer-events: none !important;
+                    }
+                    </style>""", unsafe_allow_html=True)
+                    
                     processing_texts = {'ru': '🎙️ Озвучиваем', 'en': '🎙️ Processing', 'es': '🎙️ Procesando', 'fr': '🎙️ Traitement', 'pt': '🎙️ Processando', 'hi': '🎙️ प्रोसेसिंग', 'ar': '🎙️ جاري المعالجة'}
                     processing_text = processing_texts.get(user_lang, '🎙️ Processing')
                     voice_btn_placeholder.button(processing_text, disabled=True, key="toolbar_voice_processing", use_container_width=True)

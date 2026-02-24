@@ -14,8 +14,8 @@ def load_stories() -> List[Dict]:
     try:
         with open(STORIES_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # Сортировка по дате создания (новые сверху)
-            data.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+            # Сортировка по дате создания (старые сверху)
+            data.sort(key=lambda x: x.get("created_at", ""))
             return data
     except (json.JSONDecodeError, OSError):
         return []
@@ -41,7 +41,7 @@ def save_story(story: Dict) -> None:
     if existing_index >= 0:
         stories[existing_index] = story_to_save
     else:
-        stories.insert(0, story_to_save) # Добавляем в начало
+        stories.append(story_to_save) # Добавляем в конец
         
     try:
         with open(STORIES_FILE, "w", encoding="utf-8") as f:

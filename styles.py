@@ -1385,11 +1385,11 @@ def get_app_styles(dark_mode: bool = True) -> str:
         letter-spacing: 0.01em !important;
     }}
 
-    /* Hover effect for toolbar buttons */
-    .st-key-toolbar_download button:hover,
-    .st-key-toolbar_voice button:hover,
-    .st-key-toolbar_save button:hover,
-    .st-key-toolbar_voice_retry button:hover {{
+    /* Hover effect for toolbar buttons (only if enabled) */
+    .st-key-toolbar_download button:not(:disabled):hover,
+    .st-key-toolbar_voice button:not(:disabled):hover,
+    .st-key-toolbar_save button:not(:disabled):hover,
+    .st-key-toolbar_voice_retry button:not(:disabled):hover {{
         background: {'rgba(102, 126, 234, 0.12)' if dark_mode else 'rgba(102, 126, 234, 0.08)'} !important;
         color: #667eea !important;
         transform: translateY(-1px);
@@ -1415,10 +1415,10 @@ def get_app_styles(dark_mode: bool = True) -> str:
         outline: none !important;
     }}
 
-    /* Active press state */
-    .st-key-toolbar_download button:active,
-    .st-key-toolbar_voice button:active,
-    .st-key-toolbar_save button:active {{
+    /* Active press state (only for enabled buttons) */
+    .st-key-toolbar_download button:not(:disabled):active,
+    .st-key-toolbar_voice button:not(:disabled):active,
+    .st-key-toolbar_save button:not(:disabled):active {{
         transform: scale(0.97) !important;
     }}
 
