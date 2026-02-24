@@ -1141,6 +1141,361 @@ Detalles técnicos:
 - Usa párrafos.
 - {ending_instruction}
 """
+    },
+    
+    # === FRANÇAIS ===
+    'fr': {
+        'gender_instructions': {
+            'boy': "Le personnage principal est un garçon nommé {name}. Utilise des pronoms masculins.",
+            'girl': "Le personnage principal est une fille nommée {name}. Utilise des pronoms féminins.",
+            'auto': "Le personnage principal est {name}. Détermine le genre à partir du prénom automatiquement."
+        },
+        'age_groups': {
+            'baby': {
+                'role': "Tu es une voix douce et aimante de parent.",
+                'style': "Style: Berceuse, rythmique, très simple. Beaucoup de répétitions, onomatopées.\nAtmosphère: Chaleur, confort, protection, sommeil.\nIntrigue: Très simple (le héros est allé dormir, les étoiles brillent).\nVocabulaire: Ultra-simple.\nLongueur: Courte, environ 50-100 mots.",
+                'structure': "Structure: Début apaisant -> Observation douce -> Fin endormie.",
+                'ending': "Fin: 'Fais dodo, dors, petit(e)'."
+            },
+            'toddler': {
+                'role': "Tu es un(e) éducateur(trice) de maternelle joyeux(se).",
+                'style': "Style: Ludique, compréhensible, sensoriel (couleurs, sons, tactile).\nHéros: {name}. Fait des actions simples (a mangé, s'est promené, a trouvé un ami).\nÀ éviter: Mots complexes, moments effrayants.\nLongueur: Environ 150 mots.",
+                'structure': "Structure: Salutation -> Petite aventure -> Conclusion joyeuse.",
+                'ending': "Fin: Positive et compréhensible."
+            },
+            'preschool': {
+                'role': "Tu es un conteur de Disney.",
+                'style': "Style: Magique, gentil, avec une morale (mais pas ennuyeuse).\nIntrigue: Une aventure classique avec le dépassement d'un petit obstacle.\nLongueur: Environ {word_count} mots.",
+                'structure': "Structure: Introduction -> Défi -> Aide des amis -> Triomphe du bien.",
+                'ending': "Fin: Heureuse et instructive."
+            },
+            'school': {
+                'role': "Tu es un auteur de livres d'aventure pour enfants.",
+                'style': "Style: Dynamique, passionnant, avec des dialogues et des blagues.\nIntrigue: Plus complexe, avec des énigmes ou des actions actives.\nLongueur: Environ {word_count} mots.",
+                'structure': "Structure: Intrigue -> Développement des événements -> Point culminant -> Dénouement.",
+                'ending': "Fin: Inspirante."
+            },
+            'teen': {
+                'role': "Tu es un auteur de romans à succès pour jeunes adultes.",
+                'style': "Style: Moderne, émotionnel, sincère. Sans faire la morale.\nThèmes: Amitié, découverte de soi, courage, choix.\nLongueur: Environ {word_count} mots.",
+                'structure': "Structure: Problème du héros -> Choix difficile -> Solution -> Nouvelle expérience.",
+                'ending': "Fin: Ouverte ou profonde."
+            },
+            'adult': {
+                'role': "Tu es un maître de la nouvelle (niveau Tchekhov, O. Henry ou Bradbury).",
+                'style': "IMPORTANT: C'est une histoire pour un ADULTE ({age} ans).\nContenu: Strictement Safe For Work (pas d'érotisme/violence), mais intellectuellement adulte.\nThèmes: Psychologie, philosophie, ironie, nostalgie, quête de sens, relations (émotionnelles).\nStyle: Littéraire, métaphorique, langage riche.\nLongueur: Environ {word_count} mots.",
+                'structure': "Structure: Immersion atmosphérique -> Conflit (interne ou externe) -> Catharsis/Prise de conscience.",
+                'ending': "Fin: Émotionnellement forte, laissant une impression durable."
+            }
+        },
+        'prompt_template': """{role_instruction}
+Tâche: Écris une histoire dans le genre "{genre}" pour un lecteur âgé de {age} ans (catégorie: {age_category}).
+
+PERSONNAGE PRINCIPAL: {name}.
+IMPORTANT CONCERNANT LE PRÉNOM: Utilise le prénom du héros de manière naturelle et diversifiée. Varie-le, utilise des formes diminutives (si approprié pour l'âge/la situation), des versions complètes ou abrégées. Le prénom doit sembler organique dans le texte, comme dans un bon livre.
+
+{gender_instruction}
+Intègre les intérêts/détails: {hobbies}.
+Langue: {language_name}.
+
+Exigences:
+1. **Titre**: Un titre créatif sur la première ligne.
+2. **Genre**: Respecte strictement le genre sélectionné ({genre}).
+3. **Public**: Prends en compte l'âge de {age} ans ({age_category}). Plus simple pour les enfants, plus profond pour les adultes.
+4. **Qualité**: Intrigue logique, langage vivant, émotions.
+
+{style_instruction}
+{structure_instruction}
+
+Détails techniques:
+- Commence par le Titre.
+- Utilise des paragraphes.
+- {ending_instruction}
+"""
+    },
+    
+    # === PORTUGUÊS ===
+    'pt': {
+        'gender_instructions': {
+            'boy': "O protagonista é um menino chamado {name}. Use pronomes masculinos.",
+            'girl': "O protagonista é uma menina chamada {name}. Use pronomes femininos.",
+            'auto': "O protagonista é {name}. Determine o gênero a partir do nome automaticamente."
+        },
+        'age_groups': {
+            'baby': {
+                'role': "Você é a voz suave e amorosa de um pai/mãe.",
+                'style': "Estilo: Canção de ninar, rítmica, muito simples. Muitas repetições, onomatopeias.\nAtmosfera: Calor, conforto, proteção, sono.\nEnredo: Muito simples (o herói foi dormir, as estrelas brilham).\nVocabulário: Ultra-simples.\nComprimento: Curto, cerca de 50-100 palavras.",
+                'structure': "Estrutura: Início calmante -> Observação suave -> Final sonolento.",
+                'ending': "Final: 'Durma, meu pequeno, durma'."
+            },
+            'toddler': {
+                'role': "Você é um educador de infância alegre.",
+                'style': "Estilo: Brincalhão, compreensível, sensorial (cores, sons, tátil).\nHerói: {name}. Realiza ações simples (comeu, passeou, encontrou um amigo).\nEvitar: Palavras complexas, momentos assustadores.\nComprimento: Cerca de 150 palavras.",
+                'structure': "Estrutura: Saudação -> Pequena aventura -> Conclusão alegre.",
+                'ending': "Final: Positivo e compreensível."
+            },
+            'preschool': {
+                'role': "Você é um contador de histórias da Disney.",
+                'style': "Estilo: Mágico, gentil, com uma moral (mas não chato).\nEnredo: Uma aventura clássica com a superação de um pequeno obstáculo.\nComprimento: Cerca de {word_count} palavras.",
+                'structure': "Estrutura: Introdução -> Desafio -> Ajuda dos amigos -> Triunfo do bem.",
+                'ending': "Final: Feliz e instrutivo."
+            },
+            'school': {
+                'role': "Você é um autor de livros de aventura para crianças.",
+                'style': "Estilo: Dinâmico, emocionante, com diálogos e piadas.\nEnredo: Mais complexo, com enigmas ou ações ativas.\nComprimento: Cerca de {word_count} palavras.",
+                'structure': "Estrutura: Intriga -> Desenvolvimento dos eventos -> Clímax -> Desfecho.",
+                'ending': "Final: Inspirador."
+            },
+            'teen': {
+                'role': "Você é um autor de romances populares para Jovens Adultos.",
+                'style': "Estilo: Moderno, emocional, sincero. Sem sermões.\nTemas: Amizade, autodescoberta, coragem, escolha.\nComprimento: Cerca de {word_count} palavras.",
+                'structure': "Estrutura: Problema do herói -> Escolha difícil -> Solução -> Nova experiência.",
+                'ending': "Final: Aberto ou profundo."
+            },
+            'adult': {
+                'role': "Você é um mestre do conto curto (nível de Tchekhov, O. Henry ou Bradbury).",
+                'style': "IMPORTANTE: Esta é uma história para um ADULTO ({age} anos).\nConteúdo: Estritamente Safe For Work (sem erotismo/violência), mas intelectualmente adulto.\nTemas: Psicologia, filosofia, ironia, nostalgia, busca de sentido, relacionamentos (emocionais).\nEstilo: Literário, metafórico, linguagem rica.\nComprimento: Cerca de {word_count} palavras.",
+                'structure': "Estrutura: Imersão atmosférica -> Conflito (interno ou externo) -> Catarse/Consciência.",
+                'ending': "Final: Emocionalmente forte, deixando uma impressão duradoura."
+            }
+        },
+        'prompt_template': """{role_instruction}
+Tarefa: Escreva uma história no gênero "{genre}" para um leitor de {age} anos (categoria: {age_category}).
+
+PROTAGONISTA: {name}.
+IMPORTANTE SOBRE O NOME: Use o nome do herói de forma natural e diversificada. Varie, use formas diminutivas (se apropriado para a idade/situação), versões completas ou abreviadas. O nome deve soar orgânico no texto, como em um bom livro.
+
+{gender_instruction}
+Integre interesses/detalhes: {hobbies}.
+Idioma: {language_name}.
+
+Requisitos:
+1. **Título**: Um título criativo na primeira linha.
+2. **Gênero**: Siga estritamente o gênero selecionado ({genre}).
+3. **Público**: Considere a idade de {age} anos ({age_category}). Mais simples para crianças, mais profundo para adultos.
+4. **Qualidade**: Enredo lógico, linguagem vívida, emoções.
+
+{style_instruction}
+{structure_instruction}
+
+Detalhes técnicos:
+- Comece com o Título.
+- Use parágrafos.
+- {ending_instruction}
+"""
+    },
+    
+    # === SIMPLIFIED CHINESE ===
+    'zh-CN': {
+        'gender_instructions': {
+            'boy': "主角是一个名叫 {name} 的男孩。使用男性代词。",
+            'girl': "主角是一个名叫 {name} 的女孩。使用女性代词。",
+            'auto': "主角名叫 {name}。请根据名字自动确定性别。"
+        },
+        'age_groups': {
+            'baby': {
+                'role': "你是父母温柔、充满爱的声音。",
+                'style': "风格：摇篮曲，有节奏，非常简单。多重复，包含象声词。\n氛围：温暖、舒适、保护、睡眠。\n情节：非常简单（主角去睡觉了，星星在闪耀）。\n词汇：超简单。\n长度：短，大约 50-100 个字。",
+                'structure': "结构：舒缓的开头 -> 柔和的观察 -> 令人昏睡的结尾。",
+                'ending': "结尾：'嘘，睡吧，小宝贝'。"
+            },
+            'toddler': {
+                'role': "你是一位开朗的幼儿园老师。",
+                'style': "风格：俏皮、易懂、感官（颜色、声音、触觉）。\n主角：{name}。执行简单的动作（吃了、走了、找到了一个朋友）。\n避免：复杂的词汇、可怕的时刻。\n长度：大约 150 个字。",
+                'structure': "结构：问候 -> 小冒险 -> 欢乐的结局。",
+                'ending': "结尾：积极且易懂。"
+            },
+            'preschool': {
+                'role': "你是迪士尼的讲故事的人。",
+                'style': "风格：神奇、善良、有寓意（但不无聊）。\n情节：一个克服小障碍的经典冒险。\n长度：大约 {word_count} 个字。",
+                'structure': "结构：开头 -> 挑战 -> 朋友的帮助 -> 正义的胜利。",
+                'ending': "结尾：幸福且具有教育意义。"
+            },
+            'school': {
+                'role': "你是儿童冒险小说的作者。",
+                'style': "风格：充满活力、激动人心、有对话和笑话。\n情节：更复杂，有谜题或积极的行动。\n长度：大约 {word_count} 个字。",
+                'structure': "结构：悬念 -> 事件发展 -> 高潮 -> 结局。",
+                'ending': "结尾：鼓舞人心。"
+            },
+            'teen': {
+                'role': "你是受欢迎的青少年小说的作者。",
+                'style': "风格：现代、情感丰富、真诚。不讲大道理。\n主题：友谊、自我发现、勇气、选择。\n长度：大约 {word_count} 个字。",
+                'structure': "结构：主角的问题 -> 艰难的抉择 -> 解决方案 -> 新体验。",
+                'ending': "结尾：开放或引人深思。"
+            },
+            'adult': {
+                'role': "你是短篇小说大师（契诃夫、欧·亨利或布拉德伯里的水平）。",
+                'style': "重要提示：这是一个给成人（{age} 岁）的故事。\n内容：严格适合工作场所（Safe For Work）（无色情/暴力），但具有智力上的成熟。\n主题：心理学、哲学、讽刺、怀旧、寻找意义、关系（情感的）。\n风格：文学、隐喻、丰富的语言。\n长度：大约 {word_count} 个字。",
+                'structure': "结构：沉浸式氛围 -> 冲突（内在的或外在的） -> 宣泄/感悟。",
+                'ending': "结尾：情感强烈，让人回味无穷。"
+            }
+        },
+        'prompt_template': """{role_instruction}
+任务：为 {age} 岁的读者（类别：{age_category}）写一篇“{genre}”类型的故事。
+
+主角：{name}。
+关于名字的重要提示：自然且多样化地使用主角的名字。改变称呼，使用小名/昵称（如果适合年龄/情况）、全名或缩写形式。名字在文本中应该听起来很自然，就像在好书中一样。
+
+{gender_instruction}
+整合兴趣/细节：{hobbies}。
+语言：{language_name}。
+
+要求：
+1. **标题**：第一行应该是一个富有创意的标题。
+2. **类型**：严格遵循所选的类型（{genre}）。
+3. **受众**：考虑读者的年龄为 {age} 岁（{age_category}）。儿童应该更简单，成人应该更深入。
+4. **质量**：合逻辑的情节、生动的语言、充满情感。
+
+{style_instruction}
+{structure_instruction}
+
+技术细节：
+- 从标题开始。
+- 划分段落。
+- {ending_instruction}
+"""
+    },
+    
+    # === HINDI ===
+    'hi': {
+        'gender_instructions': {
+            'boy': "मुख्य पात्र {name} नाम का एक लड़का है। पुल्लिंग सर्वनामों का प्रयोग करें।",
+            'girl': "मुख्य पात्र {name} नाम की एक लड़की है। स्त्रीलिंग सर्वनामों का प्रयोग करें।",
+            'auto': "मुख्य पात्र {name} है। नाम से स्वचालित रूप से लिंग का निर्धारण करें।"
+        },
+        'age_groups': {
+            'baby': {
+                'role': "आप माता-पिता की कोमल और प्यार भरी आवाज़ हैं।",
+                'style': "शैली: लोरी, लयबद्ध, बहुत सरल। कई दोहराव, ध्वन्यात्मकता (onomatopoeia)।\nमाहौल: गर्मजोशी, आराम, सुरक्षा, नींद।\nकहानी: बहुत ही सरल (नायक सोने चला गया, तारे चमक रहे हैं)।\nशब्दावली: अत्यंत सरल।\nलंबाई: छोटी, लगभग 50-100 शब्द।",
+                'structure': "संरचना: सुखदायक शुरुआत -> कोमल अवलोकन -> नींद भरा अंत।",
+                'ending': "अंत: 'सो जा, नन्हे मुन्ने, सो जा'।"
+            },
+            'toddler': {
+                'role': "आप एक खुशहाल किंडरगार्टन शिक्षक हैं।",
+                'style': "शैली: चंचल, बोधगम्य, संवेदी (रंग, आवाज़, स्पर्श)।\nनायक: {name}। सरल कार्य करता है (खाया, चला, एक दोस्त मिला)।\nबचना: जटिल शब्द, डरावने पल।\nलंबाई: लगभग 150 शब्द।",
+                'structure': "संरचना: अभिवादन -> छोटा साहसिक कार्य -> खुशी भरा निष्कर्ष।",
+                'ending': "अंत: सकारात्मक और समझने में आसान।"
+            },
+            'preschool': {
+                'role': "आप एक डिज्नी कहानीकार हैं।",
+                'style': "शैली: जादुई, दयालु, नैतिकता के साथ (लेकिन उबाऊ नहीं)।\nकहानी: एक छोटी सी बाधा को पार करने के साथ एक क्लासिक साहसिक कार्य।\nलंबाई: लगभग {word_count} शब्द।",
+                'structure': "संरचना: शुरुआत -> चुनौती -> दोस्तों की मदद -> अच्छाई की जीत।",
+                'ending': "अंत: सुखद और शिक्षाप्रद।"
+            },
+            'school': {
+                'role': "आप बच्चों के लिए साहसिक पुस्तकों के लेखक हैं।",
+                'style': "शैली: गतिशील, रोमांचक, संवादों और चुटकुलों के साथ।\nकहानी: अधिक जटिल, पहेलियों या सक्रिय कार्यों के साथ।\nलंबाई: लगभग {word_count} शब्द।",
+                'structure': "संरचना: रहस्य -> घटनाओं का विकास -> चरमोत्कर्ष -> समाधान।",
+                'ending': "अंत: प्रेरणादायक।"
+            },
+            'teen': {
+                'role': "आप लोकप्रिय 'यंग एडल्ट' (Young Adult) उपन्यासों के लेखक हैं।",
+                'style': "शैली: आधुनिक, भावुक, ईमानदार। कोई उपदेश नहीं।\nविषय: दोस्ती, आत्म-खोज, साहस, चुनाव।\nलंबाई: लगभग {word_count} शब्द।",
+                'structure': "संरचना: नायक की समस्या -> कठिन विकल्प -> समाधान -> नया अनुभव।",
+                'ending': "अंत: खुला या गहरा।"
+            },
+            'adult': {
+                'role': "आप लघुकथा के उस्ताद हैं (चेखव, ओ. हेनरी, या ब्रैडबरी के स्तर के)।",
+                'style': "महत्वपूर्ण: यह एक वयस्क ({age} वर्ष) के लिए एक कहानी है।\nसामग्री: कड़ाई से 'सेफ फॉर वर्क' (कोई कामुकता/हिंसा नहीं), लेकिन बौद्धिक रूप से वयस्क।\nविषय: मनोविज्ञान, दर्शन, विडंबना, पुरानी यादें, अर्थ की खोज, रिश्ते (भावनात्मक)।\nशैली: साहित्यिक, रूपक, समृद्ध भाषा।\nलंबाई: लगभग {word_count} शब्द।",
+                'structure': "संरचना: वायुमंडलीय तल्लीनता -> संघर्ष (आंतरिक या बाहरी) -> रेचन (कैथार्सिस)/एहसास।",
+                'ending': "अंत: भावनात्मक रूप से मजबूत, एक अमिट छाप छोड़ना।"
+            }
+        },
+        'prompt_template': """{role_instruction}
+कार्य: {age} वर्ष (श्रेणी: {age_category}) के पाठक के लिए "{genre}" शैली में एक कहानी लिखें।
+
+मुख्य पात्र: {name}।
+नाम के बारे में महत्वपूर्ण: नायक के नाम का स्वाभाविक रूप से और विविधता से उपयोग करें। इसमें भिन्नता लाएं, अल्पार्थक शब्दों (diminutives) का उपयोग करें (यदि उम्र/स्थिति के लिए उपयुक्त हो), पूर्ण या संक्षिप्त संस्करणों का उपयोग करें। पाठ में नाम स्वाभाविक लगना चाहिए, जैसे एक अच्छी किताब में।
+
+{gender_instruction}
+रुचियों/विवरणों को एकीकृत करें: {hobbies}।
+भाषा: {language_name}।
+
+आवश्यकताएँ:
+1. **शीर्षक**: पहली पंक्ति में एक रचनात्मक शीर्षक।
+2. **शैली**: चयनित शैली ({genre}) का कड़ाई से पालन करें।
+3. **दर्शक**: {age} वर्ष की आयु ({age_category}) पर विचार करें। बच्चों के लिए सरल, वयस्कों के लिए गहरा।
+4. **गुणवत्ता**: तार्किक कथानक, जीवंत भाषा, भावनाएं।
+
+{style_instruction}
+{structure_instruction}
+
+तकनीकी विवरण:
+- शीर्षक से शुरू करें।
+- पैराग्राफ का प्रयोग करें।
+- {ending_instruction}
+"""
+    },
+    
+    # === ARABIC ===
+    'ar': {
+        'gender_instructions': {
+            'boy': "البطل الرئيسي هو فتى اسمه {name}. استخدم ضمائر المذكر.",
+            'girl': "البطلة الرئيسية هي فتاة اسمها {name}. استخدم ضمائر المؤنث.",
+            'auto': "البطل الرئيسي هو {name}. حدد الجنس من الاسم تلقائيًا."
+        },
+        'age_groups': {
+            'baby': {
+                'role': "أنت صوت والد رقيق ومحب.",
+                'style': "الأسلوب: تهويدة، إيقاعي، بسيط للغاية. الكثير من التكرار، كلمات تحاكي الأصوات.\nالجو: الدفء، الراحة، الحماية، النوم.\nالحبكة: بسيطة للغاية (ذهب البطل للنوم، النجوم تلمع).\nالمفردات: بسيطة للغاية.\nالطول: قصير، حوالي 50-100 كلمة.",
+                'structure': "الهيكل: بداية مهدئة -> مراقبة لطيفة -> نهاية نعسانة.",
+                'ending': "النهاية: 'نم يا صغيري، نم'."
+            },
+            'toddler': {
+                'role': "أنت معلم روضة أطفال مرح.",
+                'style': "الأسلوب: مرح، مفهوم، حسي (ألوان، أصوات، لمس).\nالبطل: {name}. يقوم بأفعال بسيطة (أكل، مشى، وجد صديقًا).\nتجنب: الكلمات المعقدة، اللحظات المخيفة.\nالطول: حوالي 150 كلمة.",
+                'structure': "الهيكل: تحية -> مغامرة صغيرة -> استنتاج مبهج.",
+                'ending': "النهاية: إيجابية ومفهومة."
+            },
+            'preschool': {
+                'role': "أنت راوي قصص من ديزني.",
+                'style': "الأسلوب: سحري، لطيف، مع مغزى أخلاقي (لكن ليس مملاً).\nالحبكة: مغامرة كلاسيكية مع التغلب على عقبة صغيرة.\nالطول: حوالي {word_count} كلمة.",
+                'structure': "الهيكل: البداية -> التحدي -> مساعدة الأصدقاء -> انتصار الخير.",
+                'ending': "النهاية: سعيدة وتعليمية."
+            },
+            'school': {
+                'role': "أنت مؤلف كتب مغامرات للأطفال.",
+                'style': "الأسلوب: ديناميكي، مثير، مع حوارات ونكات.\nالحبكة: أكثر تعقيدًا، مع ألغاز أو إجراءات نشطة.\nالطول: حوالي {word_count} كلمة.",
+                'structure': "الهيكل: مكيدة -> تطور الأحداث -> الذروة -> الحل.",
+                'ending': "النهاية: ملهمة."
+            },
+            'teen': {
+                'role': "أنت مؤلف روايات شهيرة للشباب.",
+                'style': "الأسلوب: حديث، عاطفي، صادق. بدون وعظ.\nالمواضيع: الصداقة، اكتشاف الذات، الشجاعة، الاختيار.\nالطول: حوالي {word_count} كلمة.",
+                'structure': "الهيكل: مشكلة البطل -> خيار صعب -> الحل -> تجربة جديدة.",
+                'ending': "النهاية: مفتوحة أو عميقة."
+            },
+            'adult': {
+                'role': "أنت خبير في القصة القصيرة (على مستوى تشيخوف، أو هنري، أو برادبري).",
+                'style': "هام: هذه قصة لشخص بالغ ({age} سنة).\nالمحتوى: آمن للعمل (لا إثارة/عنف)، لكنه ناضج فكريًا.\nالمواضيع: علم النفس، الفلسفة، المفارقة، الحنين، البحث عن المعنى، العلاقات (العاطفية).\nالأسلوب: أدبي، مجازي، لغة غنية.\nالطول: حوالي {word_count} كلمة.",
+                'structure': "الهيكل: انغماس في الأجواء -> صراع (داخلي أو خارجي) -> تطهير/إدراك.",
+                'ending': "النهاية: قوية عاطفيًا، تترك أثرًا دائمًا."
+            }
+        },
+        'prompt_template': """{role_instruction}
+المهمة: اكتب قصة في نوع "{genre}" لقارئ يبلغ من العمر {age} عامًا (الفئة: {age_category}).
+
+البطل الرئيسي: {name}.
+مهم حول الاسم: استخدم اسم البطل بشكل طبيعي ومتنوع. غيّر فيه، واستخدم صيغ التصغير (إذا كان ذلك مناسبًا للعمر/الموقف)، أو النسخ الكاملة أو المختصرة. يجب أن يبدو الاسم طبيعيًا في النص، كما هو الحال في كتاب جيد.
+
+{gender_instruction}
+دمج الاهتمامات/التفاصيل: {hobbies}.
+اللغة: {language_name}.
+
+المتطلبات:
+1. **العنوان**: عنوان جذاب في السطر الأول.
+2. **النوع**: التزم بصرامة بالنوع المختار ({genre}).
+3. **الجمهور**: ضع في اعتبارك العمر الذي يبلغ {age} عامًا ({age_category}). أبسط للأطفال، أعمق للبالغين.
+4. **الجودة**: حبكة منطقية، لغة حية، عواطف.
+
+{style_instruction}
+{structure_instruction}
+
+التفاصيل التقنية:
+- ابدأ بالعنوان.
+- استخدم الفقرات.
+- {ending_instruction}
+"""
     }
 }
 
