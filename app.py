@@ -1118,11 +1118,31 @@ with st.sidebar:
 # =====================================
 # РОУТИНГ: Лендинг vs Генератор
 # =====================================
-st.session_state.current_page = 'generator'
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'landing'
+
+# Скрытая кнопка разработчика в сайдбаре для тестов
+with st.sidebar:
+    st.markdown("---")
+    if st.session_state.current_page == 'landing':
+        if st.button("🔧 DEV: Открыть генератор", use_container_width=True):
+            st.session_state.current_page = 'generator'
+            st.rerun()
+    else:
+        if st.button("🔧 DEV: Открыть лендинг", use_container_width=True):
+            st.session_state.current_page = 'landing'
+            st.rerun()
 
 # =====================================
 # РЕНДЕРИНГ СТРАНИЦ
 # =====================================
+
+if st.session_state.current_page == 'landing':
+    import landing
+    landing.render_full_landing_page()
+    st.stop()  # Остановка выполнения кода генератора
+    
+# --- Генератор (если не лендинг) ---
 
 # --- Верхняя панель (Навигация) ---
 user_email = st.session_state.get('user_email', None)
