@@ -16,6 +16,8 @@ import streamlit as st
 import base64
 from pathlib import Path
 from auth import sign_up, sign_in, init_auth_state, is_authenticated
+from config import SUPPORTED_LANGUAGES
+from i18n import get_genre_list
 
 def inject_landing_styles():
     """Инъекция глобальных стилей для лендинга (Glassmorphism, Анимации, Типографика)."""
@@ -194,16 +196,32 @@ section[data-testid="stSidebar"] {
     line-height: 1;
 }
 .step-card h3 {
-    font-size: 1.15rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    margin-bottom: 0.6rem;
     color: #f8fafc;
     font-family: 'Comfortaa', cursive;
 }
 .step-card p {
     color: #94a3b8;
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     line-height: 1.55;
     margin: 0;
+}
+.step-card { transition: all 0.3s ease; }
+.step-1:hover {
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
+    transform: translateY(-5px);
+}
+.step-2:hover {
+    border-color: rgba(167, 139, 250, 0.5);
+    box-shadow: 0 12px 30px rgba(167, 139, 250, 0.15);
+    transform: translateY(-5px);
+}
+.step-3:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+    transform: translateY(-5px);
 }
 
 /* Stats bar */
@@ -224,14 +242,14 @@ section[data-testid="stSidebar"] {
 .stat-item:nth-child(3) { animation-delay: 0.4s; }
 .stat-item:nth-child(4) { animation-delay: 0.55s; }
 .stat-number {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
     font-family: 'Comfortaa', cursive;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.4rem;
     line-height: 1.2;
 }
 .stat-label {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     color: #94a3b8;
     font-weight: 500;
     text-transform: uppercase;
@@ -264,7 +282,7 @@ section[data-testid="stSidebar"] {
     white-space: nowrap;
 }
 .price-amount {
-    font-size: 3.2rem;
+    font-size: 3.5rem;
     font-weight: 700;
     margin: 1rem 0 0.3rem;
     font-family: 'Comfortaa', cursive;
@@ -272,7 +290,7 @@ section[data-testid="stSidebar"] {
 }
 .price-period {
     color: #64748b;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
 }
 .price-features {
@@ -280,13 +298,13 @@ section[data-testid="stSidebar"] {
     margin-bottom: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.85rem;
     flex-grow: 1;
 }
 .price-feature {
     display: flex;
-    gap: 10px;
-    font-size: 0.95rem;
+    gap: 12px;
+    font-size: 1.05rem;
     align-items: flex-start;
 }
 .price-feature span {
@@ -296,28 +314,115 @@ section[data-testid="stSidebar"] {
     color: #64748b;
 }
 
-/* Testimonial cards */
-.testimonial-card {
-    padding: 1.5rem;
-    height: 100%;
+/* Testimonial carousel */
+.carousel-wrapper {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    overflow: visible;
 }
-.testimonial-card .stars {
-    color: #fbbf24;
-    font-size: 1rem;
-    margin-bottom: 0.8rem;
-    letter-spacing: 2px;
+.carousel-track-container {
+    overflow: hidden;
+    padding: 10px 0;
+}
+.carousel-track {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+}
+.carousel-slide {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+    visibility: hidden;
+    opacity: 0;
+    transform: scale(0.95) translateY(12px);
+    transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.8s;
+    pointer-events: none;
+}
+.carousel-slide.active {
+    visibility: visible;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+    z-index: 2;
+}
+.carousel-slide .glass-card:hover {
+    transform: none; /* Disable hover to prevent clipping during animation */
+}
+.testimonial-card {
+    padding: 3rem;
+    text-align: center;
+    width: 100%;
+    max-width: 700px;
 }
 .testimonial-card .quote {
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 1.1rem;
+    line-height: 1.8;
     color: #cbd5e1;
     font-style: italic;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
 }
 .testimonial-card .author {
-    font-size: 0.82rem;
-    color: #94a3b8;
+    font-size: 0.85rem;
+    color: #a78bfa;
     font-weight: 600;
+}
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+.carousel-dot.active {
+    background: #a78bfa;
+    transform: scale(1.3);
+}
+.carousel-arrows {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: -52px;
+    right: -52px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 2;
+}
+.carousel-arrow {
+    pointer-events: auto;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #cbd5e1;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.carousel-arrow:hover {
+    background: rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+    color: #fff;
 }
 
 /* Footer */
@@ -327,6 +432,289 @@ section[data-testid="stSidebar"] {
     text-align: center;
     color: #64748b;
     margin-top: 4rem;
+}
+
+/* Animated stars / particles */
+@keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1); }
+}
+@keyframes twinkleSoft {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.6; }
+}
+.hero-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.hero-stars .star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--dur, 4s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+.hero-stars .star.soft {
+    width: 2px;
+    height: 2px;
+    background: rgba(196, 181, 253, 0.6);
+    animation-name: twinkleSoft;
+}
+
+/* Floating emoji icons */
+@keyframes floatIcon1 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-12px) rotate(5deg); }
+    66% { transform: translateY(6px) rotate(-3deg); }
+}
+@keyframes floatIcon2 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-18px) rotate(-8deg); }
+}
+@keyframes floatIcon3 {
+    0%, 100% { transform: translateX(0px) translateY(0px); }
+    25% { transform: translateX(8px) translateY(-10px); }
+    75% { transform: translateX(-6px) translateY(5px); }
+}
+.hero-floats {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.hero-floats .float-icon {
+    position: absolute;
+    font-size: var(--size, 2rem);
+    opacity: var(--opa, 0.12);
+    animation: var(--anim, floatIcon1) var(--dur, 6s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    filter: blur(0.5px);
+    user-select: none;
+}
+
+/* Feature showcase cards */
+.feature-card {
+    padding: 1.5rem 1.3rem;
+    text-align: center;
+    height: 100%;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+.feature-card .feature-icon {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+    line-height: 1;
+}
+.feature-card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.6rem;
+    color: #f8fafc;
+    font-family: 'Comfortaa', cursive;
+}
+.feature-card p {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Example cards (Before → After gallery) */
+.example-card {
+    padding: 1.8rem 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.example-card .example-input {
+    padding: 1rem 1.2rem;
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px dashed rgba(139, 92, 246, 0.25);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: #94a3b8;
+    line-height: 1.6;
+}
+.example-card .example-input strong {
+    color: #c4b5fd;
+}
+.example-card .example-arrow {
+    text-align: center;
+    font-size: 1.4rem;
+    color: rgba(139, 92, 246, 0.5);
+    line-height: 1;
+}
+.example-card .example-result {
+    text-align: center;
+}
+.example-card .example-result .result-title {
+    font-family: 'Comfortaa', cursive;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 0.6rem;
+}
+.example-card .example-result .result-meta {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+}
+.example-card .example-result .result-badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+.badge-genre {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.25);
+}
+.badge-duration {
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.badge-lang {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* Scroll-triggered reveal animations */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--reveal-delay, 0s);
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* FAQ accordion */
+.faq-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+/* Story typing snippet */
+@keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+.story-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    max-width: 1400px;
+    width: 100%;
+}
+@media (max-width: 1100px) {
+    .story-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .story-grid { grid-template-columns: 1fr; }
+}
+.story-snippet {
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem 1.6rem;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.30);
+    text-align: left;
+    height: 100%;
+}
+.story-snippet-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-family: 'Comfortaa', cursive;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #c4b5fd;
+}
+.lang-badge {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    border-radius: 6px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.7rem;
+    color: #e2e8f0;
+    margin-left: auto;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.5px;
+}
+.story-snippet-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    line-height: 1.7;
+    min-height: 3.2em;
+}
+.story-snippet-text .typing-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: #a78bfa;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blinkCursor 0.8s step-end infinite;
+}
+
+.faq-item:hover {
+    border-color: rgba(167, 139, 250, 0.25);
+}
+.faq-item summary {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: #f8fafc;
+    cursor: pointer;
+    padding: 1.5rem 1.4rem;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+    content: '+';
+    font-size: 1.5rem;
+    color: #a78bfa;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+.faq-item[open] summary::after {
+    transform: rotate(45deg);
+}
+.faq-answer {
+    padding: 0 1.4rem 1.5rem;
+    color: #94a3b8;
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
 /* Responsive tweaks */
@@ -346,8 +734,9 @@ section[data-testid="stSidebar"] {
 
 def render_navbar():
     from utils import get_user_language
+    import streamlit.components.v1 as components
     
-    # Только те языки, которые действительно поддерживаются в i18n.py
+    # Supported languages matching i18n.py
     lang_options = {
         "ru": "Русский",
         "en": "English",
@@ -365,111 +754,99 @@ def render_navbar():
     current_lang = st.session_state.user_lang
     if current_lang not in lang_options:
         current_lang = "ru"
-        
-    lang_idx = list(lang_options.keys()).index(current_lang)
-    
-    # Нативный селектор языка Streamlit, позиционированный поверх HTML-хедера
-    selected_lang = st.selectbox(
-        "Язык",
-        options=list(lang_options.values()),
-        index=lang_idx,
-        key="landing_lang_selector",
-        label_visibility="collapsed"
-    )
-    
-    for k, v in lang_options.items():
-        if v == selected_lang:
-            if st.session_state.user_lang != k:
-                st.session_state.user_lang = k
-                st.rerun()
-            break
 
-    st.html("""
-<div style="padding: 1rem 3rem; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.06); transition: all 0.3s ease;">
+    # Check if language was changed via query params (from the HTML select)
+    qp = st.query_params
+    new_lang = qp.get("lang", None)
+    if new_lang and new_lang in lang_options and new_lang != current_lang:
+        st.session_state.user_lang = new_lang
+        current_lang = new_lang
+        # Clear the query param to avoid re-triggering on next rerun
+        del qp["lang"]
+        st.rerun()
+    
+    # Build HTML <option> list with the current language pre-selected
+    options_html = ""
+    for code, name in lang_options.items():
+        selected = 'selected' if code == current_lang else ''
+        options_html += f'<option value="{code}" {selected}>{name}</option>\\n'
+
+    # Render navbar directly into the parent DOM using original landing styles
+    st.html(f"""
+<div style="padding: 1rem 3rem; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: transparent; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.03); transition: all 0.3s ease;">
 <div style="font-family: 'Comfortaa', cursive; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
 ✨ <span class="text-gradient">СказкаAI</span>
 </div>
 <div style="display: flex; gap: 1rem; align-items: center;">
-<!-- Отступ для Streamlit-селектора языка -->
-<div style="width: 180px;"></div>
+<style>
+.lang-select-nav {{
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 500;
+    padding: 0.4rem 2rem 0.4rem 0.8rem;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    outline: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}}
+.lang-select-nav:hover {{
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+}}
+.lang-select-nav option {{
+    background: #1e293b;
+    color: white;
+}}
+@media (max-width: 768px) {{
+    div[style*="padding: 1rem 3rem;"] {{ padding: 0.8rem 1rem !important; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }}
+}}
+</style>
+<select class="lang-select-nav" id="langPickerNav">
+    {options_html}
+</select>
 <a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">Начать ✨</a>
 </div>
 </div>
 """)
 
-    # Streamlit baseui применяет inline style="background: rgb(255,255,255)" на selectbox.
-    # CSS !important НЕ побеждает inline-стили. Единственное решение — JS.
-    # st.markdown() блокирует <script>. st.html() — рендерит в изолированном iframe.
-    # st.components.v1.html() — iframe, НО имеет доступ к parent через window.parent.document.
-    import streamlit.components.v1 as components
+    # Inject JS event listener into the parent DOM's select element from a 0-height iframe container.
     components.html("""
 <script>
 (function() {
     var doc = window.parent.document;
-    function cleanSelectbox() {
-        var sbs = doc.querySelectorAll('[data-testid="stSelectbox"]');
-        if (!sbs.length) return false;
-        sbs.forEach(function(sb) {
-            sb.querySelectorAll('div').forEach(function(el) {
-                el.style.setProperty('background', 'transparent', 'important');
-                el.style.setProperty('background-color', 'transparent', 'important');
-                el.style.setProperty('border', 'none', 'important');
-                el.style.setProperty('border-color', 'transparent', 'important');
-                el.style.setProperty('box-shadow', 'none', 'important');
+    function attachListener() {
+        var picker = doc.getElementById('langPickerNav');
+        if (picker && !picker.dataset.listenerAttached) {
+            picker.dataset.listenerAttached = "true";
+            picker.addEventListener('change', function(e) {
+                var langCode = e.target.value;
+                var url = new URL(window.parent.location.href);
+                url.searchParams.set('lang', langCode);
+                window.parent.location.href = url.toString();
             });
-            sb.querySelectorAll('span').forEach(function(sp) {
-                sp.style.setProperty('color', 'white', 'important');
-            });
-            sb.querySelectorAll('svg').forEach(function(sv) {
-                sv.style.setProperty('fill', 'rgba(255,255,255,0.6)', 'important');
-            });
-        });
-        return true;
-    }
-    var pollId = setInterval(function() {
-        if (cleanSelectbox()) {
-            clearInterval(pollId);
-            var target = doc.querySelector('[data-testid="stSelectbox"]');
-            if (target) {
-                new MutationObserver(function() { cleanSelectbox(); })
-                    .observe(target, {childList:true, subtree:true, attributes:true, attributeFilter:['style','class']});
-            }
+            return true;
         }
-    }, 300);
-    setTimeout(function() { clearInterval(pollId); }, 15000);
+        return false;
+    }
+    
+    // Attempt multiple times because DOM render might be slightly delayed
+    var pollId = setInterval(function() {
+        if (attachListener()) {
+            clearInterval(pollId);
+        }
+    }, 100);
+    setTimeout(function() { clearInterval(pollId); }, 5000);
 })();
 </script>
-""", height=0)
-
-    # CSS-позиционирование selectbox (не зависит от inline-стилей, поэтому CSS работает)
-    st.markdown("""
-<style>
-div[data-testid="stSelectbox"] {
-    position: fixed !important;
-    top: 0.85rem !important;
-    right: 10rem !important;
-    z-index: 105 !important;
-    width: 180px !important;
-    margin-bottom: 0 !important;
-}
-div[data-testid="stSelectbox"] label {
-    display: none !important;
-}
-div[data-testid="stSelectbox"] span {
-    font-size: 0.92rem !important;
-    font-weight: 500 !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
-    white-space: nowrap !important;
-}
-@media (max-width: 768px) {
-    div[data-testid="stSelectbox"] {
-        right: 1rem !important;
-        top: 4.5rem !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
+""", height=0, scrolling=False)
 
 def render_hero():
     st.html("""
@@ -477,6 +854,48 @@ def render_hero():
 <div class="hero-section">
 <div class="hero-bg-blob1"></div>
 <div class="hero-bg-blob2"></div>
+
+<!-- Floating emoji icons -->
+<div class="hero-floats">
+<span class="float-icon" style="top:10%;left:6%;--size:2.2rem;--opa:0.10;--anim:floatIcon1;--dur:7s;--delay:0s;">🧚</span>
+<span class="float-icon" style="top:20%;right:8%;--size:2.5rem;--opa:0.08;--anim:floatIcon2;--dur:8s;--delay:1s;">🐉</span>
+<span class="float-icon" style="top:55%;left:4%;--size:1.8rem;--opa:0.09;--anim:floatIcon3;--dur:9s;--delay:2s;">🏰</span>
+<span class="float-icon" style="top:15%;right:15%;--size:1.6rem;--opa:0.12;--anim:floatIcon1;--dur:6s;--delay:0.5s;">🌙</span>
+<span class="float-icon" style="top:65%;right:6%;--size:2rem;--opa:0.10;--anim:floatIcon2;--dur:7.5s;--delay:1.5s;">📖</span>
+<span class="float-icon" style="top:40%;left:10%;--size:1.5rem;--opa:0.07;--anim:floatIcon3;--dur:10s;--delay:3s;">✨</span>
+<span class="float-icon" style="top:30%;right:4%;--size:1.7rem;--opa:0.09;--anim:floatIcon1;--dur:8.5s;--delay:0.8s;">🦊</span>
+<span class="float-icon" style="top:75%;left:12%;--size:1.9rem;--opa:0.08;--anim:floatIcon2;--dur:7s;--delay:2.5s;">🐻</span>
+<span class="float-icon" style="top:5%;left:40%;--size:1.6rem;--opa:0.10;--anim:floatIcon3;--dur:9.5s;--delay:1.3s;">☀️</span>
+<span class="float-icon" style="top:45%;right:3%;--size:2rem;--opa:0.07;--anim:floatIcon1;--dur:11s;--delay:3.5s;">☁️</span>
+<span class="float-icon" style="top:70%;right:15%;--size:1.5rem;--opa:0.09;--anim:floatIcon2;--dur:6.5s;--delay:0.3s;">🦋</span>
+<span class="float-icon" style="top:80%;left:30%;--size:1.4rem;--opa:0.08;--anim:floatIcon3;--dur:8s;--delay:1.8s;">🐰</span>
+<span class="float-icon" style="top:50%;left:25%;--size:1.3rem;--opa:0.06;--anim:floatIcon1;--dur:10s;--delay:4s;">👑</span>
+<span class="float-icon" style="top:35%;left:85%;--size:1.6rem;--opa:0.08;--anim:floatIcon2;--dur:7.5s;--delay:2.2s;">🪄</span>
+</div>
+
+<!-- Animated twinkling stars -->
+<div class="hero-stars">
+<span class="star" style="top:8%;left:12%;--dur:3.2s;--delay:0s;"></span>
+<span class="star soft" style="top:15%;left:75%;--dur:4.8s;--delay:1.2s;"></span>
+<span class="star" style="top:22%;left:45%;--dur:5.5s;--delay:0.5s;"></span>
+<span class="star soft" style="top:5%;left:88%;--dur:3.8s;--delay:2.1s;"></span>
+<span class="star" style="top:35%;left:20%;--dur:4.2s;--delay:1.8s;"></span>
+<span class="star soft" style="top:12%;left:55%;--dur:6.0s;--delay:0.3s;"></span>
+<span class="star" style="top:42%;left:82%;--dur:3.5s;--delay:2.5s;"></span>
+<span class="star soft" style="top:28%;left:35%;--dur:5.2s;--delay:1.0s;"></span>
+<span class="star" style="top:18%;left:92%;--dur:4.0s;--delay:0.8s;"></span>
+<span class="star soft" style="top:48%;left:60%;--dur:5.8s;--delay:1.5s;"></span>
+<span class="star" style="top:55%;left:8%;--dur:3.6s;--delay:2.0s;"></span>
+<span class="star soft" style="top:38%;left:50%;--dur:4.5s;--delay:0.7s;"></span>
+<span class="star" style="top:65%;left:70%;--dur:5.0s;--delay:1.3s;"></span>
+<span class="star soft" style="top:10%;left:30%;--dur:4.3s;--delay:2.8s;"></span>
+<span class="star" style="top:52%;left:15%;--dur:3.9s;--delay:0.2s;"></span>
+<span class="star soft" style="top:72%;left:40%;--dur:6.2s;--delay:1.7s;"></span>
+<span class="star" style="top:60%;left:90%;--dur:3.3s;--delay:2.3s;"></span>
+<span class="star soft" style="top:25%;left:5%;--dur:5.5s;--delay:0.9s;"></span>
+<span class="star" style="top:45%;left:68%;--dur:4.7s;--delay:1.1s;"></span>
+<span class="star soft" style="top:78%;left:25%;--dur:5.1s;--delay:2.6s;"></span>
+</div>
 
 <h1 class="hero-title">
 Подарите ребёнку сказку,<br>где он — <span class="text-gradient">Главный Герой</span>
@@ -490,22 +909,18 @@ def render_hero():
 <a href="#auth-section" class="btn-magic">Создать сказку бесплатно ✨</a>
 </div>
 
-<!-- Мини-плеер демо — компактный -->
-<div style="margin-top: 4rem; display: flex; justify-content: center;">
-<div class="glass-card" style="display: inline-flex; align-items: center; padding: 0.8rem 1.6rem; border-radius: 50px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 12px 35px rgba(0,0,0,0.35);">
-<div style="display: flex; align-items: center; gap: 1.2rem;">
-<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); flex-shrink: 0;">
-<svg width="16" height="16" viewBox="0 0 24 24" fill="white" style="margin-left: 2px;"><path d="M8 5v14l11-7z"/></svg>
-</div>
-<div style="text-align: left;">
-<div style="font-size: 0.9rem; color: #f8fafc; font-weight: 600; font-family: 'Inter', sans-serif; white-space: nowrap;">Александр и Дракон Пиксель</div>
-<div style="width: 140px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 6px; overflow: hidden; position: relative;">
-<div style="width: 45%; height: 100%; background: linear-gradient(90deg, #c4b5fd, #818cf8); border-radius: 2px; position: absolute; left: 0; top: 0; box-shadow: 0 0 5px rgba(129, 140, 248, 0.5);"></div>
-<div style="width: 7px; height: 7px; background: white; border-radius: 50%; position: absolute; left: 45%; top: -1.5px; transform: translateX(-50%); box-shadow: 0 0 4px rgba(0,0,0,0.5);"></div>
-</div>
-</div>
-<div style="font-size: 0.78rem; color: #94a3b8; font-weight: 500; font-family: 'Inter', sans-serif; margin-left: 0.3rem; white-space: nowrap;">02:34 / 05:12</div>
-</div>
+<!-- Story typing snippets grid -->
+<div style="margin-top: 3.5rem; display: flex; justify-content: center; animation: fadeInUp 1.4s ease-out forwards; opacity: 0; animation-delay: 0.6s;">
+<div class="story-grid">
+""" + "".join([f"""
+    <div class="story-snippet">
+        <div class="story-snippet-header">
+            <span id="typing-title-{i}">✨ Отрывок сказки</span>
+            <span class="lang-badge" id="typing-lang-{i}"></span>
+        </div>
+        <div class="story-snippet-text" id="typing-target-{i}"><span class="typing-cursor"></span></div>
+    </div>
+""" for i in range(8)]) + """
 </div>
 </div>
 </div>
@@ -513,33 +928,100 @@ def render_hero():
 """)
 
 def render_stats():
-    """Секция с метриками — Social Proof."""
-    st.html("""
-<div class="landing-wrapper">
+    """Секция с метриками — Social Proof. Языки и жанры считаются динамически."""
+    num_languages = len(SUPPORTED_LANGUAGES)
+    num_genres = len(get_genre_list('ru'))
+    
+    st.html(f"""
+<div class="landing-wrapper reveal">
 <div class="stats-bar">
 <div class="stat-item">
-    <div class="stat-number text-gradient">10 000+</div>
+    <div class="stat-number text-gradient"><span class="count-up" data-target="10000" data-suffix="+" data-separator="|">0</span></div>
     <div class="stat-label">Сказок создано</div>
 </div>
 <div class="stat-item">
-    <div class="stat-number text-gradient">8</div>
+    <div class="stat-number text-gradient"><span class="count-up" data-target="{num_languages}">0</span></div>
     <div class="stat-label">Языков озвучки</div>
 </div>
 <div class="stat-item">
-    <div class="stat-number text-gradient">13</div>
+    <div class="stat-number text-gradient"><span class="count-up" data-target="{num_genres}">0</span></div>
     <div class="stat-label">Жанров историй</div>
 </div>
 <div class="stat-item">
-    <div class="stat-number text-gradient">~1 мин</div>
+    <div class="stat-number text-gradient"><span class="count-up" data-target="1" data-prefix="~" data-suffix="|мин">0</span></div>
     <div class="stat-label">Время генерации</div>
 </div>
 </div>
 </div>
 """)
 
+def render_features():
+    """Секция возможностей — Feature Showcase."""
+    st.html("""
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<h2 class="section-title">Возможности <span class="text-gradient">платформы</span></h2>
+</div>
+""")
+    
+    # Row 1: 3 features
+    spacer_left, c1, c2, c3, spacer_right = st.columns([1, 4, 4, 4, 1])
+    
+    with c1:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0s;">
+<div class="feature-icon">🎭</div>
+<h3>Любой жанр</h3>
+<p>От космических приключений до убаюкивающих сказок перед сном</p>
+</div>
+""")
+    with c2:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
+<div class="feature-icon">🌍</div>
+<h3>Мультиязычность</h3>
+<p>Читайте и слушайте сказки на 8 языках с нейроозвучкой</p>
+</div>
+""")
+    with c3:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
+<div class="feature-icon">🎙️</div>
+<h3>Премиум голоса</h3>
+<p>Мужские и женские HD-голоса с естественной интонацией</p>
+</div>
+""")
+    
+    # Row 2: 3 features
+    spacer_left, c4, c5, c6, spacer_right = st.columns([1, 4, 4, 4, 1])
+    
+    with c4:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
+<div class="feature-icon">📲</div>
+<h3>Скачивай и слушай</h3>
+<p>Читайте и слушайте офлайн на любом устройстве</p>
+</div>
+""")
+    with c5:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
+<div class="feature-icon">👨‍👩‍👧‍👦</div>
+<h3>Для любого возраста</h3>
+<p>Умная адаптация сложности и лексики — от малышей до взрослых</p>
+</div>
+""")
+    with c6:
+        st.html("""
+<div class="glass-card feature-card reveal" style="--reveal-delay: 0.3s;">
+<div class="feature-icon">🧠</div>
+<h3>Персонализация</h3>
+<p>ИИ учитывает имя, хобби и интересы героя</p>
+</div>
+""")
+
 def render_how_it_works():
     st.html("""
-<div class="landing-wrapper" style="padding: 3rem 2rem 1rem;">
+<div class="landing-wrapper reveal" style="padding: 3rem 2rem 1rem;">
 <h2 class="section-title">Магия в <span class="text-gradient">три шага</span></h2>
 </div>
 """)
@@ -548,7 +1030,7 @@ def render_how_it_works():
     
     with col1:
         st.html("""
-<div class="glass-card step-card">
+<div class="glass-card step-card step-1 reveal" style="--reveal-delay: 0s;">
 <div class="step-icon">👶</div>
 <h3>1. Расскажите о герое</h3>
 <p>Впишите имя, возраст и увлечения ребёнка. ИИ сделает его центром сюжета.</p>
@@ -557,7 +1039,7 @@ def render_how_it_works():
         
     with col2:
         st.html("""
-<div class="glass-card step-card">
+<div class="glass-card step-card step-2 reveal" style="--reveal-delay: 0.15s;">
 <div class="step-icon">🧚‍♀️</div>
 <h3>2. Выберите жанр</h3>
 <p>Космос, пираты, лес фей или терапевтическая сказка для крепкого сна.</p>
@@ -566,18 +1048,19 @@ def render_how_it_works():
         
     with col3:
         st.html("""
-<div class="glass-card step-card">
+<div class="glass-card step-card step-3 reveal" style="--reveal-delay: 0.3s;">
 <div class="step-icon">🎧</div>
 <h3>3. Слушайте!</h3>
 <p>Получите аудиокнигу с нейроозвучкой. Скачайте в MP3 или PDF.</p>
 </div>
 """)
 
-def render_testimonials():
-    """Секция отзывов — Social Proof."""
+def render_examples():
+    """Секция с примерами — Before → After."""
     st.html("""
-<div class="landing-wrapper" style="padding: 4rem 2rem 1rem;">
-<h2 class="section-title">Что говорят <span class="text-gradient">родители</span></h2>
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<h2 class="section-title">Примеры <span class="text-gradient">волшебства</span></h2>
+<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2.5rem; font-size: 0.95rem; line-height: 1.6;">Вот что получают дети — всего за минуту</p>
 </div>
 """)
     
@@ -585,34 +1068,144 @@ def render_testimonials():
     
     with col1:
         st.html("""
-<div class="glass-card testimonial-card">
-<div class="stars">★★★★★</div>
-<div class="quote">«Дочка слушает каждый вечер перед сном и просит ещё. Теперь она — принцесса-астронавт! Это лучший подарок, который мы нашли.»</div>
-<div class="author">— Анна, мама Софии (5 лет)</div>
+<div class="glass-card example-card reveal" style="--reveal-delay: 0s;">
+<div class="example-input">
+<strong>Имя:</strong> Артём, 5 лет<br>
+<strong>Жанр:</strong> Космос<br>
+<strong>Хобби:</strong> Динозавры, роботы
+</div>
+<div class="example-arrow">↓ ✨ ↓</div>
+<div class="example-result">
+<div class="result-title">«Артём и Звёздный Динозавр»</div>
+<div class="result-meta">
+<span class="result-badge badge-genre">🚀 Космос</span>
+<span class="result-badge badge-duration">🎧 3 мин</span>
+<span class="result-badge badge-lang">RU</span>
+</div>
+</div>
 </div>
 """)
     
     with col2:
         st.html("""
-<div class="glass-card testimonial-card">
-<div class="stars">★★★★★</div>
-<div class="quote">«Генератор создаёт истории, которые учат добру. Сын стал просить сказку вместо мультиков. Озвучка просто невероятная!»</div>
-<div class="author">— Дмитрий, папа Артёма (7 лет)</div>
+<div class="glass-card example-card reveal" style="--reveal-delay: 0.15s;">
+<div class="example-input">
+<strong>Имя:</strong> София, 4 года<br>
+<strong>Жанр:</strong> Сказка<br>
+<strong>Хобби:</strong> Рисование, котики
+</div>
+<div class="example-arrow">↓ ✨ ↓</div>
+<div class="example-result">
+<div class="result-title">«Принцесса София и Радужный Кот»</div>
+<div class="result-meta">
+<span class="result-badge badge-genre">👸 Сказка</span>
+<span class="result-badge badge-duration">🎧 5 мин</span>
+<span class="result-badge badge-lang">RU</span>
+</div>
+</div>
 </div>
 """)
     
     with col3:
         st.html("""
+<div class="glass-card example-card reveal" style="--reveal-delay: 0.3s;">
+<div class="example-input">
+<strong>Name:</strong> Luca, 7 years<br>
+<strong>Genre:</strong> Adventure<br>
+<strong>Hobbies:</strong> Football, pirate ships
+</div>
+<div class="example-arrow">↓ ✨ ↓</div>
+<div class="example-result">
+<div class="result-title">«Captain Luca and the Golden Island»</div>
+<div class="result-meta">
+<span class="result-badge badge-genre">🏴‍☠️ Adventure</span>
+<span class="result-badge badge-duration">🎧 7 min</span>
+<span class="result-badge badge-lang">EN</span>
+</div>
+</div>
+</div>
+""")
+
+def render_testimonials():
+    """Секция отзывов — Карусель с авто-ротацией."""
+    st.html("""
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<h2 class="section-title">Что говорят <span class="text-gradient">родители</span></h2>
+
+<div class="carousel-wrapper" id="testimonial-carousel">
+<div class="carousel-arrows">
+    <button class="carousel-arrow" id="carousel-prev">‹</button>
+    <button class="carousel-arrow" id="carousel-next">›</button>
+</div>
+<div class="carousel-track-container" id="carousel-track-container">
+<div class="carousel-track" id="carousel-track">
+
+<div class="carousel-slide active">
 <div class="glass-card testimonial-card">
-<div class="stars">★★★★★</div>
+<div class="quote">«Дочка слушает каждый вечер перед сном и просит ещё. Теперь она — принцесса-астронавт! Это лучший подарок, который мы нашли.»</div>
+<div class="author">— Анна, мама Софии (5 лет)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«Генератор создаёт истории, которые учат добру. Сын стал просить сказку вместо мультиков. Озвучка просто невероятная!»</div>
+<div class="author">— Дмитрий, папа Артёма (7 лет)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
 <div class="quote">«Использую на французском для билингвальных детей. Качество перевода и озвучки удивительное — дети в восторге!»</div>
 <div class="author">— Marie, мама двоих (4 и 8 лет)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«Бабушка записывает сказки внуку по имени и отправляет из другого города. Малыш думает, что бабушка рядом. Плачу от умиления!»</div>
+<div class="author">— Елена, бабушка Миши (4 года)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«My son asks to hear his space adventure every night. The AI voices are so natural — he thinks a real person is reading to him!»</div>
+<div class="author">— James, dad of Leo (6 years)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«За 2 месяца словарный запас дочери вырос заметно. Каждая сказка — маленький урок с новыми словами и ситуациями. Рекомендую всем!»</div>
+<div class="author">— Ольга, мама Алисы (6 лет)</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«Usamos en español para nuestros hijos. Las historias son creativas y la narración suena completamente natural. ¡Increíble tecnología!»</div>
+<div class="author">— Carlos, papá de Mateo y Lucía</div>
+</div>
+</div>
+
+<div class="carousel-slide">
+<div class="glass-card testimonial-card">
+<div class="quote">«Подарила подписку подруге на рождение ребёнка. Теперь обе семьи генерируют сказки каждую неделю. Лучше любой игрушки!»</div>
+<div class="author">— Наталья, мама Кирилла (3 года)</div>
+</div>
+</div>
+
+</div>
+<div class="carousel-dots" id="carousel-dots"></div>
+</div>
+
 </div>
 """)
 
 def render_pricing():
     st.html("""
-<div class="landing-wrapper" style="padding: 4rem 2rem 1.5rem;">
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
 <h2 class="section-title" id="pricing-section">Выберите ваш <span class="text-gradient">Билет в сказку</span></h2>
 </div>
 """)
@@ -621,7 +1214,7 @@ def render_pricing():
     
     with col1:
         st.html("""
-<div class="glass-card price-card">
+<div class="glass-card price-card reveal" style="--reveal-delay: 0s;">
 <h3 style="font-size: 1.3rem; color: #cbd5e1; font-family: 'Comfortaa', cursive;">Для знакомства</h3>
 <div class="price-amount">0₽</div>
 <div class="price-period">Навсегда бесплатно</div>
@@ -640,7 +1233,7 @@ def render_pricing():
         
     with col2:
         st.html("""
-<div class="glass-card price-card" style="border-color: rgba(167, 139, 250, 0.5); box-shadow: 0 0 30px rgba(167,139,250,0.15);">
+<div class="glass-card price-card reveal" style="--reveal-delay: 0.15s; border-color: rgba(167, 139, 250, 0.5); box-shadow: 0 0 30px rgba(167,139,250,0.15);">
 <div class="price-popular-badge">🌟 Популярный</div>
 <h3 style="font-size: 1.3rem; color: #f8fafc; font-family: 'Comfortaa', cursive;">Безлимитная подписка</h3>
 <div class="price-amount text-gradient">299₽<span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span></div>
@@ -800,15 +1393,52 @@ def render_footer():
     st.html("""
 <div class="landing-wrapper">
 <div class="footer">
-<div style="font-family: 'Comfortaa', cursive; font-size: 1.4rem; font-weight: 700; margin-bottom: 0.8rem;">
+<div style="font-family: 'Comfortaa', cursive; font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem;">
 ✨ СказкаAI
 </div>
-<p style="font-size: 0.88rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.5;">Создаем моменты, которые дети запомнят на всю жизнь.</p>
-<div style="font-size: 0.78rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+<p style="font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">Создаем моменты, которые дети запомнят на всю жизнь.</p>
+<div style="font-size: 0.85rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
 <span>© 2026 Fairy Tale Generator</span>
 <a href="#" style="color: inherit; text-decoration: none;">Политика конфиденциальности</a>
 <a href="#" style="color: inherit; text-decoration: none;">Условия использования</a>
 </div>
+</div>
+</div>
+""")
+
+def render_faq():
+    """Секция FAQ — Часто задаваемые вопросы."""
+    st.html("""
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 2rem;">
+<h2 class="section-title">Частые <span class="text-gradient">вопросы</span></h2>
+
+<div style="max-width: 700px; margin: 0 auto;">
+
+<details class="faq-item">
+<summary>Нужна ли подписка, чтобы попробовать?</summary>
+<div class="faq-answer">Нет! Вы можете создать первую сказку бесплатно сразу после регистрации. Бесплатный тариф включает 1 историю в день со стандартными голосами — навсегда.</div>
+</details>
+
+<details class="faq-item">
+<summary>Безопасен ли контент для детей?</summary>
+<div class="faq-answer">Абсолютно. ИИ настроен на генерацию добрых, позитивных историй с поучительным сюжетом. Контент адаптируется под указанный возраст — никакого насилия, страхов или неуместных тем.</div>
+</details>
+
+<details class="faq-item">
+<summary>Какие форматы скачивания доступны?</summary>
+<div class="faq-answer">Сказки можно скачать в форматах MP3 (аудио), PDF, EPUB, FB2 и TXT (текст). Слушайте в машине, читайте на электронной книге — любое устройство, офлайн.</div>
+</details>
+
+<details class="faq-item">
+<summary>Какие языки поддерживаются?</summary>
+<div class="faq-answer">Сейчас доступны 8 языков: русский, английский, испанский, французский, португальский, китайский, хинди и арабский. Текст и озвучка генерируются на выбранном языке. Мы постоянно добавляем новые!</div>
+</details>
+
+<details class="faq-item">
+<summary>Можно ли отменить подписку?</summary>
+<div class="faq-answer">Да, в любой момент. Никаких скрытых условий и долгосрочных контрактов. Отмена в один клик из личного кабинета, доступ сохраняется до конца оплаченного периода.</div>
+</details>
+
 </div>
 </div>
 """)
@@ -821,8 +1451,270 @@ def render_full_landing_page():
     render_navbar()
     render_hero()
     render_stats()
+    render_features()
     render_how_it_works()
+    render_examples()
     render_testimonials()
     render_pricing()
+    render_faq()
     render_auth()
     render_footer()
+    
+    import json
+    user_lang = st.session_state.get('user_lang', 'ru')
+    
+    all_stories = [
+        {"lang": "ru", "badge": "RU", "title": "Отрывок сказки", "text": "«Однажды Артём нашёл крошечного дракона. Он переливался всеми цветами радуги и был готов к приключениям...»"},
+        {"lang": "en", "badge": "EN", "title": "Story snippet", "text": "«Princess Sofia stepped into the forest. Here, every flower could sing, and ancient trees whispered tales of magic...»"},
+        {"lang": "es", "badge": "ES", "title": "Fragmento de cuento", "text": "«Una vez, Mateo encontró un dragón en el jardín, no más grande que un gatito y brillaba con colores...»"},
+        {"lang": "fr", "badge": "FR", "title": "Extrait de conte", "text": "«La princesse Sophie entra dans la forêt. Chaque fleur pouvait chanter et chaque arbre racontait des histoires...»"},
+        {"lang": "pt", "badge": "PT", "title": "Trecho de conto", "text": "«A princesa Sofia entrou na floresta encantada. Onde cada flor podia cantar e as árvores contavam histórias...»"},
+        {"lang": "zh-CN", "badge": "ZH", "title": "故事片段", "text": "«从前，小明发现了一条小龙。这条龙只有猫那么大，闪烁着光芒...»"},
+        {"lang": "hi", "badge": "HI", "title": "कहानी का अंश", "text": "«एक बार, आरव को बगीचे में एक छोटा ड्रैगन मिला। वह इंद्रधनुष के सभी रंगों से चमक रहा था...»"},
+        {"lang": "ar", "badge": "AR", "title": "مقتطف من قصة", "text": "«في يوم من الأيام، وجد أحمد تنينًا صغيرًا في الحديقة. كان يتلألأ بكل الألوان...»"}
+    ]
+    # Текущий язык — первый в списке
+    all_stories.sort(key=lambda x: 0 if x["lang"] == user_lang else 1)
+    stories_json = json.dumps(all_stories)
+    
+    # Scroll-triggered reveal animations + card height equalizer
+    import streamlit.components.v1 as components
+    
+    js_code = r"""
+<script>
+(function() {
+    var doc = window.parent.document;
+    
+    // Equalize card heights within each card group
+    function equalizeCards(selector) {
+        var cards = doc.querySelectorAll(selector);
+        if (!cards.length) return;
+        // Reset heights first to get natural sizes
+        cards.forEach(function(c) { c.style.minHeight = ''; });
+        var maxH = 0;
+        cards.forEach(function(c) {
+            var h = c.getBoundingClientRect().height;
+            if (h > maxH) maxH = h;
+        });
+        cards.forEach(function(c) { c.style.minHeight = maxH + 'px'; });
+    }
+    
+    function initObserver() {
+        var els = doc.querySelectorAll('.reveal:not(.observed)');
+        if (!els.length) return false;
+        
+        if (!window.__revealObserver) {
+            window.__revealObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        window.__revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+        }
+        
+        els.forEach(function(el) { 
+            el.classList.add('observed');
+            window.__revealObserver.observe(el); 
+        });
+        return true;
+    }
+    
+    function initAll() {
+        initObserver();
+        
+        // Equalize card heights for uniform appearance
+        equalizeCards('.feature-card');
+        equalizeCards('.step-card');
+        equalizeCards('.testimonial-card');
+        equalizeCards('.example-card');
+        
+        // Count-Up animation for stat numbers
+        var counters = doc.querySelectorAll('.count-up:not(.observed)');
+        if (counters.length) {
+            if (!window.__countObserver) {
+                window.__countObserver = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            animateCount(entry.target);
+                            window.__countObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+            }
+            counters.forEach(function(el) { 
+                el.classList.add('observed');
+                window.__countObserver.observe(el); 
+            });
+        }
+        
+        // Parallax effect for hero background blobs
+        if (!window.__parallaxInit && doc.querySelector('.hero-bg-blob1')) {
+            window.__parallaxInit = true;
+            initParallax();
+        }
+        
+        // Testimonial carousel
+        var track = doc.getElementById('carousel-track');
+        if (track && !window.__carouselInit) {
+            window.__carouselInit = true;
+            initCarousel();
+        }
+    }
+    
+    function initParallax() {
+        var blob1 = doc.querySelector('.hero-bg-blob1');
+        var blob2 = doc.querySelector('.hero-bg-blob2');
+        if (!blob1 && !blob2) return;
+        
+        window.parent.addEventListener('scroll', function() {
+            // Use requestAnimationFrame for smooth scrolling if needed,
+            // but for simple transform, direct assignment is often ok enough in Streamlit.
+            var scrollY = window.parent.pageYOffset || window.parent.scrollY;
+            if (blob1) {
+                // negative Y for slower upward movement
+                blob1.style.transform = 'translateY(' + (scrollY * -0.2) + 'px)';
+            }
+            if (blob2) {
+                // positive Y for faster/different movement
+                blob2.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
+            }
+        });
+    }
+    
+    function initCarousel() {
+        var track = doc.getElementById('carousel-track');
+        var slides = doc.querySelectorAll('.carousel-slide');
+        var dotsWrap = doc.getElementById('carousel-dots');
+        var prevBtn = doc.getElementById('carousel-prev');
+        var nextBtn = doc.getElementById('carousel-next');
+        if (!slides.length || !track || !dotsWrap) return;
+        
+        var current = 0;
+        var total = slides.length;
+        var autoInterval = null;
+        
+        // Generate dots
+        for (var i = 0; i < total; i++) {
+            var dot = doc.createElement('button');
+            dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('data-idx', i);
+            dot.addEventListener('click', function() {
+                goTo(parseInt(this.getAttribute('data-idx')));
+                resetAuto();
+            });
+            dotsWrap.appendChild(dot);
+        }
+        
+        function goTo(idx) {
+            slides[current].classList.remove('active');
+            dotsWrap.children[current].classList.remove('active');
+            current = (idx + total) % total;
+            slides[current].classList.add('active');
+            dotsWrap.children[current].classList.add('active');
+        }
+        
+        function nextSlide() { goTo(current + 1); }
+        function prevSlide() { goTo(current - 1); }
+        
+        if (prevBtn) prevBtn.addEventListener('click', function() { prevSlide(); resetAuto(); });
+        if (nextBtn) nextBtn.addEventListener('click', function() { nextSlide(); resetAuto(); });
+        
+        function startAuto() {
+            autoInterval = setInterval(nextSlide, 8000);
+        }
+        function resetAuto() {
+            clearInterval(autoInterval);
+            startAuto();
+        }
+        startAuto();
+    }
+    
+    function animateCount(el) {
+        var target = parseInt(el.getAttribute('data-target')) || 0;
+        var prefix = (el.getAttribute('data-prefix') || '').replace(/\|/g, ' ');
+        var suffix = (el.getAttribute('data-suffix') || '').replace(/\|/g, ' ');
+        var sep = (el.getAttribute('data-separator') || '').replace(/\|/g, ' ');
+        var duration = target > 100 ? 2000 : 1200;
+        var start = performance.now();
+        
+        function formatNum(n) {
+            if (!sep) return n.toString();
+            return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+        }
+        
+        function step(now) {
+            var progress = Math.min((now - start) / duration, 1);
+            // Ease-out cubic for smooth deceleration
+            var ease = 1 - Math.pow(1 - progress, 3);
+            var current = Math.round(ease * target);
+            el.textContent = prefix + formatNum(current) + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+    
+    // Story typing effect
+    function initTypingEffect() {
+        var stories = __STORIES_JSON__;
+        
+        // 1. Pre-fill to calculate max height naturally
+        stories.forEach(function(story, i) {
+            var el = doc.getElementById('typing-target-' + i);
+            var headEl = doc.getElementById('typing-lang-' + i);
+            var titleEl = doc.getElementById('typing-title-' + i);
+            if (!el || !headEl || !titleEl) return;
+            
+            headEl.textContent = story.badge;
+            titleEl.textContent = '✨ ' + story.title;
+            el.innerHTML = story.text;
+        });
+        
+        // 2. Lock equal heights based on the longest snippet
+        equalizeCards('.story-snippet');
+        
+        // 3. Clear and start animation
+        stories.forEach(function(story, i) {
+            var el = doc.getElementById('typing-target-' + i);
+            if (!el) return;
+            el.innerHTML = '<span class="typing-cursor"></span>';
+            
+            var text = story.text;
+            var charIdx = 0;
+            var speed = 30;
+            var delay = 800 + (i * 300) + Math.random() * 200;
+            
+            function tick() {
+                charIdx++;
+                el.innerHTML = text.substring(0, charIdx) + '<span class="typing-cursor"></span>';
+                if (charIdx < text.length) {
+                    setTimeout(tick, speed + Math.random() * 20);
+                } else {
+                    el.innerHTML = text; // remove cursor completely
+                }
+            }
+            setTimeout(tick, delay);
+        });
+    }
+    
+    // Poll until DOM is deeply ready (captures delayed columns rendering)
+    var pollCount = 0;
+    var pollId = setInterval(function() {
+        initAll();
+        if (pollCount === 0) {
+            initTypingEffect();
+        }
+        pollCount++;
+        // Keep polling for a few seconds to catch all lazy-loaded .reveal blocks
+        if (pollCount > 15) {
+            clearInterval(pollId);
+        }
+    }, 200);
+    setTimeout(function() { clearInterval(pollId); }, 8000);
+})();
+</script>
+"""
+    
+    js_code = js_code.replace('__STORIES_JSON__', stories_json)
+    components.html(js_code, height=0, scrolling=False)
