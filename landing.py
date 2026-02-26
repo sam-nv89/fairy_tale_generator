@@ -39,6 +39,10 @@ def inject_landing_styles():
 }
 
 /* Скрытие стандартных отступов Streamlit для чистого холста */
+html {
+    scroll-behavior: smooth;
+}
+
 div.block-container {
     padding-top: 0rem !important;
     padding-bottom: 0rem !important;
@@ -769,7 +773,7 @@ def render_navbar():
     options_html = ""
     for code, name in lang_options.items():
         selected = 'selected' if code == current_lang else ''
-        options_html += f'<option value="{code}" {selected}>{name}</option>\\n'
+        options_html += f'<option value="{code}" {selected}>{name}</option>\n'
 
     # Render navbar directly into the parent DOM using original landing styles
     st.html(f"""
@@ -1400,51 +1404,257 @@ def render_testimonials():
 """)
 
 def render_pricing():
+    """Секция тарифов — 3 плана с переключателем мес/год. Единый HTML-блок для равной высоты."""
     st.html("""
-<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
+<style>
+/* ── Billing Toggle (Pure CSS no-JS) ── */
+#billing-checkbox {
+    display: none;
+}
+.pricing-section-wrapper {
+    display: block;
+    width: 100%;
+}
+.billing-toggle-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 2.5rem;
+}
+.billing-label {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #f8fafc;
+    cursor: pointer;
+    transition: color 0.3s;
+    user-select: none;
+}
+.billing-toggle {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+}
+.billing-toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #c4b5fd;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: 0 2px 8px rgba(167, 139, 250, 0.4);
+}
+
+/* CSS Toggle Logic */
+#billing-checkbox:checked ~ .billing-toggle-wrap .billing-toggle {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: rgba(167, 139, 250, 0.4);
+}
+#billing-checkbox:checked ~ .billing-toggle-wrap .billing-toggle::after {
+    transform: translateX(24px);
+}
+#billing-checkbox:not(:checked) ~ .billing-toggle-wrap #label-yearly { color: #94a3b8; }
+#billing-checkbox:checked ~ .billing-toggle-wrap #label-monthly { color: #94a3b8; }
+
+.billing-save-badge {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Price Switch Logic */
+#billing-checkbox:not(:checked) ~ .pricing-grid .price-yearly,
+#billing-checkbox:not(:checked) ~ .pricing-grid .desc-yearly {
+    display: none;
+}
+#billing-checkbox:checked ~ .pricing-grid .price-monthly,
+#billing-checkbox:checked ~ .pricing-grid .desc-monthly {
+    display: none;
+}
+
+.price-yearly, .desc-yearly {
+    animation: fadeInPrice 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+}
+@keyframes fadeInPrice {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.price-old-strike {
+    text-decoration: line-through;
+    color: #ef4444; /* Red for marketing effect */
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-right: 0.6rem;
+    opacity: 0.85;
+}
+.benefit-year {
+    color: #10b981; /* Emerald green for benefit */
+    font-weight: 700;
+    font-size: 0.85rem;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+/* ── Pricing Grid ── */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    align-items: stretch;
+}
+@media (max-width: 900px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+    }
+}
+.pricing-grid .price-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.pricing-grid .price-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+.pricing-grid .price-features {
+    flex: 1;
+    margin: 1.5rem 0;
+}
+</style>
+
+<div class="pricing-section-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
 <h2 class="section-title" id="pricing-section">Выберите ваш <span class="text-gradient">Билет в сказку</span></h2>
+<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">14 дней Pro бесплатно при регистрации</p>
+
+<!-- PURE CSS Billing toggle: Monthly / Yearly -->
+<input type="checkbox" id="billing-checkbox" />
+<div class="billing-toggle-wrap">
+    <label for="billing-checkbox" id="label-monthly" class="billing-label">Ежемесячно</label>
+    <label for="billing-checkbox" class="billing-toggle" role="switch"></label>
+    <label for="billing-checkbox" id="label-yearly" class="billing-label">Ежегодно</label>
+    <span class="billing-save-badge">СКИДКА −20%</span>
 </div>
-""")
+
+<!-- Pricing Cards Grid -->
+<div class="pricing-grid">
+
+<!-- ─── FREE ─── -->
+<div class="price-card reveal" style="--reveal-delay: 0s;">
+    <h3 style="font-size: 1.3rem; color: #cbd5e1; font-family: 'Comfortaa', cursive; margin-bottom: 0.5rem;">🆓 Free</h3>
+    <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
+        <span class="price-value">0₽</span>
+    </div>
+    <div class="price-period" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">Навсегда бесплатно</div>
+
+    <div class="price-features">
+        <div class="price-feature">✅ <span>3 сказки в день</span></div>
+        <div class="price-feature">✅ <span>До 5 минут</span></div>
+        <div class="price-feature">✅ <span>1 стандартный голос</span></div>
+        <div class="price-feature">✅ <span>1 язык (авто)</span></div>
+        <div class="price-feature disabled">❌ <span>Скачивание</span></div>
+        <div class="price-feature disabled">❌ <span>Профили детей</span></div>
+        <div class="price-feature disabled">❌ <span>AI-иллюстрации</span></div>
+        <div class="price-feature disabled">❌ <span>Серии сказок</span></div>
+        <div class="price-feature disabled">❌ <span>Клон голоса</span></div>
+    </div>
+
+    <a href="#auth-section" class="btn-magic" style="background: rgba(255,255,255,0.08); width: 100%; animation: none; font-size: 1rem; text-align: center;">Начать бесплатно</a>
+</div>
+
+<!-- ─── PRO ─── -->
+<div class="price-card reveal" style="--reveal-delay: 0.15s; border-color: rgba(167, 139, 250, 0.5); box-shadow: 0 0 30px rgba(167,139,250,0.15);">
+    <div class="price-popular-badge" style="position: absolute; top: -12px; right: 1.2rem; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;">🌟 Популярный</div>
+    <h3 style="font-size: 1.3rem; color: #f8fafc; font-family: 'Comfortaa', cursive; margin-bottom: 0.5rem;">⭐ Pro</h3>
     
-    spacer_left, col1, col2, spacer_right = st.columns([2.5, 4.5, 4.5, 2.5])
+    <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
+        <div class="price-monthly">
+            <span class="price-value text-gradient">499₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+        </div>
+        <div class="price-yearly">
+            <span class="price-old-strike">499₽</span><span class="price-value text-gradient">399₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+        </div>
+    </div>
     
-    with col1:
-        st.html("""
-<div class="glass-card price-card reveal" style="--reveal-delay: 0s;">
-<h3 style="font-size: 1.3rem; color: #cbd5e1; font-family: 'Comfortaa', cursive;">Для знакомства</h3>
-<div class="price-amount">0₽</div>
-<div class="price-period">Навсегда бесплатно</div>
+    <div class="price-period" style="font-size: 0.85rem; margin-bottom: 0.5rem; height: 1.2rem;">
+        <div class="desc-monthly" style="color: #a78bfa; font-weight: 500;">Отмена в любой момент</div>
+        <div class="desc-yearly"><span class="benefit-year">Выгода 1 200₽ (списание 4 788₽/год)</span></div>
+    </div>
 
-<div class="price-features">
-<div class="price-feature">✅ <span>1 сказка в день</span></div>
-<div class="price-feature">✅ <span>Стандартные голоса</span></div>
-<div class="price-feature">✅ <span>Текстовый формат</span></div>
-<div class="price-feature disabled">❌ <span>Скачивание MP3</span></div>
-<div class="price-feature disabled">❌ <span>Премиум голоса</span></div>
+    <div class="price-features" style="margin-top: 2rem;">
+        <div class="price-feature">✅ <span><b>Безлимитные сказки</b></span></div>
+        <div class="price-feature">✅ <span>До 15 минут</span></div>
+        <div class="price-feature">✅ <span>Все премиум голоса</span></div>
+        <div class="price-feature">✅ <span>До 4 языков</span></div>
+        <div class="price-feature">✅ <span><b>Скачивание MP3, PDF, EPUB</b></span></div>
+        <div class="price-feature">✅ <span>Профили детей (до 3)</span></div>
+        <div class="price-feature">✅ <span>AI-иллюстрации (5/мес)</span></div>
+        <div class="price-feature disabled">❌ <span>Серии сказок</span></div>
+        <div class="price-feature disabled">❌ <span>Клон голоса</span></div>
+    </div>
+
+    <a href="#auth-section" class="btn-magic" style="width: 100%; font-size: 1rem; text-align: center;">Оформить подписку</a>
 </div>
 
-<a href="#auth-section" class="btn-magic" style="background: rgba(255,255,255,0.08); width: 100%; animation: none; font-size: 1rem;">Попробовать бесплатно</a>
-</div>
-""")
-        
-    with col2:
-        st.html("""
-<div class="glass-card price-card reveal" style="--reveal-delay: 0.15s; border-color: rgba(167, 139, 250, 0.5); box-shadow: 0 0 30px rgba(167,139,250,0.15);">
-<div class="price-popular-badge">🌟 Популярный</div>
-<h3 style="font-size: 1.3rem; color: #f8fafc; font-family: 'Comfortaa', cursive;">Безлимитная подписка</h3>
-<div class="price-amount text-gradient">299₽<span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span></div>
-<div class="price-period" style="color: #a78bfa; font-weight: 500;">Отмена в любой момент</div>
+<!-- ─── FAMILY ─── -->
+<div class="price-card reveal" style="--reveal-delay: 0.3s; border-color: rgba(236, 72, 153, 0.3); box-shadow: 0 0 20px rgba(236,72,153,0.1);">
+    <h3 style="font-size: 1.3rem; color: #f8fafc; font-family: 'Comfortaa', cursive; margin-bottom: 0.5rem;">👨‍👩‍👧‍👦 Family</h3>
+    
+    <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
+        <div class="price-monthly">
+            <span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">799₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+        </div>
+        <div class="price-yearly">
+            <span class="price-old-strike">799₽</span><span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">649₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+        </div>
+    </div>
+    
+    <div class="price-period" style="font-size: 0.85rem; margin-bottom: 0.5rem; height: 1.2rem;">
+        <div class="desc-monthly" style="color: #f472b6; font-weight: 500;">Для всей семьи</div>
+        <div class="desc-yearly"><span class="benefit-year">Выгода 1 800₽ (списание 7 788₽/год)</span></div>
+    </div>
 
-<div class="price-features">
-<div class="price-feature">✅ <span><b>Безлимитные истории</b></span></div>
-<div class="price-feature">✅ <span>Премиум нейроголоса HD</span></div>
-<div class="price-feature">✅ <span><b>Скачивание MP3, PDF, EPUB</b></span></div>
-<div class="price-feature">✅ <span>Ранний доступ к новинкам</span></div>
-<div class="price-feature">✅ <span>Профили детей (до 5)</span></div>
+    <div class="price-features" style="margin-top: 2rem;">
+        <div class="price-feature">✅ <span><b>Безлимитные сказки</b></span></div>
+        <div class="price-feature">✅ <span>До 15 минут</span></div>
+        <div class="price-feature">✅ <span>Все голоса + <b>клон голоса</b></span></div>
+        <div class="price-feature">✅ <span>Все 8 языков</span></div>
+        <div class="price-feature">✅ <span>Скачивание всех форматов</span></div>
+        <div class="price-feature">✅ <span>Профили детей (до 5)</span></div>
+        <div class="price-feature">✅ <span><b>Безлимит AI-иллюстрации</b></span></div>
+        <div class="price-feature">✅ <span><b>Серии сказок</b></span></div>
+        <div class="price-feature">✅ <span><b>Клон голоса</b></span></div>
+    </div>
+
+    <a href="#auth-section" class="btn-magic" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); width: 100%; font-size: 1rem; text-align: center;">Выбрать Family</a>
 </div>
 
-<a href="#auth-section" class="btn-magic" style="width: 100%; margin-top: auto; font-size: 1rem;">Оформить подписку</a>
-</div>
+</div><!-- /pricing-grid -->
+</div><!-- /pricing-section-wrapper -->
 """)
 
 def render_auth():
@@ -1531,7 +1741,37 @@ def render_auth():
             
             with tab1:
                 st.html("""
-                <button class="oauth-btn" onclick="alert('OAuth входа пока работает в демо-режиме')">
+                <style>
+                .oauth-toast {
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%) translateY(-20px);
+                    background: rgba(30, 27, 75, 0.95);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                    border: 1px solid rgba(167, 139, 250, 0.3);
+                    color: #e2e8f0;
+                    padding: 0.85rem 1.5rem;
+                    border-radius: 14px;
+                    font-family: 'Inter', sans-serif;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    z-index: 9999;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+                    white-space: nowrap;
+                }
+                .oauth-toast.show {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(0);
+                    pointer-events: auto;
+                }
+                </style>
+                <div class="oauth-toast" id="oauth-toast-signin">🚀 Google OAuth скоро будет доступен!</div>
+                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     Войти через Google
                 </button>
@@ -1559,7 +1799,8 @@ def render_auth():
             
             with tab2:
                 st.html("""
-                <button class="oauth-btn" onclick="alert('OAuth регистрации пока работает в демо-режиме')">
+                <div class="oauth-toast" id="oauth-toast-signup">🚀 Google OAuth скоро будет доступен!</div>
+                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     Регистрация через Google
                 </button>
