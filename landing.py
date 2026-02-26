@@ -773,12 +773,54 @@ def render_navbar():
 
     # Render navbar directly into the parent DOM using original landing styles
     st.html(f"""
-<div style="padding: 1rem 3rem; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: transparent; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.03); transition: all 0.3s ease;">
-<div style="font-family: 'Comfortaa', cursive; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
-✨ <span class="text-gradient">СказкаAI</span>
-</div>
-<div style="display: flex; gap: 1rem; align-items: center;">
 <style>
+/* Base Navbar Container */
+.main-nav {{
+    padding: 1rem 3rem; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    position: fixed; 
+    top: 0; left: 0; right: 0; 
+    z-index: 100; 
+    background: transparent; 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    border-bottom: 1px solid rgba(255,255,255,0.03); 
+    transition: all 0.3s ease;
+}}
+
+/* Base Logo */
+.nav-logo {{
+    font-family: 'Comfortaa', cursive; 
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    text-decoration: none;
+    color: inherit;
+}}
+
+/* Desktop Links */
+.nav-links-desktop {{
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}}
+.nav-links-desktop a.nav-link {{
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}}
+.nav-links-desktop a.nav-link:hover {{
+    color: #c4b5fd;
+}}
+
+/* Language selector */
 .lang-select-nav {{
     appearance: none;
     -webkit-appearance: none;
@@ -805,15 +847,145 @@ def render_navbar():
     background: #1e293b;
     color: white;
 }}
+
+/* Hamburger & Mobile Menu (Default: Hidden) */
+.hamburger-toggle,
+.hamburger-btn,
+.mobile-menu-overlay {{
+    display: none;
+}}
+
+/* Hamburger lines */
+.hamburger-btn {{
+    width: 30px;
+    height: 20px;
+    position: relative;
+    cursor: pointer;
+    z-index: 102; /* above overlay */
+}}
+.hamburger-btn span {{
+    display: block;
+    position: absolute;
+    height: 2px;
+    width: 100%;
+    background: white;
+    border-radius: 2px;
+    transition: 0.3s ease;
+}}
+.hamburger-btn span:nth-child(1) {{ top: 0px; }}
+.hamburger-btn span:nth-child(2) {{ top: 9px; }}
+.hamburger-btn span:nth-child(3) {{ top: 18px; }}
+
+/* Hamburger animated state */
+.hamburger-toggle:checked ~ .hamburger-btn span:nth-child(1) {{
+    top: 9px;
+    transform: rotate(45deg);
+}}
+.hamburger-toggle:checked ~ .hamburger-btn span:nth-child(2) {{
+    opacity: 0;
+}}
+.hamburger-toggle:checked ~ .hamburger-btn span:nth-child(3) {{
+    top: 9px;
+    transform: rotate(-45deg);
+}}
+
+/* Mobile responsive */
 @media (max-width: 768px) {{
-    div[style*="padding: 1rem 3rem;"] {{ padding: 0.8rem 1rem !important; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }}
+    .main-nav {{ padding: 0.8rem 1.5rem !important; }}
+    
+    .nav-links-desktop {{ 
+        display: none !important; 
+    }}
+    
+    /* Make Hamburger visible */
+    .hamburger-btn {{ display: block; }}
+    
+    /* Mobile Overlay */
+    .mobile-menu-overlay {{
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.98);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        z-index: 101; /* below icon, above page */
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.4s ease;
+    }}
+    
+    .hamburger-toggle:checked ~ .mobile-menu-overlay {{
+        opacity: 1;
+        visibility: visible;
+    }}
+    
+    .mobile-menu-overlay a.nav-link {{
+        font-size: 1.5rem;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }}
+    .mobile-menu-overlay a.nav-link:hover {{
+        color: #c4b5fd;
+    }}
+    .mobile-menu-overlay .lang-select-nav {{
+        font-size: 1.2rem;
+        padding: 0.8rem 3rem 0.8rem 1.5rem;
+        border-radius: 12px;
+        background-position: right 1rem center;
+    }}
+    .mobile-menu-overlay .btn-magic {{
+        font-size: 1.2rem;
+        padding: 1rem 3rem;
+    }}
 }}
 </style>
-<select class="lang-select-nav" id="langPickerNav">
-    {options_html}
-</select>
-<a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">Начать ✨</a>
-</div>
+
+<div class="main-nav">
+    <a href="#" class="nav-logo">
+        ✨ <span class="text-gradient">СказкаAI</span>
+    </a>
+
+    <!-- Desktop Menu -->
+    <div class="nav-links-desktop">
+        <a href="#how-it-works-section" class="nav-link">Как это работает</a>
+        <a href="#features-section" class="nav-link">Возможности</a>
+        <a href="#pricing-section" class="nav-link">Тарифы</a>
+        <a href="#faq-section" class="nav-link">FAQ</a>
+        <select class="lang-select-nav" id="langPickerNav_desktop">
+            {options_html}
+        </select>
+        <a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">Начать ✨</a>
+    </div>
+
+    <!-- Mobile Toggles & Icon -->
+    <input type="checkbox" id="mobile-menu-toggle" class="hamburger-toggle">
+    <label for="mobile-menu-toggle" class="hamburger-btn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenu">
+        <!-- added an ID so we can close it from JS if needed when link is clicked -->
+        <a href="#how-it-works-section" class="nav-link mobile-link">Как это работает</a>
+        <a href="#features-section" class="nav-link mobile-link">Возможности</a>
+        <a href="#pricing-section" class="nav-link mobile-link">Тарифы</a>
+        <a href="#faq-section" class="nav-link mobile-link">FAQ</a>
+        <select class="lang-select-nav" id="langPickerNav_mobile">
+            {options_html}
+        </select>
+        <a href="#auth-section" class="btn-magic mobile-link" style="animation: none; margin-top: 1rem;">Начать бесплатно ✨</a>
+    </div>
 </div>
 """)
 
@@ -823,18 +995,42 @@ def render_navbar():
 (function() {
     var doc = window.parent.document;
     function attachListener() {
-        var picker = doc.getElementById('langPickerNav');
-        if (picker && !picker.dataset.listenerAttached) {
-            picker.dataset.listenerAttached = "true";
-            picker.addEventListener('change', function(e) {
-                var langCode = e.target.value;
-                var url = new URL(window.parent.location.href);
-                url.searchParams.set('lang', langCode);
-                window.parent.location.href = url.toString();
-            });
-            return true;
+        var dpPicker = doc.getElementById('langPickerNav_desktop');
+        var mbPicker = doc.getElementById('langPickerNav_mobile');
+        var attachedCount = 0;
+        
+        function handleLangChange(e) {
+            var langCode = e.target.value;
+            var url = new URL(window.parent.location.href);
+            url.searchParams.set('lang', langCode);
+            window.parent.location.href = url.toString();
         }
-        return false;
+        
+        if (dpPicker && !dpPicker.dataset.listenerAttached) {
+            dpPicker.dataset.listenerAttached = "true";
+            dpPicker.addEventListener('change', handleLangChange);
+            attachedCount++;
+        }
+        if (mbPicker && !mbPicker.dataset.listenerAttached) {
+            mbPicker.dataset.listenerAttached = "true";
+            mbPicker.addEventListener('change', handleLangChange);
+            attachedCount++;
+        }
+        
+        // Auto-close hamburger when a link is clicked
+        var mobileLinks = doc.querySelectorAll('.mobile-link');
+        var toggle = doc.getElementById('mobile-menu-toggle');
+        if (mobileLinks.length > 0 && toggle && !toggle.dataset.listenerAttached) {
+            toggle.dataset.listenerAttached = "true";
+            Array.from(mobileLinks).forEach(function(link) {
+                link.addEventListener('click', function() {
+                    toggle.checked = false;
+                });
+            });
+            attachedCount++;
+        }
+        
+        return (dpPicker != null || mbPicker != null);
     }
     
     // Attempt multiple times because DOM render might be slightly delayed
@@ -959,7 +1155,7 @@ def render_features():
     """Секция возможностей — Feature Showcase."""
     st.html("""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
-<h2 class="section-title">Возможности <span class="text-gradient">платформы</span></h2>
+<h2 class="section-title" id="features-section">Возможности <span class="text-gradient">платформы</span></h2>
 </div>
 """)
     
@@ -1022,7 +1218,7 @@ def render_features():
 def render_how_it_works():
     st.html("""
 <div class="landing-wrapper reveal" style="padding: 3rem 2rem 1rem;">
-<h2 class="section-title">Магия в <span class="text-gradient">три шага</span></h2>
+<h2 class="section-title" id="how-it-works-section">Магия в <span class="text-gradient">три шага</span></h2>
 </div>
 """)
     
@@ -1410,7 +1606,7 @@ def render_faq():
     """Секция FAQ — Часто задаваемые вопросы."""
     st.html("""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 2rem;">
-<h2 class="section-title">Частые <span class="text-gradient">вопросы</span></h2>
+<h2 class="section-title" id="faq-section">Частые <span class="text-gradient">вопросы</span></h2>
 
 <div style="max-width: 700px; margin: 0 auto;">
 
