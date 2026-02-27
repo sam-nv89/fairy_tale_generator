@@ -686,99 +686,99 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         }
     },
     
-    # === ARABIC (ar) - ~400 million speakers ===
-    'ar': {
+    # === GERMAN (de) - ~130 million speakers ===
+    'de': {
         # Meta
-        'page_title': "قصص الأطفال",
+        'page_title': "Märchen für Kinder",
         'page_icon': "🧚",
         
         # Header
-        'app_title': "🧚 مولد القصص",
-        'app_subtitle': "مساعد ذكي يخلق <span style='animation: magic-glow 3s infinite alternate; color: #FFD700;'>قصصًا سحرية</span> لك ولأطفالك ✨",
+        'app_title': "🧚 Märchen-Generator",
+        'app_subtitle': "Ein intelligenter Assistent, der <span style='animation: magic-glow 3s infinite alternate; color: #FFD700;'>magische Geschichten</span> für Sie und Ihre Kinder erschafft ✨",
         
         # Sidebar
-        'settings_title': "⚙️ الإعدادات",
-        'theme_label': "🎨 المظهر",
-        'theme_day': "☀️ نهار",
-        'theme_night': "🌙 ليل",
-        'voice_label': "🎙️ صوت الراوي",
-        'voice_male': "حمدان (ذكر)",
-        'voice_female': "فاطمة (أنثى)",
+        'settings_title': "⚙️ Einstellungen",
+        'theme_label': "🎨 Thema",
+        'theme_day': "☀️ Tag",
+        'theme_night': "🌙 Nacht",
+        'voice_label': "🎙️ Erzählstimme",
+        'voice_male': "Conrad (Männlich)",
+        'voice_female': "Katja (Weiblich)",
         'preview_btn': "🔊",
-        'library_title': "📚 قصصي",
-        'library_empty': "لا شيء حتى الآن. أنشئ واحفظ قصة.",
-        'preview_help': "استمع للمثال",
-        'load_help': "انقر للقراءة",
-        'delete_help': "حذف القصة",
-        'save_help': "حفظ القصة في قصصي",
-        'duration_label': "⏱️ مدة القصة",
-        'duration_short': "🐇 قصيرة (~1 دقيقة)",
-        'duration_medium': "⭐ متوسطة (~5 دقائق)",
-        'duration_long': "🐢 طويلة (~15 دقيقة)",
-        'duration_long_hint': "💎 القصص الطويلة أفضل للأطفال من 7 سنوات فما فوق.",
-        'donate_title': "دعم المشروع ☕",
-        'donate_text': "إذا استمتعت بقصصنا، يمكنك دعوة المطور لقهوة.",
-        'donate_btn': "☕ ادعم المشروع",
-        'language_label': "اللغة",
-        'version_label': "الإصدار",
+        'library_title': "📚 Meine Geschichten",
+        'library_empty': "Noch nichts hier. Erstellen und speichern Sie eine Geschichte.",
+        'preview_help': "Beispiel anhören",
+        'load_help': "Zum Lesen klicken",
+        'delete_help': "Geschichte löschen",
+        'save_help': "Geschichte in 'Meine Geschichten' speichern",
+        'duration_label': "⏱️ Dauer der Geschichte",
+        'duration_short': "🐇 Kurz (~1 Min.)",
+        'duration_medium': "⭐ Mittel (~5 Min.)",
+        'duration_long': "🐢 Lang (~15 Min.)",
+        'duration_long_hint': "💎 Lange Geschichten sind am besten für Kinder ab 7 Jahren geeignet.",
+        'donate_title': "Projekt unterstützen ☕",
+        'donate_text': "Wenn Ihnen unsere Geschichten gefallen, können Sie dem Entwickler einen Kaffee spendieren.",
+        'donate_btn': "☕ Projekt unterstützen",
+        'language_label': "Sprache",
+        'version_label': "Version",
         
         # Form
-        'name_label': "اسم الطفل",
-        'name_placeholder': "مثال: أحمد",
-        'gender_label': "جنس البطل",
-        'gender_auto': "تلقائي",
-        'gender_boy': "ولد",
-        'gender_girl': "بنت",
-        'gender_help': "يساعد الذكاء الاصطناعي على استخدام الضمائر الصحيحة",
-        'age_label': "العمر",
-        'genre_label': "🎭 نوع القصة",
-        'hobbies_label': "🎨 موضوع القصة / تفاصيل مهمة",
-        'hobbies_placeholder': "مثال: يحب الديناصورات، يخاف من الظلام، يريد العثور على كنز...",
-        'hobbies_help': "أي رغبات للحبكة أو سمات الشخصية",
-        'submit_btn': "✨ إنشاء قصة",
+        'name_label': "Name des Kindes",
+        'name_placeholder': "Beispiel: Max",
+        'gender_label': "Geschlecht der Hauptfigur",
+        'gender_auto': "Auto",
+        'gender_boy': "Junge",
+        'gender_girl': "Mädchen",
+        'gender_help': "Hilft der KI, die richtigen Pronomen zu verwenden",
+        'age_label': "Alter",
+        'genre_label': "🎭 Genre der Geschichte",
+        'hobbies_label': "🎨 Thema der Geschichte / Wichtige Details",
+        'hobbies_placeholder': "Beispiel: liebt Dinosaurier, hat Angst vor der Dunkelheit, möchte einen Schatz finden...",
+        'hobbies_help': "Jegliche Wünsche für die Handlung oder Charaktereigenschaften",
+        'submit_btn': "✨ Geschichte erstellen",
         
         # Messages
-        'api_key_warning': "⚠️ لم يتم العثور على مفتاح Google API في secrets.toml",
-        'api_key_input': "🔑 أدخل مفتاح Google API الخاص بك",
-        'api_key_error': "🔑 الرجاء إدخال مفتاح API في القائمة اليسرى ليعمل السحر.",
-        'name_warning': "⚠️ الرجاء إدخال اسم الطفل.",
-        'name_invalid': "⚠️ الاسم يمكن أن يحتوي فقط على أحرف ومسافات وواصلات.",
-        'generating': "🪄 جاري تأليف قصة سحرية",
-        'processing_audio': "🎧 جاري إنشاء الصوت...",
-        'save_btn': "💾 حفظ في المكتبة",
-        'saved_success': "✅ تم حفظ القصة.",
-        'audio_ready': "الصوت جاهز! 🎧",
-        'download_txt': "📄 تحميل النص",
-        'logout_btn': "🚪 تسجيل الخروج",
-        'translate_prompt': "🌍 لغة هذه القصة تختلف عن لغة التطبيق. هل ترغب في ترجمتها؟",
-        'translate_btn': "🔄 ترجمة القصة",
-        'translating': "🔄 جاري ترجمة القصة",
-        'translation_error': "❌ خطأ في الترجمة: {0}",
+        'api_key_warning': "⚠️ Google API-Schlüssel in secrets.toml nicht gefunden",
+        'api_key_input': "🔑 Geben Sie Ihren Google API-Schlüssel ein",
+        'api_key_error': "🔑 Bitte geben Sie einen API-Schlüssel im linken Menü ein, damit die Magie funktioniert.",
+        'name_warning': "⚠️ Bitte geben Sie den Namen des Kindes ein.",
+        'name_invalid': "⚠️ Der Name darf nur Buchstaben, Leerzeichen und Bindestriche enthalten.",
+        'generating': "🪄 Eine magische Geschichte verfassen",
+        'processing_audio': "🎧 Audio wird erstellt...",
+        'save_btn': "💾 In der Bibliothek speichern",
+        'saved_success': "✅ Geschichte gespeichert.",
+        'audio_ready': "Audio fertig! 🎧",
+        'download_txt': "📄 Text herunterladen",
+        'logout_btn': "🚪 Abmelden",
+        'translate_prompt': "🌍 Die Sprache dieser Geschichte unterscheidet sich von der App-Sprache. Möchten Sie sie übersetzen?",
+        'translate_btn': "🔄 Geschichte übersetzen",
+        'translating': "🔄 Geschichte wird übersetzt",
+        'translation_error': "❌ Übersetzungsfehler: {0}",
         
         # Genres
         'genres': {
-            'fairytale': "حكاية خرافية",
-            'adventure': "مغامرة",
-            'scifi': "خيال علمي",
-            'detective': "تحقيق",
-            'fantasy': "فانتازيا",
-            'superhero': "بطل خارق",
-            'educational': "تعليمي",
-            'lullaby': "تهويدة",
-            'mystery': "غموض",
-            'cyberpunk': "سايبربانك",
-            'philosophical': "قصة فلسفية",
-            'romance': "رومانسية",
-            'poem': "قصيدة"
+            'fairytale': "Märchen",
+            'adventure': "Abenteuer",
+            'scifi': "Science-Fiction",
+            'detective': "Detektiv",
+            'fantasy': "Fantasy",
+            'superhero': "Superheld",
+            'educational': "Lehrreich",
+            'lullaby': "Wiegenlied",
+            'mystery': "Geheimnis",
+            'cyberpunk': "Cyberpunk",
+            'philosophical': "Philosophische Parabel",
+            'romance': "Romantik",
+            'poem': "Gedicht"
         },
         
         # Age ranges
         'age_ranges': {
-            "0-12 شهر": "0-12 شهر",
-            "1-3 سنوات": "1-3 سنوات",
-            "4-7 سنوات": "4-7 سنوات",
-            "8-12 سنة": "8-12 سنة",
-            "13-17 سنة": "13-17 سنة",
+            "0-12 Monate": "0-12 Monate",
+            "1-3 Jahre": "1-3 Jahre",
+            "4-7 Jahre": "4-7 Jahre",
+            "8-12 Jahre": "8-12 Jahre",
+            "13-17 Jahre": "13-17 Jahre",
             "18+": "18+"
         }
     }
@@ -919,7 +919,7 @@ LANGUAGE_NAMES: Dict[str, str] = {
     'pt': 'Português',
     'zh-CN': '中文',
     'hi': 'हिन्दी',
-    'ar': 'العربية'
+    'de': 'Deutsch'
 }
 
 
@@ -1427,73 +1427,73 @@ Detalhes técnicos:
 """
     },
     
-    # === ARABIC ===
-    'ar': {
+    # === GERMAN ===
+    'de': {
         'gender_instructions': {
-            'boy': "البطل الرئيسي هو فتى اسمه {name}. استخدم ضمائر المذكر.",
-            'girl': "البطلة الرئيسية هي فتاة اسمها {name}. استخدم ضمائر المؤنث.",
-            'auto': "البطل الرئيسي هو {name}. حدد الجنس من الاسم تلقائيًا."
+            'boy': "Die Hauptfigur ist ein Junge namens {name}. Verwende männliche Pronomen.",
+            'girl': "Die Hauptfigur ist ein Mädchen namens {name}. Verwende weibliche Pronomen.",
+            'auto': "Die Hauptfigur ist {name}. Bestimme das Geschlecht automatisch anhand des Namens."
         },
         'age_groups': {
             'baby': {
-                'role': "أنت صوت والد رقيق ومحب.",
-                'style': "الأسلوب: تهويدة، إيقاعي، بسيط للغاية. الكثير من التكرار، كلمات تحاكي الأصوات.\nالجو: الدفء، الراحة، الحماية، النوم.\nالحبكة: بسيطة للغاية (ذهب البطل للنوم، النجوم تلمع).\nالمفردات: بسيطة للغاية.\nالطول: قصير، حوالي 50-100 كلمة.",
-                'structure': "الهيكل: بداية مهدئة -> مراقبة لطيفة -> نهاية نعسانة.",
-                'ending': "النهاية: 'نم يا صغيري، نم'."
+                'role': "Du bist eine sanfte, liebevolle Elternstimme.",
+                'style': "Stil: Wiegenlied, rhythmisch, sehr einfach. Viele Wiederholungen, Lautmalerei.\nAtmosphäre: Wärme, Gemütlichkeit, Schutz, Schlaf.\nHandlung: Sehr einfach (der Held ist schlafen gegangen, Sterne leuchten).\nVokabular: Ultra-einfach.\nLänge: Kurz, etwa 50-100 Wörter.",
+                'structure': "Struktur: Beruhigender Anfang -> Sanfte Beobachtung -> Schläfriges Ende.",
+                'ending': "Ende: 'Schlaf, mein Kindchen, schlaf ein'."
             },
             'toddler': {
-                'role': "أنت معلم روضة أطفال مرح.",
-                'style': "الأسلوب: مرح، مفهوم، حسي (ألوان، أصوات، لمس).\nالبطل: {name}. يقوم بأفعال بسيطة (أكل، مشى، وجد صديقًا).\nتجنب: الكلمات المعقدة، اللحظات المخيفة.\nالطول: حوالي 150 كلمة.",
-                'structure': "الهيكل: تحية -> مغامرة صغيرة -> استنتاج مبهج.",
-                'ending': "النهاية: إيجابية ومفهومة."
+                'role': "Du bist ein fröhlicher Kindergärtner.",
+                'style': "Stil: Spielerisch, verständlich, sensorisch (Farben, Klänge, Tasten).\nHeld: {name}. Führt einfache Aktionen aus (hat gegessen, ist spazieren gegangen, hat einen Freund gefunden).\nVermeiden: Komplexe Wörter, gruselige Momente.\nLänge: Etwa 150 Wörter.",
+                'structure': "Struktur: Begrüßung -> Kleines Abenteuer -> Freudiger Abschluss.",
+                'ending': "Ende: Positiv und verständlich."
             },
             'preschool': {
-                'role': "أنت راوي قصص من ديزني.",
-                'style': "الأسلوب: سحري، لطيف، مع مغزى أخلاقي (لكن ليس مملاً).\nالحبكة: مغامرة كلاسيكية مع التغلب على عقبة صغيرة.\nالطول: حوالي {word_count} كلمة.",
-                'structure': "الهيكل: البداية -> التحدي -> مساعدة الأصدقاء -> انتصار الخير.",
-                'ending': "النهاية: سعيدة وتعليمية."
+                'role': "Du bist ein Disney-Geschichtenerzähler.",
+                'style': "Stil: Magisch, freundlich, mit einer Moral (aber nicht langweilig).\nHandlung: Ein klassisches Abenteuer mit der Überwindung eines kleinen Hindernisses.\nLänge: Etwa {word_count} Wörter.",
+                'structure': "Struktur: Einleitung -> Herausforderung -> Hilfe von Freunden -> Triumph des Guten.",
+                'ending': "Ende: Glücklich und lehrreich."
             },
             'school': {
-                'role': "أنت مؤلف كتب مغامرات للأطفال.",
-                'style': "الأسلوب: ديناميكي، مثير، مع حوارات ونكات.\nالحبكة: أكثر تعقيدًا، مع ألغاز أو إجراءات نشطة.\nالطول: حوالي {word_count} كلمة.",
-                'structure': "الهيكل: مكيدة -> تطور الأحداث -> الذروة -> الحل.",
-                'ending': "النهاية: ملهمة."
+                'role': "Du bist ein Autor von Abenteuerbüchern für Kinder.",
+                'style': "Stil: Dynamisch, spannend, mit Dialogen und Witzen.\nHandlung: Komplexer, mit Rätseln oder aktiven Handlungen.\nLänge: Etwa {word_count} Wörter.",
+                'structure': "Struktur: Intrige -> Entwicklung von Ereignissen -> Höhepunkt -> Auflösung.",
+                'ending': "Ende: Inspirierend."
             },
             'teen': {
-                'role': "أنت مؤلف روايات شهيرة للشباب.",
-                'style': "الأسلوب: حديث، عاطفي، صادق. بدون وعظ.\nالمواضيع: الصداقة، اكتشاف الذات، الشجاعة، الاختيار.\nالطول: حوالي {word_count} كلمة.",
-                'structure': "الهيكل: مشكلة البطل -> خيار صعب -> الحل -> تجربة جديدة.",
-                'ending': "النهاية: مفتوحة أو عميقة."
+                'role': "Du bist ein Autor populärer Young Adult-Romane.",
+                'style': "Stil: Modern, emotional, aufrichtig. Kein Predigen.\nThemen: Freundschaft, Selbstfindung, Mut, Entscheidungen.\nLänge: Etwa {word_count} Wörter.",
+                'structure': "Struktur: Problem des Helden -> Schwierige Entscheidung -> Lösung -> Neue Erfahrung.",
+                'ending': "Ende: Offen oder tiefgründig."
             },
             'adult': {
-                'role': "أنت خبير في القصة القصيرة (على مستوى تشيخوف، أو هنري، أو برادبري).",
-                'style': "هام: هذه قصة لشخص بالغ ({age} سنة).\nالمحتوى: آمن للعمل (لا إثارة/عنف)، لكنه ناضج فكريًا.\nالمواضيع: علم النفس، الفلسفة، المفارقة، الحنين، البحث عن المعنى، العلاقات (العاطفية).\nالأسلوب: أدبي، مجازي، لغة غنية.\nالطول: حوالي {word_count} كلمة.",
-                'structure': "الهيكل: انغماس في الأجواء -> صراع (داخلي أو خارجي) -> تطهير/إدراك.",
-                'ending': "النهاية: قوية عاطفيًا، تترك أثرًا دائمًا."
+                'role': "Du bist ein Meister der Kurzgeschichte (auf dem Niveau von Tschechow, O. Henry oder Bradbury).",
+                'style': "WICHTIG: Dies ist eine Geschichte für einen ERWACHSENEN ({age} Jahre alt).\nInhalt: Streng Safe For Work (keine Erotik/Gewalt), aber intellektuell erwachsen.\nThemen: Psychologie, Philosophie, Ironie, Nostalgie, Sinnsuche, Beziehungen (emotional).\nStil: Literarisch, metaphorisch, reiche Sprache.\nLänge: Etwa {word_count} Wörter.",
+                'structure': "Struktur: Atmosphärisches Eintauchen -> Konflikt (innerlich oder äußerlich) -> Katharsis/Erkenntnis.",
+                'ending': "Ende: Emotional stark, hinterlässt einen Nachgeschmack."
             }
         },
         'prompt_template': """{role_instruction}
-المهمة: اكتب قصة في نوع "{genre}" لقارئ يبلغ من العمر {age} عامًا (الفئة: {age_category}).
+Aufgabe: Schreibe eine Geschichte im Genre "{genre}" für einen Leser im Alter von {age} Jahren (Kategorie: {age_category}).
 
-البطل الرئيسي: {name}.
-مهم حول الاسم: استخدم اسم البطل بشكل طبيعي ومتنوع. غيّر فيه، واستخدم صيغ التصغير (إذا كان ذلك مناسبًا للعمر/الموقف)، أو النسخ الكاملة أو المختصرة. يجب أن يبدو الاسم طبيعيًا في النص، كما هو الحال في كتاب جيد.
+HAUPTFIGUR: {name}.
+WICHTIG ÜBER DEN NAMEN: Verwende den Namen der Figur natürlich und abwechslungsreich. Variiere ihn, verwende Verniedlichungsformen (wenn es für Alter/Situation angemessen ist), vollständige oder gekürzte Versionen. Der Name sollte natürlich im Text klingen, wie in einem guten Buch.
 
 {gender_instruction}
-دمج الاهتمامات/التفاصيل: {hobbies}.
-اللغة: {language_name}.
+Interessen/Details integrieren: {hobbies}.
+Sprache: {language_name}.
 
-المتطلبات:
-1. **العنوان**: عنوان جذاب في السطر الأول.
-2. **النوع**: التزم بصرامة بالنوع المختار ({genre}).
-3. **الجمهور**: ضع في اعتبارك العمر الذي يبلغ {age} عامًا ({age_category}). أبسط للأطفال، أعمق للبالغين.
-4. **الجودة**: حبكة منطقية، لغة حية، عواطف.
+Anforderungen:
+1. **Titel**: Ein kreativer Titel in der erste Zeile.
+2. **Genre**: Halte dich strikt an das gewählte Genre ({genre}).
+3. **Zielgruppe**: Berücksichtige das Alter von {age} Jahren ({age_category}). Einfacher für Kinder, tiefer für Erwachsene.
+4. **Qualität**: Logische Handlung, lebendige Sprache, Emotionen.
 
 {style_instruction}
 {structure_instruction}
 
-التفاصيل التقنية:
-- ابدأ بالعنوان.
-- استخدم الفقرات.
+Technische Details:
+- Beginne mit dem Titel.
+- Verwende Absätze.
 - {ending_instruction}
 """
     }

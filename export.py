@@ -56,7 +56,7 @@ def _get_app_label(lang: str) -> str:
         'pt': 'Gerado pelo Fairy Tale Generator',
         'zh-CN': '由 Fairy Tale Generator 生成',
         'hi': 'Fairy Tale Generator द्वारा निर्मित',
-        'ar': 'تم إنشاؤه بواسطة Fairy Tale Generator',
+        'de': 'Erstellt vom Fairy Tale Generator',
     }
     return labels.get(lang, labels['en'])
 
@@ -466,7 +466,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': '📗 EPUB  ·  E-readers',
             'zh-CN': '📗 EPUB  ·  电子书',
             'hi': '📗 EPUB  ·  ई-रीडर',
-            'ar': '📗 EPUB  ·  القارئ الإلكتروني',
+            'de': '📗 EPUB  ·  E-reader',
         },
         'mime':      'application/epub+zip',
         'ext':       'epub',
@@ -479,7 +479,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': 'Kindle, Kobo, PocketBook, Apple Books',
             'zh-CN': 'Kindle, Kobo, PocketBook, Apple Books',
             'hi': 'Kindle, Kobo, PocketBook, Apple Books',
-            'ar': 'Kindle, Kobo, PocketBook, Apple Books',
+            'de': 'Kindle, Kobo, PocketBook, Apple Books',
         },
     },
     'fb2': {
@@ -491,7 +491,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': '📘 FB2  ·  PocketBook',
             'zh-CN': '📘 FB2  ·  PocketBook',
             'hi': '📘 FB2  ·  PocketBook',
-            'ar': '📘 FB2  ·  PocketBook',
+            'de': '📘 FB2  ·  PocketBook',
         },
         'mime':      'application/xml',
         'ext':       'fb2',
@@ -504,7 +504,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': 'PocketBook, FBReader, Bookmate',
             'zh-CN': 'PocketBook, FBReader, Bookmate',
             'hi': 'PocketBook, FBReader, Bookmate',
-            'ar': 'PocketBook, FBReader, Bookmate',
+            'de': 'PocketBook, FBReader, Bookmate',
         },
     },
     'html': {
@@ -516,7 +516,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': '🌐 HTML  ·  Navegador',
             'zh-CN': '🌐 HTML  ·  浏览器',
             'hi': '🌐 HTML  ·  ब्राउज़र',
-            'ar': '🌐 HTML  ·  المتصفح',
+            'de': '🌐 HTML  ·  Browser',
         },
         'mime':      'text/html',
         'ext':       'html',
@@ -529,7 +529,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': 'Arquivo bonito para qualquer navegador',
             'zh-CN': '适用于任何浏览器的精美文件',
             'hi': 'किसी भी ब्राउज़र के लिए सुंदर फ़ाइल',
-            'ar': 'ملف جميل لأي متصفح',
+            'de': 'Schöne Datei für jeden Browser',
         },
     },
     'pdf': {
@@ -541,7 +541,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': '📕 PDF  ·  Impressão',
             'zh-CN': '📕 PDF  ·  打印',
             'hi': '📕 PDF  ·  प्रिंट',
-            'ar': '📕 PDF  ·  طباعة',
+            'de': '📕 PDF  ·  Drucken',
         },
         'mime':      'application/pdf',
         'ext':       'pdf',
@@ -554,7 +554,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': 'Para impressão e leitura no PC',
             'zh-CN': '用于打印和在PC上阅读',
             'hi': 'पीसी पर प्रिंट करने और पढ़ने के लिए',
-            'ar': 'للطباعة والقراءة على الكمبيوتر',
+            'de': 'Zum Drucken und Lesen am PC',
         },
     },
     'txt': {
@@ -566,7 +566,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': '📄 TXT  ·  Texto',
             'zh-CN': '📄 TXT  ·  文本',
             'hi': '📄 TXT  ·  पाठ',
-            'ar': '📄 TXT  ·  نص',
+            'de': '📄 TXT  ·  Text',
         },
         'mime':      'text/plain',
         'ext':       'txt',
@@ -579,7 +579,7 @@ EXPORT_FORMATS: dict[str, dict] = {
             'pt': 'Texto simples — funciona em qualquer lugar',
             'zh-CN': '纯文本 — 随处可用',
             'hi': 'सादा पाठ — हर जगह काम करता है',
-            'ar': 'نص عادي — يعمل في كل مكان',
+            'de': 'Einfacher Text — funktioniert überall',
         },
     },
 }

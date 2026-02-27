@@ -68,9 +68,7 @@ if 'dark_mode' not in st.session_state:
 # CSS Version: 2026-02-16-v3 - Radio buttons Firefox fix
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
-# RTL Support for Arabic
-if user_lang == 'ar':
-    st.markdown(get_rtl_styles(), unsafe_allow_html=True)
+# RTL Support removed
 
 # DARK THEME FIX: Дополнительные стили для исправления контраста в sidebar
 # Применяем ПОСЛЕ основных стилей, чтобы перекрыть их
@@ -865,14 +863,14 @@ with st.sidebar:
     # 0. Переключатель языка
     # Языки с флагами и названиями
     lang_options = {
-        'ru': 'Русский',
+        'de': 'Deutsch',
         'en': 'English',
         'es': 'Español',
         'fr': 'Français',
         'pt': 'Português',
-        'zh-CN': '中文',
+        'ru': 'Русский',
         'hi': 'हिन्दी',
-        'ar': 'العربية'
+        'zh-CN': '中文'
     }
     # DEBUG: Логирование текущего языка
     logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
@@ -989,7 +987,7 @@ with st.sidebar:
                 'pt': "Olá! Vou contar uma história para você.",
                 'zh-CN': "你好! 我会给你讲故事。",
                 'hi': "नमस्ते! मैं आपको एक कहानी सुनाऊंगा।",
-                'ar': "مرحبا! سأقرأ لك قصة."
+                'de': "Hallo! Ich werde dir eine Geschichte vorlesen."
             }
             sample_text = sample_texts.get(user_lang, sample_texts['en'])
             return await generate_audio_stream(sample_text, selected_voice)
@@ -1064,7 +1062,7 @@ with st.sidebar:
             with tc1:
                 display_title = s['title']
                 created_date = s.get('created_at', '')[:10]
-                save_labels = {'ru': 'Сохранено', 'en': 'Saved', 'es': 'Guardado', 'fr': 'Enregistré', 'pt': 'Salvo', 'hi': 'सहेजा गया', 'ar': 'تم الحفظ'}
+                save_labels = {'ru': 'Сохранено', 'en': 'Saved', 'es': 'Guardado', 'fr': 'Enregistré', 'pt': 'Salvo', 'hi': 'सहेजा गया', 'de': 'Gespeichert'}
                 save_label = save_labels.get(user_lang, 'Saved')
                 if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{save_label}: {created_date}" if created_date else None, type="tertiary"):
                     s['audio'] = None
@@ -1459,7 +1457,7 @@ if 'current_story' in st.session_state:
                 'pt': 'História carregada com sucesso! 📚',
                 'zh-CN': '故事加载成功！ 📚',
                 'hi': 'कहानी सफलतापूर्वक लोड हो गई! 📚',
-                'ar': 'تم تحميل القصة بنجاح! 📚'
+                'de': 'Geschichte erfolgreich geladen! 📚'
             }
             st.toast(success_msg.get(user_lang, 'Story loaded successfully! 📚'))
             st.session_state['show_loaded_toast'] = False
@@ -1471,7 +1469,7 @@ if 'current_story' in st.session_state:
             text = story.get('body', '')[:100]
             if re.search(r'[А-Яа-яЁё]', text): story_lang = 'ru'
             elif re.search(r'[\u4e00-\u9fff]', text): story_lang = 'zh-CN'
-            elif re.search(r'[\u0600-\u06FF]', text): story_lang = 'ar'
+            elif re.search(r'[äöüßÄÖÜ]', text): story_lang = 'de'
             elif re.search(r'[\u0900-\u097F]', text): story_lang = 'hi'
             else: story_lang = 'en' # Fallback to Latin proxy
             
@@ -1609,7 +1607,7 @@ if 'current_story' in st.session_state:
                 'pt': '⬇️ Baixar',
                 'zh-CN': '⬇️ 下载',
                 'hi': '⬇️ डाउनलोड',
-                'ar': '⬇️ تحميل',
+                'de': '⬇️ Herunterladen',
             }.get(user_lang, '⬇️ Download')
 
             with st.container(key="toolbar_download"):
@@ -1655,7 +1653,7 @@ if 'current_story' in st.session_state:
             # Обёртка с ключом нужна для CSS-селектора div[class*="st-key-toolbar_voice"]
             with st.container(key="toolbar_voice"):
                 voice_btn_placeholder = st.empty()
-                voice_labels = {'ru': '🎧 Озвучить', 'en': '🎧 Narrate', 'es': '🎧 Narrar', 'fr': '🎧 Narrer', 'pt': '🎧 Narrar', 'zh-CN': '🎧 配音', 'hi': '🎧 सुनाएँ', 'ar': '🎧 رواية'}
+                voice_labels = {'ru': '🎧 Озвучить', 'en': '🎧 Narrate', 'es': '🎧 Narrar', 'fr': '🎧 Narrer', 'pt': '🎧 Narrar', 'zh-CN': '🎧 配音', 'hi': '🎧 सुनाएँ', 'de': '🎧 Vorlesen'}
                 voice_btn_text = voice_labels.get(user_lang, '🎧 Narrate')
                 clicked = voice_btn_placeholder.button(voice_btn_text, key="toolbar_voice_btn", use_container_width=True)
 
@@ -1670,7 +1668,7 @@ if 'current_story' in st.session_state:
                     }
                     </style>""", unsafe_allow_html=True)
                     
-                    processing_texts = {'ru': '🎙️ Озвучиваем', 'en': '🎙️ Processing', 'es': '🎙️ Procesando', 'fr': '🎙️ Traitement', 'pt': '🎙️ Processando', 'hi': '🎙️ प्रोसेसिंग', 'ar': '🎙️ جاري المعالجة'}
+                    processing_texts = {'ru': '🎙️ Озвучиваем', 'en': '🎙️ Processing', 'es': '🎙️ Procesando', 'fr': '🎙️ Traitement', 'pt': '🎙️ Processando', 'hi': '🎙️ प्रोसेसिंग', 'de': '🎙️ Verarbeitung'}
                     processing_text = processing_texts.get(user_lang, '🎙️ Processing')
                     voice_btn_placeholder.button(processing_text, disabled=True, key="toolbar_voice_processing", use_container_width=True)
 
@@ -1690,7 +1688,7 @@ if 'current_story' in st.session_state:
 
         with toolbar_cols[2]:
             # Сохранение в библиотеку
-            save_labels = {'ru': '💾 Сохранить', 'en': '💾 Save', 'es': '💾 Guardar', 'fr': '💾 Sauver', 'pt': '💾 Salvar', 'zh-CN': '💾 保存', 'hi': '💾 सेव', 'ar': '💾 حفظ'}
+            save_labels = {'ru': '💾 Сохранить', 'en': '💾 Save', 'es': '💾 Guardar', 'fr': '💾 Sauver', 'pt': '💾 Salvar', 'zh-CN': '💾 保存', 'hi': '💾 सेव', 'de': '💾 Speichern'}
             save_btn_text = save_labels.get(user_lang, '💾 Save')
             if st.button(save_btn_text, key="toolbar_save", help=t('save_help', user_lang), use_container_width=True):
                 storage.save_story(story)

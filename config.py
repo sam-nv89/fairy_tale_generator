@@ -59,7 +59,7 @@ APP_YEAR = "2026"
 
 # === ЯЗЫКИ (i18n) ===
 # Поддерживаемые языки с охватом ~3.5 млрд носителей
-SUPPORTED_LANGUAGES = ['ru', 'en', 'es', 'fr', 'pt', 'zh-CN', 'hi', 'ar']
+SUPPORTED_LANGUAGES = ['ru', 'en', 'es', 'fr', 'pt', 'zh-CN', 'hi', 'de']
 DEFAULT_LANGUAGE = 'ru'
 
 # Маппинг стран к языкам (для IP-детекции)
@@ -84,13 +84,10 @@ COUNTRY_TO_LANGUAGE = {
     'CN': 'zh-CN', 'TW': 'zh-CN', 'HK': 'zh-CN', 'SG': 'zh-CN',
     # Хинди (Индия)
     'IN': 'hi',
-    # Арабоязычные страны
-    'SA': 'ar', 'AE': 'ar', 'EG': 'ar', 'KW': 'ar',
-    'QA': 'ar', 'BH': 'ar', 'OM': 'ar', 'JO': 'ar',
-    'LB': 'ar', 'SY': 'ar', 'IQ': 'ar', 'YE': 'ar',
-    'MA': 'ar', 'DZ': 'ar', 'TN': 'ar', 'LY': 'ar',
+    # Немецкоязычные страны
+    'DE': 'de', 'AT': 'de', 'CH': 'de', 'LI': 'de',
     # Другие (fallback на английский)
-    'DE': 'en', 'IT': 'en', 'PL': 'en', 'CZ': 'en', 'NL': 'en',
+    'IT': 'en', 'PL': 'en', 'CZ': 'en', 'NL': 'en',
     'SE': 'en', 'NO': 'en', 'DK': 'en', 'FI': 'en',
     'JP': 'en', 'KR': 'en', 'VN': 'en', 'TH': 'en',
 }
@@ -153,12 +150,12 @@ TTS_VOICES_BY_LANGUAGE = {
             "Swara (Female)": "hi-IN-SwaraNeural"
         }
     },
-    'ar': {
-        'male': 'ar-AE-HamdanNeural',
-        'female': 'ar-AE-FatimaNeural',
+    'de': {
+        'male': 'de-DE-ConradNeural',
+        'female': 'de-DE-KatjaNeural',
         'options': {
-            "Hamdan (Male)": "ar-AE-HamdanNeural",
-            "Fatima (Female)": "ar-AE-FatimaNeural"
+            "Conrad (Männlich)": "de-DE-ConradNeural",
+            "Katja (Weiblich)": "de-DE-KatjaNeural"
         }
     }
 }

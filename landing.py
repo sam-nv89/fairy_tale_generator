@@ -742,14 +742,14 @@ def render_navbar():
     
     # Supported languages matching i18n.py
     lang_options = {
-        "ru": "Русский",
+        "de": "Deutsch",
         "en": "English",
         "es": "Español",
         "fr": "Français",
         "pt": "Português",
-        "zh-CN": "中文",
+        "ru": "Русский",
         "hi": "हिन्दी",
-        "ar": "العربية"
+        "zh-CN": "中文"
     }
     
     if 'user_lang' not in st.session_state:
@@ -1868,7 +1868,7 @@ def render_faq():
 
 <details class="faq-item">
 <summary>Какие языки поддерживаются?</summary>
-<div class="faq-answer">Сейчас доступны 8 языков: русский, английский, испанский, французский, португальский, китайский, хинди и арабский. Текст и озвучка генерируются на выбранном языке. Мы постоянно добавляем новые!</div>
+<div class="faq-answer">Сейчас доступны 8 языков: русский, английский, испанский, французский, португальский, китайский, хинди и немецкий. Текст и озвучка генерируются на выбранном языке. Мы постоянно добавляем новые!</div>
 </details>
 
 <details class="faq-item">
@@ -1908,7 +1908,7 @@ def render_full_landing_page():
         {"lang": "pt", "badge": "PT", "title": "Trecho de conto", "text": "«A princesa Sofia entrou na floresta encantada. Onde cada flor podia cantar e as árvores contavam histórias...»"},
         {"lang": "zh-CN", "badge": "ZH", "title": "故事片段", "text": "«从前，小明发现了一条小龙。这条龙只有猫那么大，闪烁着光芒...»"},
         {"lang": "hi", "badge": "HI", "title": "कहानी का अंश", "text": "«एक बार, आरव को बगीचे में एक छोटा ड्रैगन मिला। वह इंद्रधनुष के सभी रंगों से चमक रहा था...»"},
-        {"lang": "ar", "badge": "AR", "title": "مقتطف من قصة", "text": "«في يوم من الأيام، وجد أحمد تنينًا صغيرًا في الحديقة. كان يتلألأ بكل الألوان...»"}
+        {"lang": "de", "badge": "DE", "title": "Märchenauszug", "text": "«Eines Tages fand Max einen winzigen Drachen im Garten. Er schillerte in allen Regenbogenfarben...»"}
     ]
     # Текущий язык — первый в списке
     all_stories.sort(key=lambda x: 0 if x["lang"] == user_lang else 1)
