@@ -753,22 +753,7 @@ def render_navbar():
     }
     
     # --- Language Handling ---
-    if 'user_lang' not in st.session_state:
-        st.session_state.user_lang = get_user_language()
-        
-    # Check for manual language override via URL query params
-    qp_lang = st.query_params.get("lang")
-    if isinstance(qp_lang, list): qp_lang = qp_lang[0] if qp_lang else None
-    
-    if qp_lang and qp_lang in lang_options and qp_lang != st.session_state.user_lang:
-        st.session_state.user_lang = qp_lang
-        try:
-            st.query_params.clear()
-        except:
-            pass
-        st.rerun()
-
-    current_lang = st.session_state.user_lang
+    current_lang = st.session_state.get('user_lang', 'ru')
     if current_lang not in lang_options:
         current_lang = "ru"
     
@@ -867,6 +852,18 @@ def render_navbar():
 .lang-dropdown:hover .lang-dropbtn {{
     background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255,255,255,0.4);
+}}
+
+/* Hover bridge to provide a wider area to move from button to menu */
+.lang-dropdown::after {{
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: transparent;
+    z-index: 1;
 }}
 
 .lang-dropdown-content {{
@@ -1465,8 +1462,62 @@ def render_testimonials():
 </div>
 """)
 
+import urllib.request
+import json
+import math
+
+@st.cache_data(ttl=3600*12)
+def get_exchange_rates():
+    try:
+        url = "https://api.exchangerate-api.com/v4/latest/RUB"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read())
+            return data.get("rates", {"USD": 0.011, "EUR": 0.010})
+    except Exception as e:
+        print(f"Rates API Error: {e}")
+        return {"USD": 0.011, "EUR": 0.010}
+
+def get_currency_for_lang(lang_code):
+    if lang_code == 'ru':
+        return 'RUB'
+    elif lang_code in ['de', 'es', 'fr', 'pt']:
+        return 'EUR'
+    else:
+        return 'USD'
+
+def format_price(rub_price, currency):
+    if rub_price == 0:
+        return "0₽" if currency == 'RUB' else ("€0" if currency == 'EUR' else "$0")
+    
+    if currency == 'RUB':
+        return f"{rub_price}₽"
+    
+    rates = get_exchange_rates()
+    rate = rates.get(currency, rates.get('USD', 0.011))
+    raw_price = rub_price * rate
+    
+    # Разница: если цена до 5$, мы можем сделать 4.90. Если больше, тоже .90.
+    nice_price = round(raw_price) - 0.10
+    if nice_price <= 0:
+         nice_price = 0.90
+         
+    if currency == 'EUR':
+        return f"€{nice_price:.2f}".replace('.', ',')
+    else:
+        return f"${nice_price:.2f}"
+
 def render_pricing():
     """Секция тарифов — 3 плана с переключателем мес/год. Единый HTML-блок для равной высоты."""
+    user_lang = st.session_state.get('user_lang', 'ru')
+    currency = get_currency_for_lang(user_lang)
+    
+    free_price = format_price(0, currency)
+    pro_mo = format_price(499, currency)
+    pro_yr = format_price(399, currency)
+    fam_mo = format_price(799, currency)
+    fam_yr = format_price(649, currency)
+
     st.html("""
 <style>
 /* ── Billing Toggle (Pure CSS no-JS) ── */
@@ -1629,7 +1680,7 @@ def render_pricing():
 <div class="price-card reveal" style="--reveal-delay: 0s;">
     <h3 style="font-size: 1.3rem; color: #cbd5e1; font-family: 'Comfortaa', cursive; margin-bottom: 0.5rem;">🆓 Free</h3>
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
-        <span class="price-value">0₽</span>
+        <span class="price-value">{free_price}</span>
     </div>
     <div class="price-period" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">{t("price_free_per")}</div>
 
@@ -1655,10 +1706,10 @@ def render_pricing():
     
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
         <div class="price-monthly">
-            <span class="price-value text-gradient">499₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
+            <span class="price-value text-gradient">{pro_mo}</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
         <div class="price-yearly">
-            <span class="price-old-strike">499₽</span><span class="price-value text-gradient">399₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
+            <span class="price-old-strike">{pro_mo}</span><span class="price-value text-gradient">{pro_yr}</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
     </div>
     
@@ -1688,10 +1739,10 @@ def render_pricing():
     
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
         <div class="price-monthly">
-            <span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">799₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
+            <span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{fam_mo}</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
         <div class="price-yearly">
-            <span class="price-old-strike">799₽</span><span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">649₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
+            <span class="price-old-strike">{fam_mo}</span><span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{fam_yr}</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
     </div>
     
@@ -1720,7 +1771,7 @@ def render_pricing():
 """)
 
 def render_auth():
-    st.html("""
+    st.html(f"""
 <div id="auth-section" class="landing-wrapper" style="padding: 4rem 2rem 1.5rem; text-align: center;">
 <h2 class="section-title">{t("auth_login_title")}</h2>
 <p style="color: #94a3b8; max-width: 500px; margin: -1rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("auth_login_sub")}</p>
@@ -1802,9 +1853,9 @@ def render_auth():
             tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
             
             with tab1:
-                st.html("""
+                st.html(f"""
                 <style>
-                .oauth-toast {
+                .oauth-toast {{
                     position: fixed;
                     top: 80px;
                     left: 50%;
@@ -1825,15 +1876,15 @@ def render_auth():
                     transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
                     white-space: nowrap;
-                }
-                .oauth-toast.show {
+                }}
+                .oauth-toast.show {{
                     opacity: 1;
                     transform: translateX(-50%) translateY(0);
                     pointer-events: auto;
-                }
+                }}
                 </style>
                 <div class="oauth-toast" id="oauth-toast-signin">🚀 {t("auth_oauth_soon")}</div>
-                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
+                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){{t.classList.remove('show')}},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     {t("auth_google_login")}
                 </button>
@@ -1860,9 +1911,9 @@ def render_auth():
                                     st.error(res['error'])
             
             with tab2:
-                st.html("""
+                st.html(f"""
                 <div class="oauth-toast" id="oauth-toast-signup">🚀 {t("auth_oauth_soon")}</div>
-                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
+                <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){{t.classList.remove('show')}},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     {t("auth_google_signup")}
                 </button>
@@ -1870,7 +1921,7 @@ def render_auth():
                 """)
                 with st.form("signup_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder={t("auth_pass_len")})
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
                     st.html("<br>")
                     submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
                     if submit:
@@ -1889,17 +1940,21 @@ def render_auth():
                                     st.error(res['error'])
 
 def render_footer():
-    st.html("""
+    # Получаем текущий язык для передачи в ссылки документов
+    user_lang = st.session_state.get('user_lang', 'ru')
+    st.html(f"""
 <div class="landing-wrapper">
 <div class="footer">
 <div style="font-family: 'Comfortaa', cursive; font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem;">
 {t('app_name')}
 </div>
 <p style="font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">{t("footer_text")}</p>
-<div style="font-size: 0.85rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-<span>© 2026 Fairy Tale Generator</span>
-<a href="?page=privacy" target="_top" style="color: inherit; text-decoration: none;">{t("footer_privacy")}</a>
-<a href="?page=terms" target="_top" style="color: inherit; text-decoration: none;">{t("footer_terms")}</a>
+    <div style="font-size: 0.85rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem;">
+<a href="?page=privacy&lang={user_lang}" target="_top" style="color: inherit; text-decoration: none;">{t("footer_privacy")}</a>
+<a href="?page=terms&lang={user_lang}" target="_top" style="color: inherit; text-decoration: none;">{t("footer_terms")}</a>
+</div>
+<div style="font-size: 0.85rem; opacity: 0.5; text-align: center;">
+© 2026 Fairy Tale Generator
 </div>
 </div>
 </div>
@@ -1971,18 +2026,25 @@ def t(key):
 def render_scripts():
     user_lang = st.session_state.get('user_lang', 'ru')
     
+    lang_names = {
+        "de": "Deutsch", "en": "English", "es": "Español", "fr": "Français",
+        "pt": "Português", "ru": "Русский", "hi": "हिन्दी", "zh-CN": "中文"
+    }
+    
     all_stories = [
-        {"lang": "ru", "badge": "RU", "title": t("story_snippet_title"), "text": t("story_snippet_text")},
+        {"lang": "de", "badge": "DE", "title": "Märchenauszug", "text": "«Eines Tages fand Max einen winzigen Drachen im Garten. Er schillerte in allen Regenbogenfarben...»"},
         {"lang": "en", "badge": "EN", "title": "Story snippet", "text": "«Princess Sofia stepped into the forest. Here, every flower could sing, and ancient trees whispered tales of magic...»"},
         {"lang": "es", "badge": "ES", "title": "Fragmento de cuento", "text": "«Una vez, Mateo encontró un dragón en el jardín, no más grande que un gatito y brillaba con colores...»"},
         {"lang": "fr", "badge": "FR", "title": "Extrait de conte", "text": "«La princesse Sophie entra dans la forêt. Chaque fleur pouvait chanter et chaque arbre racontait des histoires...»"},
         {"lang": "pt", "badge": "PT", "title": "Trecho de conto", "text": "«A princesa Sofia entrou na floresta encantada. Onde cada flor podia cantar e as árvores contavam histórias...»"},
+        {"lang": "ru", "badge": "RU", "title": t("story_snippet_title"), "text": t("story_snippet_text")},
+        {"lang": "hi", "badge": "HI", "title": "कहानी का अंश", "text": "«एक बार, आरв को बगीचे में एक छोटा ड्रैगन मिला। वह इंद्रधनुष के सभी रंगों से चमक रहा था...»"},
         {"lang": "zh-CN", "badge": "ZH", "title": "故事片段", "text": "«从前，小明发现了一条小龙。这条龙只有猫那么大，闪烁着光芒...»"},
-        {"lang": "hi", "badge": "HI", "title": "कहानी का अंश", "text": "«एक बार, आरव को बगीचे में एक छोटा ड्रैगन मिला। वह इंद्रधनुष के सभी रंगों से चमक रहा था...»"},
-        {"lang": "de", "badge": "DE", "title": "Märchenauszug", "text": "«Eines Tages fand Max einen winzigen Drachen im Garten. Er schillerte in allen Regenbogenfarben...»"}
     ]
-    # Текущий язык — первый в списке
-    all_stories.sort(key=lambda x: 0 if x["lang"] == user_lang else 1)
+    
+    # Сортируем по названию языка (алфавитный порядок как в Navbar)
+    all_stories.sort(key=lambda x: lang_names.get(x["lang"], ""))
+    
     stories_json = json.dumps(all_stories)
     
     # Scroll-triggered reveal animations + card height equalizer

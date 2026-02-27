@@ -1,6 +1,6 @@
 # 🧚 Генератор Аудио-Сказок
 
-![Version](https://img.shields.io/badge/version-v3.1-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
+![Version](https://img.shields.io/badge/version-v3.2-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
 
 Умный веб-сервис для родителей: генерирует персонализированные сказки с помощью ИИ и озвучивает нейронными голосами. Поддерживает 8 языков с охватом ~3.5 млрд носителей.
 
@@ -34,7 +34,7 @@
 | `config.py` | Конфигурация: языки, голоса TTS, маппинг стран |
 | `auth.py` | Авторизация через Supabase |
 | `storage.py` | Локальное хранилище историй |
-| `landing.py` | Лендинг с интерактивным UI и авторизацией |
+| `landing.py` | Лендинг с интерактивным UI и динамическими тарифами |
 | `styles.py` | Глобальные CSS-стили |
 | `utils.py` | Утилиты: определение языка, валюты, форматирование цен |
 
@@ -84,7 +84,7 @@ python -m streamlit run app.py
 - 🎤 **Караоке и Floating Плеер** — точная подстветка текста в такт аудио, плеер закреплён внизу экрана поверх всего контента
 - 💾 **Скачивание** — мультиформатный экспорт сказок: MP3, PDF, EPUB, FB2, TXT с динамическими именами
 - 📚 **Личная библиотека** — сохранение, просмотр и удаление любимых сказок (локальное хранилище JSON)
-- 💰 **Мультивалютность** — авто-определение (RUB, USD, EUR, KZT, BYN, UZS)
+- 💰 **Мультивалютные тарифы** — динамическое определение валюты (RUB, USD, EUR) по языку с онлайн-конвертацией курсов
 - ⏳ **Длительность** — выбор продолжительности сказки (1, 5 или 15 минут)
 - 🔐 **Авторизация** — планируется вход/регистрация через Supabase (Фаза 4)
 

@@ -2,6 +2,8 @@
 import requests
 import logging
 import json
+import math
+import streamlit as st
 from typing import Tuple, Union, Optional
 
 from config import (
@@ -90,12 +92,19 @@ def get_user_language(accept_language: Optional[str] = None) -> str:
         if primary_lang in SUPPORTED_LANGUAGES:
             logger.info(f"Language detected from Accept-Language: {primary_lang}")
             return primary_lang
+        
+        # Специальный маппинг для китайского
+        if primary_lang == 'zh':
+            return 'zh-CN'
+
         # Если язык не поддерживается, пробуем второй в списке
         for part in accept_language.split(','):
             lang = part.split(';')[0].split('-')[0].strip().lower()
             if lang in SUPPORTED_LANGUAGES:
                 logger.info(f"Language detected from Accept-Language (fallback): {lang}")
                 return lang
+            if lang == 'zh':
+                return 'zh-CN'
     
     # 2. Fallback: IP-геолокация
     try:
@@ -153,3 +162,58 @@ def format_price(amount: Union[int, float], currency_symbol: str) -> str:
         logger.exception("Failed to format price")
         # На крайний случай — просто вернуть как есть
         return f"{amount} {currency_symbol}"
+
+def get_currency_by_lang(lang: str) -> Tuple[str, str]:
+    """Возвращает валюту и символ по языку интерфейса."""
+    if lang == 'ru':
+        return 'RUB', '₽'
+    elif lang in ['fr', 'de', 'es', 'pt']:
+        return 'EUR', '€'
+    else:
+        return 'USD', '$'
+
+@st.cache_data(ttl=3600*12) # кэш на 12 часов
+def get_exchange_rates() -> dict:
+    try:
+        response = requests.get("https://open.er-api.com/v6/latest/USD", timeout=5)
+        if response.status_code == 200:
+            return response.json().get("rates", {})
+    except Exception as e:
+        logger.warning(f"Error fetching rates: {e}")
+    return {}
+
+def calculate_dynamic_price(base_usd_price: float, target_currency: str) -> str:
+    """
+    Рассчитывает динамическую цену с красивым округлением:
+    - RUB: до ближайшего числа, оканчивающегося на 9
+    - EUR/USD: x.90
+    """
+    if base_usd_price <= 0:
+        return "0"
+        
+    rates = get_exchange_rates()
+    # Fallback курсы на случай недоступности API
+    fallback_rates = {'USD': 1.0, 'EUR': 0.95, 'RUB': 98.0}
+    rate = rates.get(target_currency, fallback_rates.get(target_currency, 1.0))
+    
+    local_price = base_usd_price * rate
+    
+    if target_currency == 'RUB':
+        # Округляем до десятков вверх и вычитаем 1 (например 423 -> 429, 492 -> 499)
+        rounded = int(math.ceil(local_price / 10.0)) * 10 - 1
+        return str(rounded)
+    elif target_currency == 'EUR':
+        rounded = math.floor(local_price) + 0.90
+        return f"{rounded:.2f}".replace('.', ',')
+    else: 
+        rounded = math.floor(local_price) + 0.90
+        return f"{rounded:.2f}"
+
+def format_price_display(val: str, currency_code: str, currency_sym: str) -> str:
+    """Форматирует отображение цены со знаком валюты в нужном месте."""
+    if currency_code == 'USD':
+        return f"{currency_sym}{val}"
+    elif currency_code == 'EUR':
+        return f"{val} {currency_sym}"
+    else:
+        return f"{val}{currency_sym}"

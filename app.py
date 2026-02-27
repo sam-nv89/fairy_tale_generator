@@ -46,22 +46,43 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 1.5. Автодетект языка (i18n) ---
-if 'user_lang' not in st.session_state:
-    # 1. Сначала проверяем URL-параметры (если пользователь переключил язык вручную)
-    qp_lang = st.query_params.get("lang")
-    if isinstance(qp_lang, list): qp_lang = qp_lang[0] if qp_lang else None
-    
-    if qp_lang and qp_lang in SUPPORTED_LANGUAGES:
+# --- 1.5. Локализация (i18n) и Маршрутизация ---
+# Проверка параметров URL (?lang=en&page=privacy)
+qp = st.query_params
+qp_lang = qp.get("lang")
+qp_page = qp.get("page")
+
+# Нормализация параметров (если они списки)
+if isinstance(qp_lang, list): qp_lang = qp_lang[0] if qp_lang else None
+if isinstance(qp_page, list): qp_page = qp_page[0] if qp_page else None
+
+needs_rerun = False
+
+# 1. Обработка языка
+if qp_lang and qp_lang in SUPPORTED_LANGUAGES:
+    if qp_lang != st.session_state.get('user_lang'):
         st.session_state.user_lang = qp_lang
-        # Очищаем параметры для чистого URL
-        try:
-            st.query_params.clear()
-        except:
-            pass
-    else:
-        # 2. Если параметров нет, используем IP-детекцию
-        st.session_state.user_lang = get_user_language()
+        needs_rerun = True
+
+if 'user_lang' not in st.session_state:
+    st.session_state.user_lang = get_user_language()
+
+# 2. Обработка маршрутизации
+if qp_page and qp_page in ['landing', 'generator', 'privacy', 'terms']:
+    if qp_page != st.session_state.get('current_page'):
+        st.session_state.current_page = qp_page
+        needs_rerun = True
+
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'landing'
+
+# Если параметры обработаны - очищаем URL для красоты и делаем один rerun
+if needs_rerun:
+    try:
+        st.query_params.clear()
+    except:
+        pass
+    st.rerun()
 
 # Текущий язык
 user_lang = st.session_state.user_lang
@@ -867,286 +888,10 @@ async def generate_audio_stream(text: str, voice: str, return_boundaries: bool =
 # (st.set_page_config moved to top)
 
 # --- САЙДБАР: НАСТРОЙКИ (Фаза 1 Реализации) ---
-with st.sidebar:
-    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: -2rem;'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
-    
-    # 0. Переключатель языка
-    # Языки с флагами и названиями
-    lang_options = {
-        'de': 'Deutsch',
-        'en': 'English',
-        'es': 'Español',
-        'fr': 'Français',
-        'pt': 'Português',
-        'ru': 'Русский',
-        'hi': 'हिन्दी',
-        'zh-CN': '中文'
-    }
-    # DEBUG: Логирование текущего языка
-    logger.info(f"[DEBUG i18n] Current user_lang: {user_lang}")
-    logger.info(f"[DEBUG i18n] Sample translation 'app_title': {t('app_title', user_lang)}")
-    
-    # Отслеживаем предыдущий язык для сброса голоса
-    prev_lang = st.session_state.get('prev_lang', user_lang)
-    
-    current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
-    # Language selector - show only "Language" for English, show "Язык / Language" for others
-    lang_label = f"{t('language_label', user_lang)}" if user_lang == 'en' else f"{t('language_label', user_lang)} / Language"
-    st.markdown(f"<p class='sidebar-header'>{lang_label}</p>", unsafe_allow_html=True)
-    selected_lang_display = st.selectbox(
-        "hidden_lang_label",
-        options=list(lang_options.values()),
-        index=current_lang_index,
-        key="lang_select",
-        label_visibility="collapsed"
-    )
-    # Обновляем язык при изменении
-    selected_lang = [k for k, v in lang_options.items() if v == selected_lang_display][0]
-    if selected_lang != user_lang:
-        st.session_state.user_lang = selected_lang
-        st.session_state.prev_lang = selected_lang  # Обновляем предыдущий язык
-        # Удаляем голос при смене языка
-        if 'voice_select_sidebar' in st.session_state:
-            del st.session_state['voice_select_sidebar']
-        st.rerun()
-    
-    # Сохраняем текущий язык как предыдущий для следующего раза
-    st.session_state.prev_lang = user_lang
-    
-    st.divider()
-    
-    # 1. Dark Mode
-    # 1. Theme Switch (pill toggle)
-    st.markdown(f"<p class='sidebar-header'>{t('theme_label', user_lang)}</p>", unsafe_allow_html=True)
-    
-    # Init if needed
-    if "theme_radio" not in st.session_state:
-        # Define index based on dark_mode boolean (defaults to True, index 1)
-        st.session_state["theme_radio"] = t('theme_night', user_lang) if st.session_state.get('dark_mode', True) else t('theme_day', user_lang)
-    
-    # Callback to update dark_mode flag when radio changes
-    def update_theme():
-        st.session_state.dark_mode = (st.session_state.theme_radio == t('theme_night', user_lang))
-
-    st.radio(
-        "hidden_theme_label",
-        options=[t('theme_day', user_lang), t('theme_night', user_lang)],
-        horizontal=True,
-        key="theme_radio",
-        label_visibility="collapsed",
-        on_change=update_theme
-    )
-    
-    dark_mode = st.session_state.dark_mode
-
-    st.divider()
-
-    # 2. Выбор голоса (Перенесено из Хедера)
-    # Используем голоса для текущего языка
-    voice_options = TTS_VOICES_BY_LANGUAGE.get(user_lang, TTS_VOICES_BY_LANGUAGE['ru'])['options']
-    
-    # Ключ зависит от языка - это гарантирует сброс при смене языка
-    voice_key = f"voice_select_{user_lang}"
-    
-    # CSS для выравнивания контейнера с колонками
-    st.markdown("""
-    <style>
-        div[data-testid="stHorizontalBlock"] {
-            align-items: center !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # Колонки с меньшим gap для более плотного размещения
-    col1, col2 = st.columns([4, 1], gap="small")
-    
-    with col1:
-        st.markdown(f"<p class='sidebar-header'>{t('voice_label', user_lang)}</p>", unsafe_allow_html=True)
-        # Label moved up
-        voice_option = st.selectbox(
-            "hidden_voice_label",
-            options=list(voice_options.keys()),
-            index=0,
-            key=voice_key,
-            label_visibility="collapsed"
-        )
-    selected_voice = voice_options[voice_option]
-    
-    # Кнопка превью справа от выпадающего списка
-    # TWEAK: Вертикальное положение кнопки динамика (вниз в пикселях)
-    # ИСПОЛЬЗУЙТЕ ТОЛЬКО ПОЛОЖИТЕЛЬНЫЕ ЧИСЛА: "15px", "20px", "30px"
-    # Это добавит пустое пространство над кнопкой, опустив её ниже.
-    button_offset_y = "15px"  # <--- ПОПРОБУЙТЕ МЕНЯТЬ ЭТУ ЦИФРУ
-    
-    with col2:
-        # ДОБАВЛЯЕМ ОТСТУП СВЕРХУ (Spacer)
-        if button_offset_y and button_offset_y != "0px":
-             st.markdown(f'<div style="margin-bottom: {button_offset_y}; font-size: 0;"></div>', unsafe_allow_html=True)
-        
-        preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
-
-    # Логика превью (внутри сайдбара)
-    if preview_clicked:
-        async def play_sample():
-            # Тексты для preview на всех 8 языках
-            sample_texts = {
-                'ru': "Привет! Я буду читать сказку.",
-                'en': "Hello! I will read you a story.",
-                'es': "¡Hola! Te leeré un cuento.",
-                'fr': "Bonjour! Je vais vous lire une histoire.",
-                'pt': "Olá! Vou contar uma história para você.",
-                'zh-CN': "你好! 我会给你讲故事。",
-                'hi': "नमस्ते! मैं आपको एक कहानी सुनाऊंगा।",
-                'de': "Hallo! Ich werde dir eine Geschichte vorlesen."
-            }
-            sample_text = sample_texts.get(user_lang, sample_texts['en'])
-            return await generate_audio_stream(sample_text, selected_voice)
-        
-        try:
-            with st.spinner(""):
-                sample_audio = asyncio.run(play_sample())
-            # Используем мини-плеер или нативный, чтобы не загромождать сайдбар
-            st.audio(sample_audio, format="audio/mp3", autoplay=True)
-        except Exception as e:
-            st.error(f"Ошибка: {e}" if user_lang == 'ru' else f"Error: {e}")
-
-    st.divider()
-    
-    st.markdown("""
-    <style>
-        /* Стили для кнопок удаления (крестик) в библиотеке */
-        [data-testid="stButton"]:has(button[key^="del_"]) {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-        }
-        
-        [data-testid="stButton"]:has(button[key^="del_"]) button {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            min-width: auto !important;
-            width: auto !important;
-            height: auto !important;
-            border-radius: 0 !important;
-            font-size: 1.2rem !important;
-            line-height: 1 !important;
-            color: #999 !important;
-            transition: color 0.2s ease !important;
-        }
-        
-        [data-testid="stButton"]:has(button[key^="del_"]) button:hover {
-            background: transparent !important;
-            border: none !important;
-            color: #ff4444 !important;
-        }
-        
-        [data-testid="stButton"]:has(button[key^="del_"]) button:focus {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-        
-        /* Также убираем у всех tertiary кнопок в библиотеке */
-        section.main [data-testid="stButton"] button[kind="tertiary"] {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    # 3. Личная библиотека
-    st.markdown(f"<p class='sidebar-header'>{t('library_title', user_lang)}</p>", unsafe_allow_html=True)
-    saved_stories = storage.load_stories()
-    
-    if not saved_stories:
-        st.markdown(f"<p class='sidebar-text'>{t('library_empty', user_lang)}</p>", unsafe_allow_html=True)
-    else:
-        for idx, s in enumerate(saved_stories, 1):
-            num_col, tc1, tc2 = st.columns([0.5, 5, 1], vertical_alignment="center")
-            with num_col:
-                st.markdown(f"**{idx}.**")
-            with tc1:
-                display_title = s['title']
-                created_date = s.get('created_at', '')[:10]
-                save_labels = {'ru': 'Сохранено', 'en': 'Saved', 'es': 'Guardado', 'fr': 'Enregistré', 'pt': 'Salvo', 'hi': 'सहेजा गया', 'de': 'Gespeichert'}
-                save_label = save_labels.get(user_lang, 'Saved')
-                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{save_label}: {created_date}" if created_date else None, type="tertiary"):
-                    s['audio'] = None
-                    st.session_state['current_story'] = s
-                    st.session_state['show_loaded_toast'] = True
-                    st.rerun()
-            with tc2:
-                if st.button("✕", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
-                    storage.delete_story(s['id'])
-                    st.rerun()
-    
-    st.divider()
-    
-    # 2. Длительность (Фаза 1)
-    # Переведённые варианты длительности
-    duration_options = [
-        t('duration_short', user_lang),
-        t('duration_medium', user_lang),
-        t('duration_long', user_lang)
-    ]
-    st.markdown(f"<p class='sidebar-header'>{t('duration_label', user_lang)}</p>", unsafe_allow_html=True)
-    story_length = st.radio(
-        "hidden_duration_label",
-        options=duration_options,
-        index=1,
-        horizontal=True,
-        key="story_duration_radio",
-        label_visibility="collapsed"
-    )
-    # Проверяем по индексу (2 = длинная сказка)
-    if duration_options.index(story_length) == 2:
-        st.info(t('duration_long_hint', user_lang))
-        
-    st.divider()
-    
-    # 3. Донаты (Фаза 1)
-    st.markdown(f"<p class='sidebar-header'>{t('donate_title', user_lang)}</p>", unsafe_allow_html=True)
-    st.markdown(f"<p class='sidebar-text'>{t('donate_text', user_lang)}</p>", unsafe_allow_html=True)
-    st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com") # TODO: Реальная ссылка
-    
-    st.divider()
-    st.markdown(
-        f"<p style='text-align: center; color: var(--text-color); opacity: 0.6; font-size: 0.8rem; margin-top: 1rem;'>"
-        f"{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}"
-        f"</p>", 
-        unsafe_allow_html=True
-    )
 
 # --- СТИЛИ ПЕРЕНЕСЕНЫ В НАЧАЛО ФАЙЛА ---
 
-# =====================================
-# РОУТИНГ: Лендинг vs Генератор vs Документация
-# =====================================
-qp = st.query_params
-if "page" in qp:
-    page_param = qp["page"]
-    if page_param in ['landing', 'generator', 'privacy', 'terms']:
-        st.session_state.current_page = page_param
-        del qp["page"]
-
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'landing'
-
-# Скрытая кнопка разработчика в сайдбаре для тестов
-with st.sidebar:
-    st.markdown("---")
-    if st.session_state.current_page == 'landing':
-        if st.button("🔧 DEV: Открыть генератор", use_container_width=True):
-            st.session_state.current_page = 'generator'
-            st.rerun()
-    elif st.session_state.current_page in ['generator', 'privacy', 'terms']:
-        if st.button("🔧 DEV: Открыть лендинг", use_container_width=True):
-            st.session_state.current_page = 'landing'
-            st.rerun()
+# --- Контент страницы определяется st.session_state.current_page ---
 
 # =====================================
 # РЕНДЕРИНГ СТРАНИЦ
@@ -1162,6 +907,171 @@ elif st.session_state.current_page == 'landing':
     st.stop()  # Остановка выполнения кода генератора
     
 # --- Генератор (если не лендинг) ---
+with st.sidebar:
+    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: -2rem;'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
+    
+    # 0. Переключатель языка
+    # Языки с флагами и названиями
+    lang_display_names = {
+        'de': 'Deutsch',
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'pt': 'Português',
+        'ru': 'Русский',
+        'hi': 'हिन्दी',
+        'zh-CN': '中文'
+    }
+    
+    # Отслеживаем предыдущий язык для сброса голоса
+    prev_lang = st.session_state.get('prev_lang', user_lang)
+    
+    current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
+    # Language selector - show only "Language" for English, show "Язык / Language" for others
+    lang_label = f"{t('language_label', user_lang)}" if user_lang == 'en' else f"{t('language_label', user_lang)} / Language"
+    st.markdown(f"<p class='sidebar-header'>{lang_label}</p>", unsafe_allow_html=True)
+    
+    selected_lang = st.selectbox(
+        "hidden_lang_label",
+        options=SUPPORTED_LANGUAGES,
+        index=current_lang_index,
+        format_func=lambda x: lang_display_names.get(x, x),
+        key="lang_select",
+        label_visibility="collapsed"
+    )
+    
+    # Обновляем язык при изменении
+    if selected_lang != user_lang:
+        st.session_state.user_lang = selected_lang
+        st.session_state.prev_lang = selected_lang
+        if 'voice_select_sidebar' in st.session_state:
+            del st.session_state['voice_select_sidebar']
+        st.rerun()
+    
+    st.session_state.prev_lang = user_lang
+    st.divider()
+    
+    # 1. Theme Switch
+    st.markdown(f"<p class='sidebar-header'>{t('theme_label', user_lang)}</p>", unsafe_allow_html=True)
+    if "theme_radio" not in st.session_state:
+        st.session_state["theme_radio"] = t('theme_night', user_lang) if st.session_state.get('dark_mode', True) else t('theme_day', user_lang)
+    
+    def update_theme():
+        st.session_state.dark_mode = (st.session_state.theme_radio == t('theme_night', user_lang))
+
+    st.radio(
+        "hidden_theme_label",
+        options=[t('theme_day', user_lang), t('theme_night', user_lang)],
+        horizontal=True,
+        key="theme_radio",
+        label_visibility="collapsed",
+        on_change=update_theme
+    )
+    
+    dark_mode = st.session_state.dark_mode
+    st.divider()
+
+    # 2. Выбор голоса
+    voice_options = TTS_VOICES_BY_LANGUAGE.get(user_lang, TTS_VOICES_BY_LANGUAGE['ru'])['options']
+    voice_key = f"voice_select_{user_lang}"
+    
+    st.markdown("<style>div[data-testid='stHorizontalBlock'] { align-items: center !important; }</style>", unsafe_allow_html=True)
+    col1, col2 = st.columns([4, 1], gap="small")
+    with col1:
+        st.markdown(f"<p class='sidebar-header'>{t('voice_label', user_lang)}</p>", unsafe_allow_html=True)
+        voice_option = st.selectbox(
+            "hidden_voice_label",
+            options=list(voice_options.keys()),
+            index=0,
+            key=voice_key,
+            label_visibility="collapsed"
+        )
+    selected_voice = voice_options[voice_option]
+    
+    button_offset_y = "15px"
+    with col2:
+        if button_offset_y and button_offset_y != "0px":
+             st.markdown(f'<div style="margin-bottom: {button_offset_y}; font-size: 0;"></div>', unsafe_allow_html=True)
+        preview_clicked = st.button(t('preview_btn', user_lang), key="btn_preview_sidebar", type="tertiary", help=t('preview_help', user_lang))
+
+    if preview_clicked:
+        async def play_sample():
+            sample_texts = {
+                'ru': "Привет! Я буду читать сказку.",
+                'en': "Hello! I will read you a story.",
+                'es': "¡Hola! Te leeré un cuento.",
+                'fr': "Bonjour! Je vais vous lire une histoire.",
+                'pt': "Olá! Vou contar uma história para você.",
+                'zh-CN': "你好! 我会给你讲故事。",
+                'hi': "नमस्ते! मैं आपको एक कहानी सुनाऊंगा।",
+                'de': "Hallo! Ich werde dir eine Geschichte vorlesen."
+            }
+            sample_text = sample_texts.get(user_lang, sample_texts['en'])
+            return await generate_audio_stream(sample_text, selected_voice)
+        try:
+            with st.spinner(""):
+                sample_audio = asyncio.run(play_sample())
+            st.audio(sample_audio, format="audio/mp3", autoplay=True)
+        except Exception as e:
+            st.error(f"Ошибка: {e}" if user_lang == 'ru' else f"Error: {e}")
+
+    st.divider()
+    
+    # 3. Личная библиотека
+    st.markdown(f"<p class='sidebar-header'>{t('library_title', user_lang)}</p>", unsafe_allow_html=True)
+    saved_stories = storage.load_stories()
+    if not saved_stories:
+        st.markdown(f"<p class='sidebar-text'>{t('library_empty', user_lang)}</p>", unsafe_allow_html=True)
+    else:
+        for idx, s in enumerate(saved_stories, 1):
+            num_col, tc1, tc2 = st.columns([0.5, 5, 1], vertical_alignment="center")
+            with num_col:
+                st.markdown(f"**{idx}.**")
+            with tc1:
+                display_title = s['title']
+                created_date = s.get('created_at', '')[:10]
+                saved_on_labels = {
+                    'ru': 'Сохранено', 'en': 'Saved', 'es': 'Guardado', 
+                    'fr': 'Enregistré', 'pt': 'Salvo', 'hi': 'सहेजा गया', 
+                    'de': 'Gespeichert', 'zh-CN': '已保存'
+                }
+                save_label = saved_on_labels.get(user_lang, 'Saved')
+                if st.button(f"📄 {display_title}", key=f"load_{s['id']}", help=f"{created_date}" if created_date else None, type="tertiary"):
+                    s['audio'] = None
+                    st.session_state['current_story'] = s
+                    st.session_state['show_loaded_toast'] = True
+                    st.rerun()
+            with tc2:
+                if st.button("✕", key=f"del_{s['id']}", help=t('delete_help', user_lang), type="secondary"):
+                    storage.delete_story(s['id'])
+                    st.rerun()
+    
+    st.divider()
+    
+    # 2. Длительность
+    duration_options = [t('duration_short', user_lang), t('duration_medium', user_lang), t('duration_long', user_lang)]
+    st.markdown(f"<p class='sidebar-header'>{t('duration_label', user_lang)}</p>", unsafe_allow_html=True)
+    story_length = st.radio(
+        "hidden_duration_label",
+        options=duration_options,
+        index=1,
+        horizontal=True,
+        key="story_duration_radio",
+        label_visibility="collapsed"
+    )
+    if duration_options.index(story_length) == 2:
+        st.info(t('duration_long_hint', user_lang))
+        
+    st.divider()
+    
+    # 3. Донаты
+    st.markdown(f"<p class='sidebar-header'>{t('donate_title', user_lang)}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p class='sidebar-text'>{t('donate_text', user_lang)}</p>", unsafe_allow_html=True)
+    st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com")
+    
+    st.divider()
+    st.markdown(f"<p style='text-align: center; color: var(--text-color); opacity: 0.6; font-size: 0.8rem; margin-top: 1rem;'>{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}</p>", unsafe_allow_html=True)
+
 
 # --- Верхняя панель (Навигация) ---
 user_email = st.session_state.get('user_email', None)
