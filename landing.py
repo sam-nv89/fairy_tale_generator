@@ -771,7 +771,7 @@ def render_navbar():
     
     # Build HTML <option> list with the current language pre-selected
     options_html = ""
-    for code, name in lang_options.items():
+    for code, name in sorted(lang_options.items(), key=lambda x: x[1]):
         selected = 'selected' if code == current_lang else ''
         options_html += f'<option value="{code}" {selected}>{name}</option>\n'
 
@@ -955,19 +955,19 @@ def render_navbar():
 
 <div class="main-nav">
     <a href="#" class="nav-logo">
-        ✨ <span class="text-gradient">СказкаAI</span>
+        {t('app_name_gradient')}
     </a>
 
     <!-- Desktop Menu -->
     <div class="nav-links-desktop">
-        <a href="#how-it-works-section" class="nav-link">Как это работает</a>
-        <a href="#features-section" class="nav-link">Возможности</a>
-        <a href="#pricing-section" class="nav-link">Тарифы</a>
-        <a href="#faq-section" class="nav-link">FAQ</a>
+        <a href="#how-it-works-section" class="nav-link">{t("nav_how_it_works")}</a>
+        <a href="#features-section" class="nav-link">{t("nav_features")}</a>
+        <a href="#pricing-section" class="nav-link">{t("nav_pricing")}</a>
+        <a href="#faq-section" class="nav-link">{t("nav_faq")}</a>
         <select class="lang-select-nav" id="langPickerNav_desktop">
             {options_html}
         </select>
-        <a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">Начать ✨</a>
+        <a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">{t("nav_start")}</a>
     </div>
 
     <!-- Mobile Toggles & Icon -->
@@ -981,14 +981,14 @@ def render_navbar():
     <!-- Mobile Overlay -->
     <div class="mobile-menu-overlay" id="mobileMenu">
         <!-- added an ID so we can close it from JS if needed when link is clicked -->
-        <a href="#how-it-works-section" class="nav-link mobile-link">Как это работает</a>
-        <a href="#features-section" class="nav-link mobile-link">Возможности</a>
-        <a href="#pricing-section" class="nav-link mobile-link">Тарифы</a>
-        <a href="#faq-section" class="nav-link mobile-link">FAQ</a>
+        <a href="#how-it-works-section" class="nav-link mobile-link">{t("nav_how_it_works")}</a>
+        <a href="#features-section" class="nav-link mobile-link">{t("nav_features")}</a>
+        <a href="#pricing-section" class="nav-link mobile-link">{t("nav_pricing")}</a>
+        <a href="#faq-section" class="nav-link mobile-link">{t("nav_faq")}</a>
         <select class="lang-select-nav" id="langPickerNav_mobile">
             {options_html}
         </select>
-        <a href="#auth-section" class="btn-magic mobile-link" style="animation: none; margin-top: 1rem;">Начать бесплатно ✨</a>
+        <a href="#auth-section" class="btn-magic mobile-link" style="animation: none; margin-top: 1rem;">{t("nav_start_free")}</a>
     </div>
 </div>
 """)
@@ -1049,7 +1049,7 @@ def render_navbar():
 """, height=0, scrolling=False)
 
 def render_hero():
-    st.html("""
+    st.html(f"""
 <div class="landing-wrapper">
 <div class="hero-section">
 <div class="hero-bg-blob1"></div>
@@ -1098,15 +1098,14 @@ def render_hero():
 </div>
 
 <h1 class="hero-title">
-Подарите ребёнку сказку,<br>где он — <span class="text-gradient">Главный Герой</span>
+{t('hero_title')}
 </h1>
 <p class="hero-subtitle">
-Персонализированные аудио-истории с помощью ИИ за 1 минуту.<br>
-Озвучка нейродикторами на 8 языках. Добрая, поучительная магия.
+{t('hero_subtitle')}
 </p>
 
 <div style="animation: fadeInUp 1.2s ease-out forwards; opacity: 0; animation-delay: 0.4s; display: flex; justify-content: center;">
-<a href="#auth-section" class="btn-magic">Создать сказку бесплатно ✨</a>
+<a href="#auth-section" class="btn-magic">{t('hero_cta')}</a>
 </div>
 
 <!-- Story typing snippets grid -->
@@ -1115,7 +1114,7 @@ def render_hero():
 """ + "".join([f"""
     <div class="story-snippet">
         <div class="story-snippet-header">
-            <span id="typing-title-{i}">✨ Отрывок сказки</span>
+            <span id="typing-title-{i}">✨ {t("story_snippet_title")}</span>
             <span class="lang-badge" id="typing-lang-{i}"></span>
         </div>
         <div class="story-snippet-text" id="typing-target-{i}"><span class="typing-cursor"></span></div>
@@ -1137,19 +1136,19 @@ def render_stats():
 <div class="stats-bar">
 <div class="stat-item">
     <div class="stat-number text-gradient"><span class="count-up" data-target="10000" data-suffix="+" data-separator="|">0</span></div>
-    <div class="stat-label">Сказок создано</div>
+    <div class="stat-label">{t('stat_created')}</div>
 </div>
 <div class="stat-item">
     <div class="stat-number text-gradient"><span class="count-up" data-target="{num_languages}">0</span></div>
-    <div class="stat-label">Языков озвучки</div>
+    <div class="stat-label">{t('stat_languages')}</div>
 </div>
 <div class="stat-item">
     <div class="stat-number text-gradient"><span class="count-up" data-target="{num_genres}">0</span></div>
-    <div class="stat-label">Жанров историй</div>
+    <div class="stat-label">{t('stat_genres')}</div>
 </div>
 <div class="stat-item">
-    <div class="stat-number text-gradient"><span class="count-up" data-target="1" data-prefix="~" data-suffix="|мин">0</span></div>
-    <div class="stat-label">Время генерации</div>
+    <div class="stat-number text-gradient"><span class="count-up" data-target="1" data-prefix="~" data-suffix="{t('min_suffix')}">0</span></div>
+    <div class="stat-label">{t('stat_time')}</div>
 </div>
 </div>
 </div>
@@ -1157,9 +1156,9 @@ def render_stats():
 
 def render_features():
     """Секция возможностей — Feature Showcase."""
-    st.html("""
+    st.html(f"""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
-<h2 class="section-title" id="features-section">Возможности <span class="text-gradient">платформы</span></h2>
+<h2 class="section-title" id="features-section">{t("feat_title")}</h2>
 </div>
 """)
     
@@ -1167,27 +1166,27 @@ def render_features():
     spacer_left, c1, c2, c3, spacer_right = st.columns([1, 4, 4, 4, 1])
     
     with c1:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0s;">
 <div class="feature-icon">🎭</div>
-<h3>Любой жанр</h3>
-<p>От космических приключений до убаюкивающих сказок перед сном</p>
+<h3>{t("feat_1")}</h3>
+<p>{t("feat_1_sub")}</p>
 </div>
 """)
     with c2:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
 <div class="feature-icon">🌍</div>
-<h3>Мультиязычность</h3>
-<p>Читайте и слушайте сказки на 8 языках с нейроозвучкой</p>
+<h3>{t("feat_2")}</h3>
+<p>{t("feat_2_sub")}</p>
 </div>
 """)
     with c3:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
 <div class="feature-icon">🎙️</div>
-<h3>Премиум голоса</h3>
-<p>Мужские и женские HD-голоса с естественной интонацией</p>
+<h3>{t("feat_3")}</h3>
+<p>{t("feat_3_sub")}</p>
 </div>
 """)
     
@@ -1195,91 +1194,91 @@ def render_features():
     spacer_left, c4, c5, c6, spacer_right = st.columns([1, 4, 4, 4, 1])
     
     with c4:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
 <div class="feature-icon">📲</div>
-<h3>Скачивай и слушай</h3>
-<p>Читайте и слушайте офлайн на любом устройстве</p>
+<h3>{t("feat_4")}</h3>
+<p>{t("feat_4_sub")}</p>
 </div>
 """)
     with c5:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
 <div class="feature-icon">👨‍👩‍👧‍👦</div>
-<h3>Для любого возраста</h3>
-<p>Умная адаптация сложности и лексики — от малышей до взрослых</p>
+<h3>{t("feat_5")}</h3>
+<p>{t("feat_5_sub")}</p>
 </div>
 """)
     with c6:
-        st.html("""
+        st.html(f"""
 <div class="glass-card feature-card reveal" style="--reveal-delay: 0.3s;">
 <div class="feature-icon">🧠</div>
-<h3>Персонализация</h3>
-<p>ИИ учитывает имя, хобби и интересы героя</p>
+<h3>{t("feat_6")}</h3>
+<p>{t("feat_6_sub")}</p>
 </div>
 """)
 
 def render_how_it_works():
-    st.html("""
+    st.html(f"""
 <div class="landing-wrapper reveal" style="padding: 3rem 2rem 1rem;">
-<h2 class="section-title" id="how-it-works-section">Магия в <span class="text-gradient">три шага</span></h2>
+<h2 class="section-title" id="how-it-works-section">{t("hiw_title")}</h2>
 </div>
 """)
     
     spacer_left, col1, col2, col3, spacer_right = st.columns([1, 4, 4, 4, 1])
     
     with col1:
-        st.html("""
+        st.html(f"""
 <div class="glass-card step-card step-1 reveal" style="--reveal-delay: 0s;">
 <div class="step-icon">👶</div>
-<h3>1. Расскажите о герое</h3>
-<p>Впишите имя, возраст и увлечения ребёнка. ИИ сделает его центром сюжета.</p>
+<h3>{t("hiw_1_title")}</h3>
+<p>{t("hiw_1_sub")}</p>
 </div>
 """)
         
     with col2:
-        st.html("""
+        st.html(f"""
 <div class="glass-card step-card step-2 reveal" style="--reveal-delay: 0.15s;">
 <div class="step-icon">🧚‍♀️</div>
-<h3>2. Выберите жанр</h3>
-<p>Космос, пираты, лес фей или терапевтическая сказка для крепкого сна.</p>
+<h3>{t("hiw_2_title")}</h3>
+<p>{t("hiw_2_sub")}</p>
 </div>
 """)
         
     with col3:
-        st.html("""
+        st.html(f"""
 <div class="glass-card step-card step-3 reveal" style="--reveal-delay: 0.3s;">
 <div class="step-icon">🎧</div>
-<h3>3. Слушайте!</h3>
-<p>Получите аудиокнигу с нейроозвучкой. Скачайте в MP3 или PDF.</p>
+<h3>{t("hiw_3_title")}</h3>
+<p>{t("hiw_3_sub")}</p>
 </div>
 """)
 
 def render_examples():
     """Секция с примерами — Before → After."""
-    st.html("""
+    st.html(f"""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
-<h2 class="section-title">Примеры <span class="text-gradient">волшебства</span></h2>
-<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2.5rem; font-size: 0.95rem; line-height: 1.6;">Вот что получают дети — всего за минуту</p>
+<h2 class="section-title">{t("examples_title")}</h2>
+<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2.5rem; font-size: 0.95rem; line-height: 1.6;">{t("examples_sub")}</p>
 </div>
 """)
     
     spacer_left, col1, col2, col3, spacer_right = st.columns([1, 4, 4, 4, 1])
     
     with col1:
-        st.html("""
+        st.html(f"""
 <div class="glass-card example-card reveal" style="--reveal-delay: 0s;">
 <div class="example-input">
-<strong>Имя:</strong> Артём, 5 лет<br>
-<strong>Жанр:</strong> Космос<br>
-<strong>Хобби:</strong> Динозавры, роботы
+<strong>{t("ex_name_lbl")}:</strong> {t("ex1_in_name")}<br>
+<strong>{t("ex_genre_lbl")}:</strong> {t("ex1_in_genre")}<br>
+<strong>{t("ex_hobbies_lbl")}:</strong> {t("ex1_in_hobbies")}
 </div>
 <div class="example-arrow">↓ ✨ ↓</div>
 <div class="example-result">
-<div class="result-title">«Артём и Звёздный Динозавр»</div>
+<div class="result-title">{t("ex1_out")}</div>
 <div class="result-meta">
-<span class="result-badge badge-genre">🚀 Космос</span>
-<span class="result-badge badge-duration">🎧 3 мин</span>
+<span class="result-badge badge-genre">{t("ex1_in_genre")}</span>
+<span class="result-badge badge-duration">🎧 3 min</span>
 <span class="result-badge badge-lang">RU</span>
 </div>
 </div>
@@ -1287,19 +1286,19 @@ def render_examples():
 """)
     
     with col2:
-        st.html("""
+        st.html(f"""
 <div class="glass-card example-card reveal" style="--reveal-delay: 0.15s;">
 <div class="example-input">
-<strong>Имя:</strong> София, 4 года<br>
-<strong>Жанр:</strong> Сказка<br>
-<strong>Хобби:</strong> Рисование, котики
+<strong>{t("ex_name_lbl")}:</strong> {t("ex2_in_name")}<br>
+<strong>{t("ex_genre_lbl")}:</strong> {t("ex2_in_genre")}<br>
+<strong>{t("ex_hobbies_lbl")}:</strong> {t("ex2_in_hobbies")}
 </div>
 <div class="example-arrow">↓ ✨ ↓</div>
 <div class="example-result">
-<div class="result-title">«Принцесса София и Радужный Кот»</div>
+<div class="result-title">{t("ex2_out")}</div>
 <div class="result-meta">
-<span class="result-badge badge-genre">👸 Сказка</span>
-<span class="result-badge badge-duration">🎧 5 мин</span>
+<span class="result-badge badge-genre">{t("ex2_in_genre")}</span>
+<span class="result-badge badge-duration">🎧 5 min</span>
 <span class="result-badge badge-lang">RU</span>
 </div>
 </div>
@@ -1307,16 +1306,16 @@ def render_examples():
 """)
     
     with col3:
-        st.html("""
+        st.html(f"""
 <div class="glass-card example-card reveal" style="--reveal-delay: 0.3s;">
 <div class="example-input">
-<strong>Name:</strong> Luca, 7 years<br>
-<strong>Genre:</strong> Adventure<br>
-<strong>Hobbies:</strong> Football, pirate ships
+<strong>{t("ex_name_lbl")}:</strong> {t("ex3_in_name")}<br>
+<strong>{t("ex_genre_lbl")}:</strong> {t("ex3_in_genre")}<br>
+<strong>{t("ex_hobbies_lbl")}:</strong> {t("ex3_in_hobbies")}
 </div>
 <div class="example-arrow">↓ ✨ ↓</div>
 <div class="example-result">
-<div class="result-title">«Captain Luca and the Golden Island»</div>
+<div class="result-title">{t("ex3_out")}</div>
 <div class="result-meta">
 <span class="result-badge badge-genre">🏴‍☠️ Adventure</span>
 <span class="result-badge badge-duration">🎧 7 min</span>
@@ -1328,9 +1327,9 @@ def render_examples():
 
 def render_testimonials():
     """Секция отзывов — Карусель с авто-ротацией."""
-    st.html("""
+    st.html(f"""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
-<h2 class="section-title">Что говорят <span class="text-gradient">родители</span></h2>
+<h2 class="section-title">{t("testi_title")}</h2>
 
 <div class="carousel-wrapper" id="testimonial-carousel">
 <div class="carousel-arrows">
@@ -1342,29 +1341,29 @@ def render_testimonials():
 
 <div class="carousel-slide active">
 <div class="glass-card testimonial-card">
-<div class="quote">«Дочка слушает каждый вечер перед сном и просит ещё. Теперь она — принцесса-астронавт! Это лучший подарок, который мы нашли.»</div>
-<div class="author">— Анна, мама Софии (5 лет)</div>
+<div class="quote">{t("testi_q1")}</div>
+<div class="author">{t("testi_a1")}</div>
 </div>
 </div>
 
 <div class="carousel-slide">
 <div class="glass-card testimonial-card">
-<div class="quote">«Генератор создаёт истории, которые учат добру. Сын стал просить сказку вместо мультиков. Озвучка просто невероятная!»</div>
-<div class="author">— Дмитрий, папа Артёма (7 лет)</div>
+<div class="quote">{t("testi_q2")}</div>
+<div class="author">{t("testi_a2")}</div>
 </div>
 </div>
 
 <div class="carousel-slide">
 <div class="glass-card testimonial-card">
-<div class="quote">«Использую на французском для билингвальных детей. Качество перевода и озвучки удивительное — дети в восторге!»</div>
-<div class="author">— Marie, мама двоих (4 и 8 лет)</div>
+<div class="quote">{t("testi_q3")}</div>
+<div class="author">{t("testi_a3")}</div>
 </div>
 </div>
 
 <div class="carousel-slide">
 <div class="glass-card testimonial-card">
-<div class="quote">«Бабушка записывает сказки внуку по имени и отправляет из другого города. Малыш думает, что бабушка рядом. Плачу от умиления!»</div>
-<div class="author">— Елена, бабушка Миши (4 года)</div>
+<div class="quote">{t("testi_q4")}</div>
+<div class="author">{t("testi_a4")}</div>
 </div>
 </div>
 
@@ -1377,8 +1376,8 @@ def render_testimonials():
 
 <div class="carousel-slide">
 <div class="glass-card testimonial-card">
-<div class="quote">«За 2 месяца словарный запас дочери вырос заметно. Каждая сказка — маленький урок с новыми словами и ситуациями. Рекомендую всем!»</div>
-<div class="author">— Ольга, мама Алисы (6 лет)</div>
+<div class="quote">{t("testi_q5")}</div>
+<div class="author">{t("testi_a5")}</div>
 </div>
 </div>
 
@@ -1391,8 +1390,8 @@ def render_testimonials():
 
 <div class="carousel-slide">
 <div class="glass-card testimonial-card">
-<div class="quote">«Подарила подписку подруге на рождение ребёнка. Теперь обе семьи генерируют сказки каждую неделю. Лучше любой игрушки!»</div>
-<div class="author">— Наталья, мама Кирилла (3 года)</div>
+<div class="quote">{t("testi_q6")}</div>
+<div class="author">{t("testi_a6")}</div>
 </div>
 </div>
 
@@ -1548,16 +1547,16 @@ def render_pricing():
 </style>
 
 <div class="pricing-section-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
-<h2 class="section-title" id="pricing-section">Выберите ваш <span class="text-gradient">Билет в сказку</span></h2>
-<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">14 дней Pro бесплатно при регистрации</p>
+<h2 class="section-title" id="pricing-section">{t("pricing_subtitle")}</h2>
+<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("pricing_subdesc")}</p>
 
 <!-- PURE CSS Billing toggle: Monthly / Yearly -->
 <input type="checkbox" id="billing-checkbox" />
 <div class="billing-toggle-wrap">
-    <label for="billing-checkbox" id="label-monthly" class="billing-label">Ежемесячно</label>
+    <label for="billing-checkbox" id="label-monthly" class="billing-label">{t("billing_monthly")}</label>
     <label for="billing-checkbox" class="billing-toggle" role="switch"></label>
-    <label for="billing-checkbox" id="label-yearly" class="billing-label">Ежегодно</label>
-    <span class="billing-save-badge">СКИДКА −20%</span>
+    <label for="billing-checkbox" id="label-yearly" class="billing-label">{t("billing_yearly")}</label>
+    <span class="billing-save-badge">{t("billing_discount")}</span>
 </div>
 
 <!-- Pricing Cards Grid -->
@@ -1569,55 +1568,55 @@ def render_pricing():
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
         <span class="price-value">0₽</span>
     </div>
-    <div class="price-period" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">Навсегда бесплатно</div>
+    <div class="price-period" style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">{t("price_free_per")}</div>
 
     <div class="price-features">
-        <div class="price-feature">✅ <span>3 сказки в день</span></div>
-        <div class="price-feature">✅ <span>До 5 минут</span></div>
-        <div class="price-feature">✅ <span>1 стандартный голос</span></div>
-        <div class="price-feature">✅ <span>1 язык (авто)</span></div>
-        <div class="price-feature disabled">❌ <span>Скачивание</span></div>
-        <div class="price-feature disabled">❌ <span>Профили детей</span></div>
-        <div class="price-feature disabled">❌ <span>AI-иллюстрации</span></div>
-        <div class="price-feature disabled">❌ <span>Серии сказок</span></div>
-        <div class="price-feature disabled">❌ <span>Клон голоса</span></div>
+        <div class="price-feature">✅ <span>{t("price_free_feature1")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_free_feature2")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_free_feature3")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_free_feature4")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_down")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_prof")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_img")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_series")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_clone")}</span></div>
     </div>
 
-    <a href="#auth-section" class="btn-magic" style="background: rgba(255,255,255,0.08); width: 100%; animation: none; font-size: 1rem; text-align: center;">Начать бесплатно</a>
+    <a href="#auth-section" class="btn-magic" style="background: rgba(255,255,255,0.08); width: 100%; animation: none; font-size: 1rem; text-align: center;">{t("nav_start_free")}</a>
 </div>
 
 <!-- ─── PRO ─── -->
 <div class="price-card reveal" style="--reveal-delay: 0.15s; border-color: rgba(167, 139, 250, 0.5); box-shadow: 0 0 30px rgba(167,139,250,0.15);">
-    <div class="price-popular-badge" style="position: absolute; top: -12px; right: 1.2rem; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;">🌟 Популярный</div>
+    <div class="price-popular-badge" style="position: absolute; top: -12px; right: 1.2rem; background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;">🌟 {t("price_popular")}</div>
     <h3 style="font-size: 1.3rem; color: #f8fafc; font-family: 'Comfortaa', cursive; margin-bottom: 0.5rem;">⭐ Pro</h3>
     
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
         <div class="price-monthly">
-            <span class="price-value text-gradient">499₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+            <span class="price-value text-gradient">499₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
         <div class="price-yearly">
-            <span class="price-old-strike">499₽</span><span class="price-value text-gradient">399₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+            <span class="price-old-strike">499₽</span><span class="price-value text-gradient">399₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
     </div>
     
     <div class="price-period" style="font-size: 0.85rem; margin-bottom: 0.5rem; height: 1.2rem;">
-        <div class="desc-monthly" style="color: #a78bfa; font-weight: 500;">Отмена в любой момент</div>
-        <div class="desc-yearly"><span class="benefit-year">Выгода 1 200₽ (списание 4 788₽/год)</span></div>
+        <div class="desc-monthly" style="color: #a78bfa; font-weight: 500;">{t("price_pro_cancel")}</div>
+        <div class="desc-yearly"><span class="benefit-year">{t("price_pro_saving")}</span></div>
     </div>
 
     <div class="price-features" style="margin-top: 2rem;">
-        <div class="price-feature">✅ <span><b>Безлимитные сказки</b></span></div>
-        <div class="price-feature">✅ <span>До 15 минут</span></div>
-        <div class="price-feature">✅ <span>Все премиум голоса</span></div>
-        <div class="price-feature">✅ <span>До 4 языков</span></div>
-        <div class="price-feature">✅ <span><b>Скачивание MP3, PDF, EPUB</b></span></div>
-        <div class="price-feature">✅ <span>Профили детей (до 3)</span></div>
-        <div class="price-feature">✅ <span>AI-иллюстрации (5/мес)</span></div>
-        <div class="price-feature disabled">❌ <span>Серии сказок</span></div>
-        <div class="price-feature disabled">❌ <span>Клон голоса</span></div>
+        <div class="price-feature">✅ <span><b>{t("price_unlimited")}</b></span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_time")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_voices")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_lang")}</span></div>
+        <div class="price-feature">✅ <span><b>{t("price_pro_down")}</b></span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_prof")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_img")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_series")}</span></div>
+        <div class="price-feature disabled">❌ <span>{t("price_free_feature_clone")}</span></div>
     </div>
 
-    <a href="#auth-section" class="btn-magic" style="width: 100%; font-size: 1rem; text-align: center;">Оформить подписку</a>
+    <a href="#auth-section" class="btn-magic" style="width: 100%; font-size: 1rem; text-align: center;">{t("price_pro_btn")}</a>
 </div>
 
 <!-- ─── FAMILY ─── -->
@@ -1626,31 +1625,31 @@ def render_pricing():
     
     <div class="price-amount" style="font-size: 2.8rem; font-weight: 700; font-family: 'Comfortaa', cursive; margin: 0.3rem 0;">
         <div class="price-monthly">
-            <span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">799₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+            <span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">799₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
         <div class="price-yearly">
-            <span class="price-old-strike">799₽</span><span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">649₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / мес</span>
+            <span class="price-old-strike">799₽</span><span class="price-value" style="background: linear-gradient(135deg, #f472b6 0%, #c4b5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">649₽</span><span style="font-size: 0.9rem; color: #64748b; font-family: 'Inter', sans-serif;"> / {t("month")}</span>
         </div>
     </div>
     
     <div class="price-period" style="font-size: 0.85rem; margin-bottom: 0.5rem; height: 1.2rem;">
-        <div class="desc-monthly" style="color: #f472b6; font-weight: 500;">Для всей семьи</div>
-        <div class="desc-yearly"><span class="benefit-year">Выгода 1 800₽ (списание 7 788₽/год)</span></div>
+        <div class="desc-monthly" style="color: #f472b6; font-weight: 500;">{t("price_fam_desc")}</div>
+        <div class="desc-yearly"><span class="benefit-year">{t("price_fam_saving")}</span></div>
     </div>
 
     <div class="price-features" style="margin-top: 2rem;">
-        <div class="price-feature">✅ <span><b>Безлимитные сказки</b></span></div>
-        <div class="price-feature">✅ <span>До 15 минут</span></div>
-        <div class="price-feature">✅ <span>Все голоса + <b>клон голоса</b></span></div>
-        <div class="price-feature">✅ <span>Все 8 языков</span></div>
-        <div class="price-feature">✅ <span>Скачивание всех форматов</span></div>
-        <div class="price-feature">✅ <span>Профили детей (до 5)</span></div>
-        <div class="price-feature">✅ <span><b>Безлимит AI-иллюстрации</b></span></div>
-        <div class="price-feature">✅ <span><b>Серии сказок</b></span></div>
-        <div class="price-feature">✅ <span><b>Клон голоса</b></span></div>
+        <div class="price-feature">✅ <span><b>{t("price_unlimited")}</b></span></div>
+        <div class="price-feature">✅ <span>{t("price_pro_time")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_fam_voices")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_fam_lang")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_fam_down")}</span></div>
+        <div class="price-feature">✅ <span>{t("price_fam_prof")}</span></div>
+        <div class="price-feature">✅ <span><b>{t("price_fam_img")}</b></span></div>
+        <div class="price-feature">✅ <span><b>{t("price_free_feature_series")}</b></span></div>
+        <div class="price-feature">✅ <span><b>{t("price_free_feature_clone")}</b></span></div>
     </div>
 
-    <a href="#auth-section" class="btn-magic" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); width: 100%; font-size: 1rem; text-align: center;">Выбрать Family</a>
+    <a href="#auth-section" class="btn-magic" style="background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); width: 100%; font-size: 1rem; text-align: center;">{t("price_fam_btn")}</a>
 </div>
 
 </div><!-- /pricing-grid -->
@@ -1660,8 +1659,8 @@ def render_pricing():
 def render_auth():
     st.html("""
 <div id="auth-section" class="landing-wrapper" style="padding: 4rem 2rem 1.5rem; text-align: center;">
-<h2 class="section-title">Войти в <span class="text-gradient">мир сказок</span></h2>
-<p style="color: #94a3b8; max-width: 500px; margin: -1rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">Создайте аккаунт, чтобы сохранять истории и получить доступ к генератору.</p>
+<h2 class="section-title">{t("auth_login_title")}</h2>
+<p style="color: #94a3b8; max-width: 500px; margin: -1rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("auth_login_sub")}</p>
 </div>
 """)
     
@@ -1670,8 +1669,8 @@ def render_auth():
     if is_authenticated():
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
-            st.success(f"Вы вошли как: {st.session_state.user_email}")
-            if st.button("Перейти к Генератору 🚀", type="primary", use_container_width=True):
+            st.success(f"{t("auth_logged_in")} {st.session_state.user_email}")
+            if st.button(t("auth_go_gen"), type="primary", use_container_width=True):
                 st.session_state.current_page = 'generator'
                 st.rerun()
     else:
@@ -1737,7 +1736,7 @@ def render_auth():
 </style>
 """)
             
-            tab1, tab2 = st.tabs(["🔒 Вход", "✨ Регистрация"])
+            tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
             
             with tab1:
                 st.html("""
@@ -1770,28 +1769,28 @@ def render_auth():
                     pointer-events: auto;
                 }
                 </style>
-                <div class="oauth-toast" id="oauth-toast-signin">🚀 Google OAuth скоро будет доступен!</div>
+                <div class="oauth-toast" id="oauth-toast-signin">🚀 {t("auth_oauth_soon")}</div>
                 <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    Войти через Google
+                    {t("auth_google_login")}
                 </button>
-                <div class="auth-divider"><span>или по email</span></div>
+                <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """)
                 with st.form("signin_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input("Пароль", type="password", placeholder="••••••••")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder="••••••••")
                     st.html("<br>")
-                    submit = st.form_submit_button("Войти", use_container_width=True, type="primary")
+                    submit = st.form_submit_button(t("auth_login_btn"), use_container_width=True, type="primary")
                     if submit:
                         if not email or not password:
-                            st.error("Заполните оба поля")
+                            st.error(t("auth_err_empty"))
                         else:
-                            with st.spinner("Проверка данных..."):
+                            with st.spinner(t("auth_checking")):
                                 res = sign_in(email, password)
                                 if res['success']:
                                     st.session_state.user = res['user']
                                     st.session_state.user_email = email
-                                    st.success("Успешный вход!")
+                                    st.success(t("auth_login_success"))
                                     st.session_state.current_page = 'generator'
                                     st.rerun()
                                 else:
@@ -1799,28 +1798,28 @@ def render_auth():
             
             with tab2:
                 st.html("""
-                <div class="oauth-toast" id="oauth-toast-signup">🚀 Google OAuth скоро будет доступен!</div>
+                <div class="oauth-toast" id="oauth-toast-signup">🚀 {t("auth_oauth_soon")}</div>
                 <button class="oauth-btn" onclick="var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000);">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                    Регистрация через Google
+                    {t("auth_google_signup")}
                 </button>
-                <div class="auth-divider"><span>или по email</span></div>
+                <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """)
                 with st.form("signup_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input("Пароль", type="password", placeholder="Не менее 6 символов")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder={t("auth_pass_len")})
                     st.html("<br>")
-                    submit = st.form_submit_button("Создать аккаунт", use_container_width=True, type="primary")
+                    submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
                     if submit:
                         if not email or len(password) < 6:
-                            st.error("Введите корректный email и пароль от 6 символов")
+                            st.error(t("auth_signup_err"))
                         else:
-                            with st.spinner("Создаем аккаунт..."):
+                            with st.spinner(t("auth_creating")):
                                 res = sign_up(email, password)
                                 if res['success']:
                                     st.session_state.user = res['user']
                                     st.session_state.user_email = email
-                                    st.success("Аккаунт создан! Добро пожаловать.")
+                                    st.success(t("auth_signup_success"))
                                     st.session_state.current_page = 'generator'
                                     st.rerun()
                                 else:
@@ -1831,13 +1830,13 @@ def render_footer():
 <div class="landing-wrapper">
 <div class="footer">
 <div style="font-family: 'Comfortaa', cursive; font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem;">
-✨ СказкаAI
+{t('app_name')}
 </div>
-<p style="font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">Создаем моменты, которые дети запомнят на всю жизнь.</p>
+<p style="font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">{t("footer_text")}</p>
 <div style="font-size: 0.85rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
 <span>© 2026 Fairy Tale Generator</span>
-<a href="?page=privacy" target="_top" style="color: inherit; text-decoration: none;">Политика конфиденциальности</a>
-<a href="?page=terms" target="_top" style="color: inherit; text-decoration: none;">Условия использования</a>
+<a href="?page=privacy" target="_top" style="color: inherit; text-decoration: none;">{t("footer_privacy")}</a>
+<a href="?page=terms" target="_top" style="color: inherit; text-decoration: none;">{t("footer_terms")}</a>
 </div>
 </div>
 </div>
@@ -1847,33 +1846,33 @@ def render_faq():
     """Секция FAQ — Часто задаваемые вопросы."""
     st.html("""
 <div class="landing-wrapper reveal" style="padding: 4rem 2rem 2rem;">
-<h2 class="section-title" id="faq-section">Частые <span class="text-gradient">вопросы</span></h2>
+<h2 class="section-title" id="faq-section">{t("faq_title")}</h2>
 
 <div style="max-width: 700px; margin: 0 auto;">
 
 <details class="faq-item">
-<summary>Нужна ли подписка, чтобы попробовать?</summary>
-<div class="faq-answer">Нет! Вы можете создать первую сказку бесплатно сразу после регистрации. Бесплатный тариф включает 1 историю в день со стандартными голосами — навсегда.</div>
+<summary>{t("faq_q1_new")}</summary>
+<div class="faq-answer">{t("faq_a1_new")}</div>
 </details>
 
 <details class="faq-item">
-<summary>Безопасен ли контент для детей?</summary>
-<div class="faq-answer">Абсолютно. ИИ настроен на генерацию добрых, позитивных историй с поучительным сюжетом. Контент адаптируется под указанный возраст — никакого насилия, страхов или неуместных тем.</div>
+<summary>{t("faq_q2_new")}</summary>
+<div class="faq-answer">{t("faq_a2_new")}</div>
 </details>
 
 <details class="faq-item">
-<summary>Какие форматы скачивания доступны?</summary>
-<div class="faq-answer">Сказки можно скачать в форматах MP3 (аудио), PDF, EPUB, FB2 и TXT (текст). Слушайте в машине, читайте на электронной книге — любое устройство, офлайн.</div>
+<summary>{t("faq_q3_new")}</summary>
+<div class="faq-answer">{t("faq_a3_new")}</div>
 </details>
 
 <details class="faq-item">
-<summary>Какие языки поддерживаются?</summary>
-<div class="faq-answer">Сейчас доступны 8 языков: русский, английский, испанский, французский, португальский, китайский, хинди и немецкий. Текст и озвучка генерируются на выбранном языке. Мы постоянно добавляем новые!</div>
+<summary>{t("faq_q4_new")}</summary>
+<div class="faq-answer">{t("faq_a4_new")}</div>
 </details>
 
 <details class="faq-item">
-<summary>Можно ли отменить подписку?</summary>
-<div class="faq-answer">Да, в любой момент. Никаких скрытых условий и долгосрочных контрактов. Отмена в один клик из личного кабинета, доступ сохраняется до конца оплаченного периода.</div>
+<summary>{t("faq_q5_new")}</summary>
+<div class="faq-answer">{t("faq_a5_new")}</div>
 </details>
 
 </div>
@@ -1896,12 +1895,21 @@ def render_full_landing_page():
     render_faq()
     render_auth()
     render_footer()
-    
-    import json
+    render_scripts()
+
+import json
+from landing_i18n import LANDING_TRANSLATIONS
+
+def t(key):
+    # Safe check if st.session_state is initialized and has user_lang
+    user_lang = st.session_state.get('user_lang', 'ru')
+    return LANDING_TRANSLATIONS.get(key, {}).get(user_lang, LANDING_TRANSLATIONS.get(key, {}).get('ru', key))
+
+def render_scripts():
     user_lang = st.session_state.get('user_lang', 'ru')
     
     all_stories = [
-        {"lang": "ru", "badge": "RU", "title": "Отрывок сказки", "text": "«Однажды Артём нашёл крошечного дракона. Он переливался всеми цветами радуги и был готов к приключениям...»"},
+        {"lang": "ru", "badge": "RU", "title": t("story_snippet_title"), "text": t("story_snippet_text")},
         {"lang": "en", "badge": "EN", "title": "Story snippet", "text": "«Princess Sofia stepped into the forest. Here, every flower could sing, and ancient trees whispered tales of magic...»"},
         {"lang": "es", "badge": "ES", "title": "Fragmento de cuento", "text": "«Una vez, Mateo encontró un dragón en el jardín, no más grande que un gatito y brillaba con colores...»"},
         {"lang": "fr", "badge": "FR", "title": "Extrait de conte", "text": "«La princesse Sophie entra dans la forêt. Chaque fleur pouvait chanter et chaque arbre racontait des histoires...»"},
