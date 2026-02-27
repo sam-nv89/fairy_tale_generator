@@ -1545,7 +1545,7 @@ def render_pricing():
     margin: 1.5rem 0;
 }
 </style>
-
+""" + f"""
 <div class="pricing-section-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
 <h2 class="section-title" id="pricing-section">{t("pricing_subtitle")}</h2>
 <p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("pricing_subdesc")}</p>
@@ -1844,8 +1844,8 @@ def render_footer():
 
 def render_faq():
     """Секция FAQ — Часто задаваемые вопросы."""
-    st.html("""
-<div class="landing-wrapper reveal" style="padding: 4rem 2rem 2rem;">
+    st.html(f"""
+<div class="faq-container reveal" style="padding: 4rem 2rem 2rem;">
 <h2 class="section-title" id="faq-section">{t("faq_title")}</h2>
 
 <div style="max-width: 700px; margin: 0 auto;">
