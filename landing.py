@@ -771,18 +771,11 @@ def render_navbar():
     
     # Build HTML for language options dropdown
     current_lang_name = lang_options.get(current_lang, current_lang.upper())
-    options_html = f'''
-    <div class="lang-dropdown">
-        <button class="lang-dropbtn">🌍 {current_lang_name} ▾</button>
-        <div class="lang-dropdown-content">
-    '''
+    options_html = f'<div class="lang-dropdown"><button class="lang-dropbtn">🌍 {current_lang_name} ▾</button><div class="lang-dropdown-content">'
     for code, name in sorted(lang_options.items(), key=lambda x: x[1]):
         active_style = 'font-weight: bold; color: #a78bfa;' if code == current_lang else ''
-        options_html += f'<a href="?lang={code}" style="{active_style}">{name}</a>\n'
-    options_html += '''
-        </div>
-    </div>
-    '''
+        options_html += f'<a href="?lang={code}" style="{active_style}">{name}</a>'
+    options_html += '</div></div>'
 
     # Render navbar directly into the parent DOM using original landing styles
     st.html(f"""
@@ -833,32 +826,74 @@ def render_navbar():
     color: #c4b5fd;
 }}
 
-/* Language selector */
-.lang-select-nav {{
-    appearance: none;
-    -webkit-appearance: none;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
+/* Language Dropdown */
+.lang-dropdown {{
+    position: relative;
+    display: inline-block;
+    z-index: 1000;
+}}
+
+.lang-dropbtn {{
+    background: rgba(255, 255, 255, 0.08);
     color: white;
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
-    font-family: inherit;
-    font-weight: 500;
-    padding: 0.4rem 2rem 0.4rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
     cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.6rem center;
-    outline: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }}
-.lang-select-nav:hover {{
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
+
+.lang-dropdown:hover .lang-dropbtn {{
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255,255,255,0.4);
 }}
-.lang-select-nav option {{
-    background: #1e293b;
-    color: white;
+
+.lang-dropdown-content {{
+    display: none !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 100% !important;
+    margin-top: 0.5rem !important;
+    background: #1e293b !important;
+    min-width: 160px !important;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.5) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 12px !important;
+    z-index: 9999 !important;
+    overflow: hidden !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+}}
+
+.lang-dropdown:hover .lang-dropdown-content {{
+    display: block !important;
+    animation: slideDown 0.2s ease;
+}}
+
+.lang-dropdown-content a {{
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 0.7rem 1rem !important;
+    text-decoration: none !important;
+    display: block !important;
+    font-size: 0.9rem !important;
+    text-align: left !important;
+    transition: all 0.2s !important;
+}}
+
+.lang-dropdown-content a:hover {{
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    padding-left: 1.2rem !important;
+}}
+
+@keyframes slideDown {{
+    from {{ opacity: 0; transform: translateY(-10px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
 }}
 
 /* Hamburger & Mobile Menu (Default: Hidden) */
@@ -949,11 +984,35 @@ def render_navbar():
     .mobile-menu-overlay a.nav-link:hover {{
         color: #c4b5fd;
     }}
-    .mobile-menu-overlay .lang-select-nav {{
+    .mobile-menu-overlay .lang-dropdown {{
         font-size: 1.2rem;
-        padding: 0.8rem 3rem 0.8rem 1.5rem;
-        border-radius: 12px;
-        background-position: right 1rem center;
+        margin-top: 1rem;
+        width: 80%;
+    }}
+    .mobile-menu-overlay .lang-dropbtn {{
+        font-size: 1.1rem;
+        padding: 0.8rem 1.5rem;
+        width: 100%;
+        justify-content: center;
+    }}
+    .mobile-menu-overlay .lang-dropdown-content {{
+        position: static;
+        display: block !important;
+        box-shadow: none;
+        background: transparent;
+        border: none;
+        margin-top: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }}
+    .mobile-menu-overlay .lang-dropdown-content a {{
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        color: #94a3b8;
+    }}
+    .mobile-menu-overlay .lang-dropdown-content a:hover {{
+        color: white;
+        background: transparent;
     }}
     .mobile-menu-overlay .btn-magic {{
         font-size: 1.2rem;
