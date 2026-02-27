@@ -752,22 +752,28 @@ def render_navbar():
         "zh-CN": "中文"
     }
     
+    # --- Language Handling ---
+    # 1. Initialize user_lang if missing
     if 'user_lang' not in st.session_state:
         st.session_state.user_lang = get_user_language()
         
+    # 2. Check for manual language override via URL query params
+    qp = st.query_params
+    new_lang_code = qp.get("lang", None)
+    
+    # If the URL contains a valid language code different from current, update state
+    if new_lang_code and new_lang_code in lang_options:
+        if new_lang_code != st.session_state.user_lang:
+            st.session_state.user_lang = new_lang_code
+            # Important: Clear the query param to keep the URL clean and avoid infinite reruns
+            # but we use its value for this run
+            # del qp["lang"] # Some versions of streamlit might need this, or not
+            st.query_params.clear() # Safer way to clear all params if choosing a lang
+            st.rerun()
+
     current_lang = st.session_state.user_lang
     if current_lang not in lang_options:
         current_lang = "ru"
-
-    # Check if language was changed via query params (from the HTML select)
-    qp = st.query_params
-    new_lang = qp.get("lang", None)
-    if new_lang and new_lang in lang_options and new_lang != current_lang:
-        st.session_state.user_lang = new_lang
-        current_lang = new_lang
-        # Clear the query param to avoid re-triggering on next rerun
-        del qp["lang"]
-        st.rerun()
     
     # Build HTML for language options dropdown
     current_lang_name = lang_options.get(current_lang, current_lang.upper())
