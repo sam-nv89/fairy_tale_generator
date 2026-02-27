@@ -386,7 +386,21 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: {t['label']} !important;
     }}
 
-    /* ========== INPUTS: Glass-morphism style ========== */
+    /* ========== INPUT CONTAINER (Outer) ========== */
+    [data-baseweb="input"] {{
+        background-color: {t['input_bg']} !important;
+        border: 1.5px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        box-shadow: {'inset 0 2px 4px rgba(0,0,0,0.2)' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.06)'} !important;
+        overflow: hidden !important; /* Ensure children don't overflow the rounded corners */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }}
+    
+    [data-baseweb="input"]:focus-within {{
+        border-color: #667eea !important;
+    }}
+
+    /* ========== INPUT ELEMENTS (Inner) ========== */
     .stApp input[type="text"],
     .stApp input[type="password"],
     .stApp input[type="number"],
@@ -395,21 +409,48 @@ def get_app_styles(dark_mode: bool = True) -> str:
     [data-testid="stTextInput"] input,
     [data-testid="stNumberInput"] input,
     [data-testid="stTextArea"] textarea {{
-        background-color: {t['input_bg']} !important;
+        background-color: transparent !important;
         color: {t['input_text']} !important;
-        border: 1.5px solid {t['input_border']} !important;
-        border-radius: 12px !important;
+        caret-color: {'#a78bfa' if dark_mode else '#8b5cf6'} !important; /* Theme accent caret color */
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
         padding: 0.7rem 1rem !important;
         font-size: 0.95rem !important;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        box-shadow: {'inset 0 2px 4px rgba(0,0,0,0.2)' if dark_mode else 'inset 0 1px 3px rgba(0,0,0,0.06)'} !important;
+        line-height: 1.5 !important;
     }}
 
-    /* Input container borders */
-    [data-baseweb="input"] {{
-        background-color: {t['input_bg']} !important;
-        border-color: {t['input_border']} !important;
-        border-radius: 12px !important;
+    /* Password Eye Icon Container (Visibility Toggle) */
+    [data-baseweb="input"] > div:last-child,
+    [data-baseweb="input"] div[role="button"],
+    [data-baseweb="input"] button {{
+        background-color: transparent !important;
+        color: rgba(148, 163, 184, 0.7) !important; /* Gray with transparency */
+        transform: translateX(4px) !important; /* Shift slightly to the right */
+        transition: all 0.2s ease !important;
+    }}
+    
+    /* Make sure SVGs inside the toggle button match the text color */
+    [data-baseweb="input"] div[role="button"] svg,
+    [data-baseweb="input"] button svg {{
+        fill: rgba(148, 163, 184, 0.7) !important;
+        color: rgba(148, 163, 184, 0.7) !important;
+        transition: all 0.2s ease !important;
+    }}
+    
+    /* Hover state for eye icon container to prevent background changes */
+    [data-baseweb="input"] > div:last-child:hover,
+    [data-baseweb="input"] div[role="button"]:hover,
+    [data-baseweb="input"] button:hover {{
+        background-color: transparent !important;
+        opacity: 1 !important;
+    }}
+    
+    /* Hover state for eye icon SVG to make it clearly visible on white background */
+    [data-baseweb="input"] div[role="button"]:hover svg,
+    [data-baseweb="input"] button:hover svg {{
+        fill: {t['input_text']} !important;
+        color: {t['input_text']} !important;
     }}
 
     /* Placeholder */
