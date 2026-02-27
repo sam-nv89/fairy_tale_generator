@@ -1836,8 +1836,8 @@ def render_footer():
 <p style="font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; line-height: 1.6;">Создаем моменты, которые дети запомнят на всю жизнь.</p>
 <div style="font-size: 0.85rem; opacity: 0.6; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
 <span>© 2026 Fairy Tale Generator</span>
-<a href="#" style="color: inherit; text-decoration: none;">Политика конфиденциальности</a>
-<a href="#" style="color: inherit; text-decoration: none;">Условия использования</a>
+<a href="?page=privacy" target="_top" style="color: inherit; text-decoration: none;">Политика конфиденциальности</a>
+<a href="?page=terms" target="_top" style="color: inherit; text-decoration: none;">Условия использования</a>
 </div>
 </div>
 </div>

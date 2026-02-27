@@ -1114,8 +1114,15 @@ with st.sidebar:
 # --- СТИЛИ ПЕРЕНЕСЕНЫ В НАЧАЛО ФАЙЛА ---
 
 # =====================================
-# РОУТИНГ: Лендинг vs Генератор
+# РОУТИНГ: Лендинг vs Генератор vs Документация
 # =====================================
+qp = st.query_params
+if "page" in qp:
+    page_param = qp["page"]
+    if page_param in ['landing', 'generator', 'privacy', 'terms']:
+        st.session_state.current_page = page_param
+        del qp["page"]
+
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'landing'
 
@@ -1126,7 +1133,7 @@ with st.sidebar:
         if st.button("🔧 DEV: Открыть генератор", use_container_width=True):
             st.session_state.current_page = 'generator'
             st.rerun()
-    else:
+    elif st.session_state.current_page in ['generator', 'privacy', 'terms']:
         if st.button("🔧 DEV: Открыть лендинг", use_container_width=True):
             st.session_state.current_page = 'landing'
             st.rerun()
@@ -1135,7 +1142,11 @@ with st.sidebar:
 # РЕНДЕРИНГ СТРАНИЦ
 # =====================================
 
-if st.session_state.current_page == 'landing':
+if st.session_state.current_page in ['privacy', 'terms']:
+    from legal import render_legal_page
+    render_legal_page(st.session_state.current_page)
+    st.stop()
+elif st.session_state.current_page == 'landing':
     import landing
     landing.render_full_landing_page()
     st.stop()  # Остановка выполнения кода генератора
