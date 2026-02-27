@@ -769,11 +769,20 @@ def render_navbar():
         del qp["lang"]
         st.rerun()
     
-    # Build HTML <option> list with the current language pre-selected
-    options_html = ""
+    # Build HTML for language options dropdown
+    current_lang_name = lang_options.get(current_lang, current_lang.upper())
+    options_html = f'''
+    <div class="lang-dropdown">
+        <button class="lang-dropbtn">🌍 {current_lang_name} ▾</button>
+        <div class="lang-dropdown-content">
+    '''
     for code, name in sorted(lang_options.items(), key=lambda x: x[1]):
-        selected = 'selected' if code == current_lang else ''
-        options_html += f'<option value="{code}" {selected}>{name}</option>\n'
+        active_style = 'font-weight: bold; color: #a78bfa;' if code == current_lang else ''
+        options_html += f'<a href="?lang={code}" style="{active_style}">{name}</a>\n'
+    options_html += '''
+        </div>
+    </div>
+    '''
 
     # Render navbar directly into the parent DOM using original landing styles
     st.html(f"""
@@ -964,9 +973,9 @@ def render_navbar():
         <a href="#features-section" class="nav-link">{t("nav_features")}</a>
         <a href="#pricing-section" class="nav-link">{t("nav_pricing")}</a>
         <a href="#faq-section" class="nav-link">{t("nav_faq")}</a>
-        <select class="lang-select-nav" id="langPickerNav_desktop">
+        
             {options_html}
-        </select>
+        
         <a href="#auth-section" class="btn-magic" style="padding: 0.55rem 1.3rem; font-size: 0.9rem; animation: none; box-shadow: none; border-radius: 30px;">{t("nav_start")}</a>
     </div>
 
@@ -985,9 +994,9 @@ def render_navbar():
         <a href="#features-section" class="nav-link mobile-link">{t("nav_features")}</a>
         <a href="#pricing-section" class="nav-link mobile-link">{t("nav_pricing")}</a>
         <a href="#faq-section" class="nav-link mobile-link">{t("nav_faq")}</a>
-        <select class="lang-select-nav" id="langPickerNav_mobile">
+        
             {options_html}
-        </select>
+        
         <a href="#auth-section" class="btn-magic mobile-link" style="animation: none; margin-top: 1rem;">{t("nav_start_free")}</a>
     </div>
 </div>
@@ -999,27 +1008,7 @@ def render_navbar():
 (function() {
     var doc = window.parent.document;
     function attachListener() {
-        var dpPicker = doc.getElementById('langPickerNav_desktop');
-        var mbPicker = doc.getElementById('langPickerNav_mobile');
         var attachedCount = 0;
-        
-        function handleLangChange(e) {
-            var langCode = e.target.value;
-            var url = new URL(window.parent.location.href);
-            url.searchParams.set('lang', langCode);
-            window.parent.location.href = url.toString();
-        }
-        
-        if (dpPicker && !dpPicker.dataset.listenerAttached) {
-            dpPicker.dataset.listenerAttached = "true";
-            dpPicker.addEventListener('change', handleLangChange);
-            attachedCount++;
-        }
-        if (mbPicker && !mbPicker.dataset.listenerAttached) {
-            mbPicker.dataset.listenerAttached = "true";
-            mbPicker.addEventListener('change', handleLangChange);
-            attachedCount++;
-        }
         
         // Auto-close hamburger when a link is clicked
         var mobileLinks = doc.querySelectorAll('.mobile-link');
@@ -1032,18 +1021,17 @@ def render_navbar():
                 });
             });
             attachedCount++;
+            return true;
         }
-        
-        return (dpPicker != null || mbPicker != null);
+        return false;
     }
     
-    // Attempt multiple times because DOM render might be slightly delayed
     var pollId = setInterval(function() {
         if (attachListener()) {
             clearInterval(pollId);
         }
-    }, 100);
-    setTimeout(function() { clearInterval(pollId); }, 5000);
+    }, 200);
+    setTimeout(function() { clearInterval(pollId); }, 3000);
 })();
 </script>
 """, height=0, scrolling=False)
