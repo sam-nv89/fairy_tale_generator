@@ -753,23 +753,20 @@ def render_navbar():
     }
     
     # --- Language Handling ---
-    # 1. Initialize user_lang if missing
     if 'user_lang' not in st.session_state:
         st.session_state.user_lang = get_user_language()
         
-    # 2. Check for manual language override via URL query params
-    qp = st.query_params
-    new_lang_code = qp.get("lang", None)
+    # Check for manual language override via URL query params
+    qp_lang = st.query_params.get("lang")
+    if isinstance(qp_lang, list): qp_lang = qp_lang[0] if qp_lang else None
     
-    # If the URL contains a valid language code different from current, update state
-    if new_lang_code and new_lang_code in lang_options:
-        if new_lang_code != st.session_state.user_lang:
-            st.session_state.user_lang = new_lang_code
-            # Important: Clear the query param to keep the URL clean and avoid infinite reruns
-            # but we use its value for this run
-            # del qp["lang"] # Some versions of streamlit might need this, or not
-            st.query_params.clear() # Safer way to clear all params if choosing a lang
-            st.rerun()
+    if qp_lang and qp_lang in lang_options and qp_lang != st.session_state.user_lang:
+        st.session_state.user_lang = qp_lang
+        try:
+            st.query_params.clear()
+        except:
+            pass
+        st.rerun()
 
     current_lang = st.session_state.user_lang
     if current_lang not in lang_options:
@@ -839,6 +836,17 @@ def render_navbar():
     z-index: 1000;
 }}
 
+/* Bridge to prevent hover loss between button and list */
+.lang-dropdown::after {{
+    content: "";
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    z-index: -1;
+}}
+
 .lang-dropbtn {{
     background: rgba(255, 255, 255, 0.08);
     color: white;
@@ -852,6 +860,8 @@ def render_navbar():
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
+    z-index: 2;
 }}
 
 .lang-dropdown:hover .lang-dropbtn {{
@@ -864,7 +874,7 @@ def render_navbar():
     position: absolute !important;
     right: 0 !important;
     top: 100% !important;
-    margin-top: 0.5rem !important;
+    margin-top: 2px !important; /* Minimal gap for aesthetics but bridged by pseudo-element */
     background: #1e293b !important;
     min-width: 160px !important;
     box-shadow: 0px 8px 16px rgba(0,0,0,0.5) !important;

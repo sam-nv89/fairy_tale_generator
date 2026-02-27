@@ -47,13 +47,23 @@ st.set_page_config(
 )
 
 # --- 1.5. Автодетект языка (i18n) ---
-# Определяем язык пользователя один раз при первой загрузке
 if 'user_lang' not in st.session_state:
-    # Пытаемся получить Accept-Language из заголовков браузера
-    # Streamlit не даёт прямой доступ к заголовкам, поэтому используем IP-детекцию
-    st.session_state.user_lang = get_user_language()
+    # 1. Сначала проверяем URL-параметры (если пользователь переключил язык вручную)
+    qp_lang = st.query_params.get("lang")
+    if isinstance(qp_lang, list): qp_lang = qp_lang[0] if qp_lang else None
+    
+    if qp_lang and qp_lang in SUPPORTED_LANGUAGES:
+        st.session_state.user_lang = qp_lang
+        # Очищаем параметры для чистого URL
+        try:
+            st.query_params.clear()
+        except:
+            pass
+    else:
+        # 2. Если параметров нет, используем IP-детекцию
+        st.session_state.user_lang = get_user_language()
 
-# Текущий язык (можно переключить вручную в сайдбаре)
+# Текущий язык
 user_lang = st.session_state.user_lang
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
