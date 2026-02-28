@@ -1052,33 +1052,36 @@ def render_navbar():
         width: 100%;
         justify-content: center;
     }}
-    .mobile-menu-overlay .lang-dropdown-content {{
+    #mobileMenu .lang-dropdown-content {{
         display: none !important; /* Hide by default on mobile overlay */
         position: static !important;
         box-shadow: none !important;
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
         margin-top: 0.5rem !important;
-        max-height: 200px !important;
+        max-height: 250px !important;
         overflow-y: auto !important;
         border-radius: 12px !important;
     }}
     
     /* When active class added via JS, show the dropdown */
-    .mobile-menu-overlay .lang-dropdown.active .lang-dropdown-content {{
+    #mobileMenu .lang-dropdown.active .lang-dropdown-content {{
         display: block !important;
         animation: none;
     }}
     
-    .mobile-menu-overlay .lang-dropdown-content a {{
-        padding: 0.5rem 1.5rem !important;
-        font-size: 1rem !important;
+    #mobileMenu .lang-dropdown-content a {{
+        padding: 1.2rem 1.5rem !important;
+        font-size: 1.1rem !important;
         color: #e2e8f0 !important;
         text-align: center !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }}
-    .mobile-menu-overlay .lang-dropdown-content a:hover {{
-        color: white !important;
-        background: rgba(167, 139, 250, 0.2) !important;
+    #mobileMenu .lang-dropdown-content a:last-child {{
+        border-bottom: none;
+    }}
+    #mobileMenu .lang-dropdown-content a:active {{
+        background: rgba(167, 139, 250, 0.3) !important;
     }}
     .mobile-menu-overlay .btn-magic {{
         font-size: 1.2rem;
@@ -2279,20 +2282,35 @@ def render_scripts():
         startAuto();
         
         if (isMobile && track.parentElement) {
-             let scrollTimeout;
              track.parentElement.addEventListener('scroll', function() {
-                 clearTimeout(scrollTimeout);
-                 scrollTimeout = setTimeout(function() {
-                     var slideWidth = slides[0].offsetWidth;
-                     var idx = Math.round(track.parentElement.scrollLeft / slideWidth);
-                     if (idx !== current && idx >= 0 && idx < total) {
-                         // Update active dot without triggering another animation
-                         dotsWrap.children[current].classList.remove('active');
-                         current = idx;
-                         dotsWrap.children[current].classList.add('active');
+                 var slideWidth = slides[0].offsetWidth;
+                 var idx = Math.round(track.parentElement.scrollLeft / slideWidth);
+                 if (idx !== current && idx >= 0 && idx < total) {
+                     // Update active dot immediately
+                     dotsWrap.children[current].classList.remove('active');
+                     current = idx;
+                     dotsWrap.children[current].classList.add('active');
+                 }
+             }, {passive: true});
+             
+             // Setup wrap around swiping
+             var touchStartX = 0;
+             track.parentElement.addEventListener('touchstart', function(e) {
+                 touchStartX = e.changedTouches[0].clientX;
+             }, {passive: true});
+             
+             track.parentElement.addEventListener('touchend', function(e) {
+                 var touchEndX = e.changedTouches[0].clientX;
+                 var diff = touchStartX - touchEndX;
+                 
+                 if (Math.abs(diff) > 40) {
+                     if (current === total - 1 && diff > 0) {
+                         goTo(0);
+                     } else if (current === 0 && diff < 0) {
+                         goTo(total - 1);
                      }
-                 }, 100);
-             });
+                 }
+             }, {passive: true});
         }
     }
     
