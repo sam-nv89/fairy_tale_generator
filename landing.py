@@ -1019,8 +1019,11 @@ def render_navbar():
         z-index: 101; /* below icon, above page */
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        gap: 2rem;
+        justify-content: flex-start;
+        padding-top: 6rem;
+        padding-bottom: 3rem;
+        gap: 1.5rem;
+        overflow-y: auto;
         opacity: 0;
         visibility: hidden;
         transition: 0.4s ease;
@@ -1059,8 +1062,8 @@ def render_navbar():
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
         margin-top: 0.5rem !important;
-        max-height: 250px !important;
-        overflow-y: auto !important;
+        max-height: none !important;
+        overflow-y: visible !important;
         border-radius: 12px !important;
     }}
     
@@ -2271,11 +2274,9 @@ def render_scripts():
         if (nextBtn) nextBtn.addEventListener('click', function() { nextSlide(); resetAuto(); });
         
         function startAuto() {
-            if (isMobile) return; // disable auto sliding on mobile to let native scroll work
-            autoInterval = setInterval(nextSlide, 8000);
+            autoInterval = setInterval(nextSlide, 10000);
         }
         function resetAuto() {
-            if (isMobile) return;
             clearInterval(autoInterval);
             startAuto();
         }
@@ -2296,10 +2297,12 @@ def render_scripts():
              // Setup wrap around swiping
              var touchStartX = 0;
              track.parentElement.addEventListener('touchstart', function(e) {
+                 resetAuto();
                  touchStartX = e.changedTouches[0].clientX;
              }, {passive: true});
              
              track.parentElement.addEventListener('touchend', function(e) {
+                 resetAuto();
                  var touchEndX = e.changedTouches[0].clientX;
                  var diff = touchStartX - touchEndX;
                  
