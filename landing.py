@@ -193,6 +193,9 @@ section[data-testid="stSidebar"] {
 .step-card {
     padding: 1.8rem 1.5rem;
     text-align: center;
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
 }
 .step-card .step-icon {
     font-size: 2.5rem;
@@ -513,6 +516,9 @@ section[data-testid="stSidebar"] {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
 }
 .feature-card .feature-icon {
     font-size: 2rem;
@@ -539,6 +545,9 @@ section[data-testid="stSidebar"] {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
 }
 .example-card .example-input {
     padding: 1rem 1.2rem;
@@ -731,6 +740,40 @@ section[data-testid="stSidebar"] {
     }
     .stat-number {
         font-size: 2rem;
+    }
+    /* Disable layout blocks to let cards act as block elements */
+    [data-testid="stHorizontalBlock"] {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    /* Testimonial slider for touch devices */
+    .carousel-arrows {
+        display: none !important;
+    }
+    .carousel-track-container {
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* IE and Edge */
+        -webkit-overflow-scrolling: touch;
+    }
+    .carousel-track-container::-webkit-scrollbar {
+        display: none;
+    }
+    .carousel-track {
+        display: flex;
+        width: 100%;
+    }
+    .carousel-slide {
+        visibility: visible;
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        pointer-events: auto;
+        position: relative;
+        flex: 0 0 100%;
+        min-width: 100%;
+        scroll-snap-align: center;
+        padding: 0 10px;
     }
 }
 </style>
@@ -1009,23 +1052,32 @@ def render_navbar():
         justify-content: center;
     }}
     .mobile-menu-overlay .lang-dropdown-content {{
-        position: static;
-        display: block !important;
-        box-shadow: none;
-        background: transparent;
-        border: none;
-        margin-top: 0.5rem;
-        max-height: 200px;
-        overflow-y: auto;
+        display: none !important; /* Hide by default on mobile overlay */
+        position: static !important;
+        box-shadow: none !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        margin-top: 0.5rem !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+        border-radius: 12px !important;
     }}
+    
+    /* When active class added via JS, show the dropdown */
+    .mobile-menu-overlay .lang-dropdown.active .lang-dropdown-content {{
+        display: block !important;
+        animation: none;
+    }}
+    
     .mobile-menu-overlay .lang-dropdown-content a {{
-        padding: 0.5rem 1.5rem;
-        font-size: 1rem;
-        color: #94a3b8;
+        padding: 0.5rem 1.5rem !important;
+        font-size: 1rem !important;
+        color: #e2e8f0 !important;
+        text-align: center !important;
     }}
     .mobile-menu-overlay .lang-dropdown-content a:hover {{
-        color: white;
-        background: transparent;
+        color: white !important;
+        background: rgba(167, 139, 250, 0.2) !important;
     }}
     .mobile-menu-overlay .btn-magic {{
         font-size: 1.2rem;
@@ -1092,6 +1144,17 @@ def render_navbar():
                     toggle.checked = false;
                 });
             });
+            
+            // Handle language dropdown toggle on mobile
+            var langBtns = doc.querySelectorAll('.mobile-menu-overlay .lang-dropbtn');
+            Array.from(langBtns).forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var dropdown = this.parentElement;
+                    dropdown.classList.toggle('active');
+                });
+            });
+            
             attachedCount++;
             return true;
         }
@@ -2164,8 +2227,10 @@ def render_scripts():
         var current = 0;
         var total = slides.length;
         var autoInterval = null;
+        var isMobile = doc.body.clientWidth <= 768; // Simple check
         
         // Generate dots
+
         for (var i = 0; i < total; i++) {
             var dot = doc.createElement('button');
             dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
@@ -2183,6 +2248,15 @@ def render_scripts():
             current = (idx + total) % total;
             slides[current].classList.add('active');
             dotsWrap.children[current].classList.add('active');
+            
+            if (isMobile && track.parentElement) {
+                // Adjust scroll position for native smooth scrolling
+                var slideWidth = slides[current].offsetWidth;
+                track.parentElement.scrollTo({
+                    left: current * slideWidth,
+                    behavior: 'smooth'
+                });
+            }
         }
         
         function nextSlide() { goTo(current + 1); }
@@ -2192,13 +2266,32 @@ def render_scripts():
         if (nextBtn) nextBtn.addEventListener('click', function() { nextSlide(); resetAuto(); });
         
         function startAuto() {
+            if (isMobile) return; // disable auto sliding on mobile to let native scroll work
             autoInterval = setInterval(nextSlide, 8000);
         }
         function resetAuto() {
+            if (isMobile) return;
             clearInterval(autoInterval);
             startAuto();
         }
         startAuto();
+        
+        if (isMobile && track.parentElement) {
+             let scrollTimeout;
+             track.parentElement.addEventListener('scroll', function() {
+                 clearTimeout(scrollTimeout);
+                 scrollTimeout = setTimeout(function() {
+                     var slideWidth = slides[0].offsetWidth;
+                     var idx = Math.round(track.parentElement.scrollLeft / slideWidth);
+                     if (idx !== current && idx >= 0 && idx < total) {
+                         // Update active dot without triggering another animation
+                         dotsWrap.children[current].classList.remove('active');
+                         current = idx;
+                         dotsWrap.children[current].classList.add('active');
+                     }
+                 }, 100);
+             });
+        }
     }
     
     function animateCount(el) {
