@@ -745,6 +745,7 @@ section[data-testid="stSidebar"] {
     [data-testid="stHorizontalBlock"] {
         flex-direction: column !important;
         gap: 1rem !important;
+        align-items: center !important; /* Centering cards in the column layout */
     }
     /* Testimonial slider for touch devices */
     .carousel-arrows {
@@ -1518,6 +1519,7 @@ def render_testimonials():
 </div>
 </div>
 
+</div>
 </div>
 <div class="carousel-dots" id="carousel-dots"></div>
 </div>
