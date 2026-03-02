@@ -47,7 +47,20 @@ st.set_page_config(
 )
 
 # --- 1.5. Локализация (i18n) и Маршрутизация ---
+import auth
+auth.render_oauth_handler()
+auth.handle_oauth_redirect()
+
+# DEBUG LOGGING
+if 'current_page' in st.session_state:
+    logger.info(f"APP START: current_page in session: {st.session_state.current_page}")
+logger.info(f"APP START: query_params: {list(st.query_params.keys())}")
+
 # Проверка параметров URL (?lang=en&page=privacy)
+if "page" in st.query_params:
+    st.session_state.current_page = st.query_params["page"]
+    logger.info(f"APP: Set page from query_params: {st.session_state.current_page}")
+
 qp = st.query_params
 qp_lang = qp.get("lang")
 qp_page = qp.get("page")
@@ -77,11 +90,8 @@ if 'current_page' not in st.session_state:
     st.session_state.current_page = 'landing'
 
 # Если параметры обработаны - очищаем URL для красоты и делаем один rerun
+# УБРАНА ОЧИСТКА ЗДЕСЬ, чтобы не сбросить access_token от Supabase
 if needs_rerun:
-    try:
-        st.query_params.clear()
-    except:
-        pass
     st.rerun()
 
 # Текущий язык

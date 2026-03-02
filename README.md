@@ -1,6 +1,6 @@
 # 🧚 Генератор Аудио-Сказок
 
-![Version](https://img.shields.io/badge/version-v3.2-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
+![Version](https://img.shields.io/badge/version-v3.3-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
 
 Умный веб-сервис для родителей: генерирует персонализированные сказки с помощью ИИ и озвучивает нейронными голосами. Поддерживает 8 языков с охватом ~3.5 млрд носителей.
 
@@ -86,7 +86,7 @@ python -m streamlit run app.py
 - 📚 **Личная библиотека** — сохранение, просмотр и удаление любимых сказок (локальное хранилище JSON)
 - 💰 **Мультивалютные тарифы** — динамическое определение валюты (RUB, USD, EUR) по языку с онлайн-конвертацией курсов
 - ⏳ **Длительность** — выбор продолжительности сказки (1, 5 или 15 минут)
-- 🔐 **Авторизация** — планируется вход/регистрация через Supabase (Фаза 4)
+- 🔐 **Авторизация** — вход/регистрация через Supabase (Email/Google OAuth PKCE) с сохранением сессии
 
 ## 📋 План развития
 Подробный план: [ROADMAP.md](ROADMAP.md) | Архитектура: [ARCHITECTURE.md](ARCHITECTURE.md)

@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 # Безопасный импорт supabase — позволит запускаться приложению, если пакет не установлен или несовместим
 try:
     from supabase import create_client, Client  # type: ignore
+    from supabase.lib.client_options import ClientOptions
     _SUPABASE_AVAILABLE = True
 except Exception as e:
     create_client = None
     Client = None
+    ClientOptions = None
     _SUPABASE_AVAILABLE = False
     # Логируем как debug, чтобы не засорять логи — это ожидаемая ситуация при отсутствии/несовместимости supabase
     logger.debug(f"Supabase not available (expected if not installed or Python 3.14+): {type(e).__name__}")
@@ -29,8 +31,21 @@ def validate_email(email: str) -> bool:
     return bool(re.match(pattern, email.strip()))
 
 
+from gotrue.types import SyncSupportedStorage
+
+class StreamlitStorage(SyncSupportedStorage):
+    def get_item(self, key: str) -> str | None:
+        return st.session_state.get(key)
+        
+    def set_item(self, key: str, value: str) -> None:
+        st.session_state[key] = value
+        
+    def remove_item(self, key: str) -> None:
+        if key in st.session_state:
+            del st.session_state[key]
+
 def get_supabase_client() -> Client:
-    """Создает и возвращает клиент Supabase."""
+    """Создает и возвращает клиент Supabase с поддержкой StreamlitStorage."""
     if not _SUPABASE_AVAILABLE:
         logger.warning("Supabase library is not installed. Auth features are disabled.")
         return None
@@ -43,10 +58,62 @@ def get_supabase_client() -> Client:
             logger.error("SUPABASE_URL или SUPABASE_KEY не найдены в secrets.toml")
             return None
 
-        return create_client(url, key)
+        # ИСПОЛЬЗУЕМ PKCE FLOW И STREAMLIT STORAGE!
+        options = ClientOptions(flow_type='pkce', storage=StreamlitStorage())
+        return create_client(url, key, options=options)
     except Exception as e:
         logger.error(f"Ошибка создания Supabase клиента: {e}")
         return None
+
+
+def sign_in_with_google():
+    """Получает URL для входа через Google OAuth."""
+    client = get_supabase_client()
+    if not client:
+        return {'success': False, 'url': None, 'error': 'Сервис авторизации недоступен'}
+    
+    try:
+        # Supabase вернет пользователя обратно на URL сайта с параметром "?code=..."
+        res = client.auth.sign_in_with_oauth(
+            {"provider": "google"}
+        )
+        return {'success': True, 'url': res.url}
+    except Exception as e:
+        logger.error(f"Ошибка Google Auth: {e}")
+        return {'success': False, 'url': None, 'error': str(e)}
+
+
+def render_oauth_handler():
+    """Скрипт больше не нужен — PKCE работает через query-параметры сервера."""
+    pass
+
+
+def handle_oauth_redirect():
+    """Проверяет query params на наличие PKCE кода и устанавливает сессию."""
+    if 'code' in st.query_params:
+        auth_code = st.query_params['code']
+        
+        client = get_supabase_client()
+        if client:
+            try:
+                res = client.auth.exchange_code_for_session({"auth_code": auth_code})
+                if res and res.user:
+                    st.session_state.authenticated = True
+                    st.session_state.user = res.user
+                    st.session_state.user_email = res.user.email
+                    st.session_state.current_page = 'generator'
+                    logger.info("OAUTH SUCCESS! Redirecting to generator.")
+                    st.query_params.clear()  # Очищаем параметры
+                    st.rerun()
+                else:
+                    logger.warning("OAUTH FAILED: response had no user")
+                    st.query_params.clear()
+            except Exception as e:
+                logger.error(f"Ошибка PKCE авторизации: {e}")
+                st.query_params.clear()
+                st.error("Ошибка авторизации. Попробуйте ещё раз.")
+                
+
 
 
 def sign_up(email: str, password: str) -> dict:

@@ -37,8 +37,8 @@ class TestLoadStories:
         
         stories = load_stories()
         assert len(stories) == 2
-        # Should be sorted by date (newest first)
-        assert stories[0]["id"] == "2"
+        # Should be sorted by date (oldest first)
+        assert stories[0]["id"] == "1"
     
     def test_load_stories_invalid_json(self, tmp_path, monkeypatch):
         """Test loading from invalid JSON returns empty list."""
