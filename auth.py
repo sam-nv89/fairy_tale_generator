@@ -81,10 +81,14 @@ def sign_in_with_google():
         return {'success': False, 'url': None, 'error': 'Сервис авторизации недоступен'}
     
     try:
-        # Supabase вернет пользователя обратно на URL сайта с параметром "?code=..."
-        res = client.auth.sign_in_with_oauth(
-            {"provider": "google"}
-        )
+        # При использовании flow_type='implicit' токены вернутся в фрагменте URL (#access_token=...)
+        # Мы явно указываем redirect_to, чтобы Supabase знал, куда вернуть пользователя после Google
+        res = client.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                "redirect_to": "http://localhost:8501"
+            }
+        })
         return {'success': True, 'url': res.url}
     except Exception as e:
         logger.error(f"Ошибка Google Auth: {e}")
@@ -150,7 +154,7 @@ def render_oauth_handler():
     })();
     </script>
     """
-    st.components.v1.html(js, height=0, width=0)
+    st.markdown(js, unsafe_allow_html=True)
 
 
 def handle_oauth_redirect():
@@ -159,14 +163,26 @@ def handle_oauth_redirect():
     
     logger.info(f"[handle_oauth] Checking query params: {list(qp.keys())}")
     for k in qp.keys():
-        logger.info(f"Param {k}: {len(str(qp[k]))} chars")
-        
+        val = qp[k]
+        val_str = str(val)
+        logger.info(f"Param {k}: type={type(val)}, len={len(val_str)}")
+        if len(val_str) > 10:
+            logger.info(f"Param {k} preview: {val_str[:10]}...{val_str[-5:]}")
+        else:
+            logger.info(f"Param {k} value: {val_str}")
+            
     # Обработка Implicit Flow параметров из URL Query
     if 'access_token' in qp:
         access_token = qp.get('access_token')
+        # Если это список, берем первый элемент
+        if isinstance(access_token, list):
+            access_token = access_token[0]
+            
         refresh_token = qp.get('refresh_token', '')
-        
-        logger.info(f"[handle_oauth] Found access_token (len {len(access_token)}) and refresh_token (len {len(refresh_token)})")
+        if isinstance(refresh_token, list):
+            refresh_token = refresh_token[0]
+            
+        logger.info(f"[handle_oauth] Processed access_token (len {len(str(access_token))}) and refresh_token (len {len(str(refresh_token))})")
         
         # Если refresh_token пришел как "null" строкой (сбой парсинга JS/Supabase)
         if refresh_token == "null" or not refresh_token:
