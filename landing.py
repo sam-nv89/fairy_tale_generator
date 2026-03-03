@@ -1874,29 +1874,35 @@ def render_auth():
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.oauth-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 0.75rem;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 1.5rem;
-    text-decoration: none;
+.oauth-btn,
+a.oauth-btn,
+a.oauth-btn:link,
+a.oauth-btn:visited {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 0.95rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    margin-bottom: 1.5rem !important;
+    text-decoration: none !important;
 }
-.oauth-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateY(-1px);
+.oauth-btn:hover,
+a.oauth-btn:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-1px) !important;
+    color: #f8fafc !important;
+    text-decoration: none !important;
 }
 .oauth-btn img {
     width: 18px;
@@ -1928,47 +1934,17 @@ def render_auth():
             google_res = auth.sign_in_with_google()
             google_url = google_res.get("url", "#") if google_res.get("success") else "#"
             
-            # Если возникла ошибка, мы показываем её через toast
-            on_click_str = "" if google_res.get("success") else "var t=this.parentElement.querySelector('.oauth-toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000); event.preventDefault();"
-            
             with tab1:
-                st.html(f"""
-                <style>
-                .oauth-toast {{
-                    position: fixed;
-                    top: 80px;
-                    left: 50%;
-                    transform: translateX(-50%) translateY(-20px);
-                    background: rgba(30, 27, 75, 0.95);
-                    backdrop-filter: blur(16px);
-                    -webkit-backdrop-filter: blur(16px);
-                    border: 1px solid rgba(167, 139, 250, 0.3);
-                    color: #e2e8f0;
-                    padding: 0.85rem 1.5rem;
-                    border-radius: 14px;
-                    font-family: 'Inter', sans-serif;
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                    z-index: 9999;
-                    opacity: 0;
-                    pointer-events: none;
-                    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-                    white-space: nowrap;
-                }}
-                .oauth-toast.show {{
-                    opacity: 1;
-                    transform: translateX(-50%) translateY(0);
-                    pointer-events: auto;
-                }}
-                </style>
-                <div class="oauth-toast" id="oauth-toast-signin">⚠️ {google_res.get('error', 'Error')}</div>
-                <a href="{google_url}" target="_top" class="oauth-btn" onclick="{on_click_str}">
+                # CRITICAL: use st.markdown instead of st.html!
+                # st.html() creates a sandboxed iframe that blocks ALL link navigation.
+                # st.markdown(unsafe_allow_html=True) renders directly in page DOM.
+                st.markdown(f"""
+                <a href="{google_url}" target="_self" class="oauth-btn">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     {t("auth_google_login")}
                 </a>
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
-                """)
+                """, unsafe_allow_html=True)
                 with st.form("signin_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
                     password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder="••••••••")
@@ -1991,14 +1967,14 @@ def render_auth():
                                     st.error(res['error'])
             
             with tab2:
-                st.html(f"""
-                <div class="oauth-toast" id="oauth-toast-signup">⚠️ {google_res.get('error', 'Error')}</div>
-                <a href="{google_url}" target="_top" class="oauth-btn" onclick="{on_click_str}">
+                # CRITICAL: use st.markdown instead of st.html (same iframe issue)
+                st.markdown(f"""
+                <a href="{google_url}" target="_self" class="oauth-btn">
                     <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                     {t("auth_google_signup")}
                 </a>
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
-                """)
+                """, unsafe_allow_html=True)
                 with st.form("signup_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
                     password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
