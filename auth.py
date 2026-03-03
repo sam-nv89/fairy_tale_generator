@@ -99,28 +99,53 @@ def render_oauth_handler():
     js = """
     <script>
     (function() {
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-            var hashParams = new URLSearchParams(window.location.hash.substring(1));
-            var access_token = hashParams.get('access_token');
-            var refresh_token = hashParams.get('refresh_token');
-            var type = hashParams.get('type');
-            if (access_token) {
-                // Избегаем бесконечных перезагрузок
-                if (!window.location.search.includes('access_token')) {
-                    var newUrl = window.location.pathname + '?access_token=' + access_token;
-                    if (refresh_token) newUrl += '&refresh_token=' + refresh_token;
-                    if (type) newUrl += '&type=' + type;
-                    // Сохраняем языковой параметр, если он был
-                    const searchParams = new URLSearchParams(window.location.search);
-                    if(searchParams.has('lang')) {
-                        newUrl += '&lang=' + searchParams.get('lang');
-                    }
-                    if(searchParams.has('page')) {
-                         newUrl += '&page=' + searchParams.get('page');
-                    }
-                    window.location.replace(newUrl);
-                }
+        try {
+            console.log("[OAuth Interceptor] Starting. Checking window.top.location...");
+            var targetWindow = window.top || window.parent || window;
+            var hashStr = "";
+            var searchStr = "";
+            var pathStr = "";
+            
+            try {
+                hashStr = targetWindow.location.hash;
+                searchStr = targetWindow.location.search;
+                pathStr = targetWindow.location.pathname;
+            } catch (secError) {
+                console.error("[OAuth Interceptor] Security error accessing top location:", secError);
+                return;
             }
+
+            if (hashStr && hashStr.includes('access_token')) {
+                console.log("[OAuth Interceptor] Valid access_token found in hash. Processing...");
+                var hashParams = new URLSearchParams(hashStr.substring(1));
+                var access_token = hashParams.get('access_token');
+                var refresh_token = hashParams.get('refresh_token');
+                var type = hashParams.get('type');
+                
+                if (access_token) {
+                    // Избегаем бесконечных перезагрузок
+                    if (!searchStr.includes('access_token')) {
+                        console.log("[OAuth Interceptor] Preparing redirect...");
+                        var newUrl = pathStr + '?access_token=' + access_token;
+                        if (refresh_token) newUrl += '&refresh_token=' + refresh_token;
+                        if (type) newUrl += '&type=' + type;
+                        
+                        // Сохраняем параметры 
+                        const searchParamsObj = new URLSearchParams(searchStr);
+                        if(searchParamsObj.has('lang')) newUrl += '&lang=' + searchParamsObj.get('lang');
+                        if(searchParamsObj.has('page')) newUrl += '&page=' + searchParamsObj.get('page');
+                        
+                        console.log("[OAuth Interceptor] Redirecting to:", newUrl);
+                        targetWindow.location.replace(newUrl);
+                    } else {
+                        console.log("[OAuth Interceptor] Already redirected.");
+                    }
+                }
+            } else {
+                if (hashStr) console.log("[OAuth Interceptor] Hash found, but no access_token:", hashStr);
+            }
+        } catch (e) {
+            console.error("[OAuth Interceptor] General error:", e);
         }
     })();
     </script>
@@ -132,32 +157,54 @@ def handle_oauth_redirect():
     """Проверяет URL на наличие Oauth токенов и устанавливает селекцию."""
     qp = st.query_params
     
+    logger.info(f"[handle_oauth] Checking query params: {list(qp.keys())}")
+    for k in qp.keys():
+        logger.info(f"Param {k}: {len(str(qp[k]))} chars")
+        
     # Обработка Implicit Flow параметров из URL Query
-    if 'access_token' in qp and 'refresh_token' in qp:
-        access_token = qp['access_token']
-        refresh_token = qp['refresh_token']
+    if 'access_token' in qp:
+        access_token = qp.get('access_token')
+        refresh_token = qp.get('refresh_token', '')
+        
+        logger.info(f"[handle_oauth] Found access_token (len {len(access_token)}) and refresh_token (len {len(refresh_token)})")
         
         # Если refresh_token пришел как "null" строкой (сбой парсинга JS/Supabase)
-        if refresh_token == "null" or refresh_token is None:
-            logger.warning("Auth Redirect: refresh_token is invalid/null. Cannot set session.")
-            st.query_params.clear()
-            st.error("Ошибка авторизации. Попробуйте еще раз.")
-            return
-
+        if refresh_token == "null" or not refresh_token:
+            logger.warning("Auth Redirect: refresh_token is missing or null. Using access_token only if possible, or throwing error.")
+            # В supabase-py set_session ТРЕБУЕТ и access_token, и refresh_token, поэтому передаем хоть пустую строку, но
+            # это может вызвать ошибку. Лучше передать "dummy", либо попробовать достать пользователя по токену.
+            refresh_token = ""
+            
         client = get_supabase_client()
         if client:
             try:
-                res = client.auth.set_session(access_token, refresh_token)
-                if res and res.user:
+                # Если у нас нет валидного refresh_token, set_session кинет ошибку формата JWT,
+                # поэтому мы используем get_user для валидации токена и получения профиля пользователя.
+                res = None
+                user_data = None
+                
+                if refresh_token:
+                    try:
+                        res = client.auth.set_session(access_token, refresh_token)
+                        user_data = res.user if res else None
+                    except Exception as e:
+                        logger.warning(f"set_session failed, falling back to get_user: {e}")
+                
+                # Fallback: просто получаем пользователя по токену
+                if not user_data:
+                    res = client.auth.get_user(access_token)
+                    user_data = res.user if res else None
+                    
+                if user_data:
                     st.session_state.authenticated = True
-                    st.session_state.user = res.user
-                    st.session_state.user_email = res.user.email
+                    st.session_state.user = user_data
+                    st.session_state.user_email = user_data.email
                     st.session_state.current_page = 'generator'
                     logger.info("OAUTH SUCCESS! Redirecting to generator.")
                     st.query_params.clear()  # Очищаем параметры
                     st.rerun()
                 else:
-                    logger.warning("OAUTH FAILED: set_session returned no user")
+                    logger.warning("OAUTH FAILED: getting user returned None")
                     st.query_params.clear()
             except Exception as e:
                 logger.error(f"Ошибка Implicit авторизации: {e}")
