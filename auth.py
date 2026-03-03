@@ -31,7 +31,15 @@ def validate_email(email: str) -> bool:
     return bool(re.match(pattern, email.strip()))
 
 
-from gotrue.types import SyncSupportedStorage
+# SyncSupportedStorage is exported at the gotrue package level (not gotrue.types in v2.x)
+try:
+    from gotrue import SyncSupportedStorage
+except ImportError:
+    # Fallback: define a minimal duck-type protocol if gotrue is not available
+    class SyncSupportedStorage:  # type: ignore
+        def get_item(self, key: str): return None
+        def set_item(self, key: str, value: str): pass
+        def remove_item(self, key: str): pass
 
 class StreamlitStorage(SyncSupportedStorage):
     def get_item(self, key: str) -> str | None:
@@ -58,8 +66,8 @@ def get_supabase_client() -> Client:
             logger.error("SUPABASE_URL или SUPABASE_KEY не найдены в secrets.toml")
             return None
 
-        # ИСПОЛЬЗУЕМ PKCE FLOW И STREAMLIT STORAGE!
-        options = ClientOptions(flow_type='pkce', storage=StreamlitStorage())
+        # ИСПОЛЬЗУЕМ IMPLICIT FLOW (у Streamlit теряется состояние сессии для PKCE code_verifier при редиректах)
+        options = ClientOptions(flow_type='implicit', storage=StreamlitStorage())
         return create_client(url, key, options=options)
     except Exception as e:
         logger.error(f"Ошибка создания Supabase клиента: {e}")
@@ -84,19 +92,62 @@ def sign_in_with_google():
 
 
 def render_oauth_handler():
-    """Скрипт больше не нужен — PKCE работает через query-параметры сервера."""
-    pass
+    """Отвечает за перехват Oauth токенов из URL Fragment (через JS скрипт)."""
+    # Streamlit не читает параметры после # (hash/fragment) с сервера, поэтому
+    # мы с помощью JS перехватываем эти параметры и перезагружаем страницу, 
+    # передав их уже как Query параметры (?access_token=...)
+    js = """
+    <script>
+    (function() {
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+            var hashParams = new URLSearchParams(window.location.hash.substring(1));
+            var access_token = hashParams.get('access_token');
+            var refresh_token = hashParams.get('refresh_token');
+            var type = hashParams.get('type');
+            if (access_token) {
+                // Избегаем бесконечных перезагрузок
+                if (!window.location.search.includes('access_token')) {
+                    var newUrl = window.location.pathname + '?access_token=' + access_token;
+                    if (refresh_token) newUrl += '&refresh_token=' + refresh_token;
+                    if (type) newUrl += '&type=' + type;
+                    // Сохраняем языковой параметр, если он был
+                    const searchParams = new URLSearchParams(window.location.search);
+                    if(searchParams.has('lang')) {
+                        newUrl += '&lang=' + searchParams.get('lang');
+                    }
+                    if(searchParams.has('page')) {
+                         newUrl += '&page=' + searchParams.get('page');
+                    }
+                    window.location.replace(newUrl);
+                }
+            }
+        }
+    })();
+    </script>
+    """
+    st.components.v1.html(js, height=0, width=0)
 
 
 def handle_oauth_redirect():
-    """Проверяет query params на наличие PKCE кода и устанавливает сессию."""
-    if 'code' in st.query_params:
-        auth_code = st.query_params['code']
+    """Проверяет URL на наличие Oauth токенов и устанавливает селекцию."""
+    qp = st.query_params
+    
+    # Обработка Implicit Flow параметров из URL Query
+    if 'access_token' in qp and 'refresh_token' in qp:
+        access_token = qp['access_token']
+        refresh_token = qp['refresh_token']
         
+        # Если refresh_token пришел как "null" строкой (сбой парсинга JS/Supabase)
+        if refresh_token == "null" or refresh_token is None:
+            logger.warning("Auth Redirect: refresh_token is invalid/null. Cannot set session.")
+            st.query_params.clear()
+            st.error("Ошибка авторизации. Попробуйте еще раз.")
+            return
+
         client = get_supabase_client()
         if client:
             try:
-                res = client.auth.exchange_code_for_session({"auth_code": auth_code})
+                res = client.auth.set_session(access_token, refresh_token)
                 if res and res.user:
                     st.session_state.authenticated = True
                     st.session_state.user = res.user
@@ -106,13 +157,12 @@ def handle_oauth_redirect():
                     st.query_params.clear()  # Очищаем параметры
                     st.rerun()
                 else:
-                    logger.warning("OAUTH FAILED: response had no user")
+                    logger.warning("OAUTH FAILED: set_session returned no user")
                     st.query_params.clear()
             except Exception as e:
-                logger.error(f"Ошибка PKCE авторизации: {e}")
+                logger.error(f"Ошибка Implicit авторизации: {e}")
                 st.query_params.clear()
-                st.error("Ошибка авторизации. Попробуйте ещё раз.")
-                
+                st.error("Ошибка проверки сессии. Пожалуйста, войдите снова.")
 
 
 

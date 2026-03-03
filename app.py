@@ -12,6 +12,8 @@ import re
 import base64
 import logging
 
+logger = logging.getLogger(__name__)
+
 # Импорт модуля мультиформатного экспорта
 from export import EXPORT_FORMATS, get_export_data
 
@@ -51,15 +53,10 @@ import auth
 auth.render_oauth_handler()
 auth.handle_oauth_redirect()
 
-# DEBUG LOGGING
-if 'current_page' in st.session_state:
-    logger.info(f"APP START: current_page in session: {st.session_state.current_page}")
-logger.info(f"APP START: query_params: {list(st.query_params.keys())}")
-
 # Проверка параметров URL (?lang=en&page=privacy)
 if "page" in st.query_params:
     st.session_state.current_page = st.query_params["page"]
-    logger.info(f"APP: Set page from query_params: {st.session_state.current_page}")
+    logger.info(f"APP: current_page set from query_params: {st.session_state.current_page}")
 
 qp = st.query_params
 qp_lang = qp.get("lang")
