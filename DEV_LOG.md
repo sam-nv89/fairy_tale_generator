@@ -1,32 +1,5 @@
 # Журнал разработки (Dev Log)
 
-## 03.03.2026 (пн, Update 74)
-### 🔐 Auth v3.0: Полная переработка модуля авторизации
-**Статус**: Выполнено
-
-#### Корневые причины проблем:
-1. **Google OAuth не работал**: `st.html()` и `st.components.v1.html()` создают sandboxed iframe. Ссылки внутри не могут навигировать основную страницу. А `st.markdown(unsafe_allow_html=True)` **удаляет `<script>` теги** — JS-перехватчик токенов из URL-фрагмента никогда не выполнялся.
-2. **Email вход ломался после выхода**: Supabase по умолчанию требует подтверждение Email. `sign_up` возвращает user даже без подтверждения, но `sign_in` отклоняет.
-3. **Каждый вызов `get_supabase_client()` создавал NEW клиент** — session storage и code_verifier терялись мгновенно.
-
-#### Решение — PKCE Flow + DiskStorage:
-- **Заменён Implicit Flow → PKCE**: Google теперь возвращает `?code=AUTH_CODE` как query-параметр. Streamlit читает его через `st.query_params` напрямую. **JS-перехватчик полностью удалён.**
-- **DiskStorage**: code_verifier сохраняется в файл `.auth_storage.json` на диске. Переживает редирект (перезагрузку Python). При возврате от Google — читается с диска и обменивается на сессию.
-- **Удалены**: `render_oauth_handler()`, JS-скрипт, `handle_oauth_redirect()`. Добавлена `handle_oauth_callback()`.
-- **sign_out()** теперь полностью очищает session_state + удаляет `.auth_storage.json`
-
-#### Файлы:
-- `auth.py` — полная переработка (v3.0)
-- `app.py` — заменён вызов `render_oauth_handler() + handle_oauth_redirect()` → `handle_oauth_callback()`
-- `landing.py` — кнопки Google OAuth оставлены как `st.markdown(unsafe_allow_html=True)` ссылки
-
-#### Важно для пользователя:
-- В Supabase Dashboard → Auth → URL Configuration → добавить `http://localhost:8501` в Redirect URLs
-- В Supabase Dashboard → Auth → Email Provider → отключить "Confirm email" (для разработки)
-- Подробная инструкция: см. артефакт `supabase_setup_guide.md`
-
----
-
 ## 02.03.2026 (пн, Update 73)
 ### 🔐 Auth: Фикс редиректа Google OAuth и "потери" сессии (PKCE)
 **Статус**: Выполнено
