@@ -50,8 +50,7 @@ st.set_page_config(
 
 # --- 1.5. Локализация (i18n) и Маршрутизация ---
 import auth
-auth.render_oauth_handler()
-auth.handle_oauth_redirect()
+auth.handle_oauth_callback()  # PKCE: обрабатывает ?code= от Google OAuth
 
 # Проверка параметров URL (?lang=en&page=privacy)
 if "page" in st.query_params:
