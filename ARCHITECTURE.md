@@ -1,4 +1,5 @@
 # Документация Архитектуры — Генератор Сказок
+> Актуально на: 04.03.2026 | Версия: v3.4
 
 ## Обзор Системы
 **Генератор Сказок** — веб-приложение для генерации персонализированных сказок для детей. Использует Google Gemini для создания текста и Edge TTS для озвучки нейронными голосами.
@@ -7,34 +8,41 @@
 | Компонент | Технология |
 |---|---|
 | Frontend/Backend | [Streamlit](https://streamlit.io/) (Python 3.10+) |
-| ИИ Ядро | [Google Gemini](https://ai.google.dev/) Flash/Pro |
-| Синтез речи | [Edge TTS](https://github.com/rany2/edge-tts) |
-| Аутентификация | [Supabase Auth](https://supabase.com/) |
-| Аудио Плеер | Кастомный HTML5/CSS3/JS |
+| ИИ Ядро | [Google Gemini](https://ai.google.dev/) Flash 2.0 Lite / Flash Latest |
+| Синтез речи | [Edge TTS](https://github.com/rany2/edge-tts) (Microsoft Neural Voices) |
+| Аутентификация | [Supabase Auth](https://supabase.com/) — Email + Google OAuth PKCE |
+| Аудио Плеер | Кастомный HTML5/CSS3/JS (floating, синхронизация ) |
 | Развёртывание | Локально / Streamlit Cloud / Docker |
 
 ## Структура Проекта
 ```
 fairy_tale_generator/
-├── app.py                # Точка входа: роутинг, генератор, плеер
-├── auth.py               # Авторизация (Supabase)
-├── config.py             # Централизованные константы и настройки
-├── export.py             # Мультиформатный экспорт (TXT, PDF, EPUB, FB2)
-├── i18n.py               # Интернационализация (переводы UI)
-├── storage.py            # Уровень хранения (Local JSON / Будущий Supabase)
-├── landing.py            # Лендинг-страница (Landing 3.0)
-├── styles.py             # Глобальные CSS-стили
-├── utils.py              # Утилиты (валюта, язык, форматирование)
+├── app.py                # Точка входа: роутинг, генератор, сайдбар, плеер
+├── landing.py            # Лендинг 3.0 (glassmorphism, scroll-анимации, auth)
+├── profile_page.py       # Личный кабинет (профиль, история, удаление аккаунта)
+├── auth.py               # Авторизация (Supabase, PKCE Flow, session persistence)
+├── config.py             # Централизованные константы: языки, голоса, модели
+├── export.py             # Мультиформатный экспорт (TXT, PDF, EPUB, FB2, MP3)
+├── i18n.py               # Переводы интерфейса генератора (8 языков)
+├── landing_i18n.py       # Переводы лендинга (8 языков)
+├── legal.py              # Страницы Privacy Policy и Terms of Service
+├── legal_i18n.py         # Переводы юридических документов (8 языков)
+├── storage.py            # Хранилище историй (гибрид: Supabase DB + Local JSON)
+├── styles.py             # Глобальные CSS-стили (dark/light темы)
+├── utils.py              # Утилиты: валюта, язык, форматирование цен
 ├── requirements.txt      # Зависимости Python
 ├── .streamlit/
 │   └── secrets.toml      # API-ключи (НЕ в git)
-├── stories.json          # Локальная база данных сохраненных сказок
-├── app.log              # Центральный лог-файл приложения
-├── scripts/             # Служебные скрипты (smoke-тесты форматирования)
-├── tests/               # Unit-тесты (pytest)
+├── assets/               # Статические ресурсы (шрифты, изображения)
+├── tests/                # Unit-тесты (pytest)
+│   ├── test_config.py
+│   ├── test_i18n.py
+│   ├── test_storage.py
+│   └── test_utils.py
+├── stories.json          # Локальная БД сохранённых сказок (runtime, не в git)
 ├── DEV_LOG.md            # Журнал разработки (обратная хронология)
 ├── README.md             # Документация проекта
-├── ROADMAP.md            # План развития и тарифы
+├── ROADMAP.md            # План развития
 └── ARCHITECTURE.md       # Этот документ
 ```
 
@@ -45,164 +53,160 @@ sequenceDiagram
     participant User
     participant App as app.py
     participant Auth as auth.py
+    participant Profile as profile_page.py
     participant Storage as storage.py
     participant Gemini as Google Gemini
     participant TTS as Edge TTS
+    participant Supabase
 
     User->>App: Открывает приложение
-    App->>App: Генератор (разрешен доступ всем)
+    App->>Auth: is_authenticated()?
+    alt Не авторизован
+        Auth-->>App: False
+        App->>App: render_full_landing_page()
+    else Авторизован
+        Auth-->>App: True
+        App->>App: Генератор / Профиль
+    end
 
     rect rgb(240, 248, 255)
         note right of App: Генерация текста
-        User->>App: Имя, возраст, тема
-        App->>Gemini: Промпт (адаптирован по возрасту + склонение имен)
+        User->>App: Имя, возраст, жанр, длительность
+        App->>Gemini: Промпт (адаптирован по возрасту + склонение имён)
         Gemini-->>App: Текст сказки
     end
 
     rect rgb(230, 255, 230)
         note right of App: Сохранение
         User->>App: «В библиотеку»
-        App->>Storage: Сохранить (JSON + UUID)
+        App->>Storage: save_story()
+        Storage->>Supabase: INSERT (авторизованный)
+        Storage->>Storage: stories.json (гость)
         Storage-->>App: OK
     end
 
     rect rgb(255, 240, 245)
         note right of App: Озвучка
         User->>App: «Озвучить»
-        App->>TTS: Текст → аудио
+        App->>TTS: Текст → аудио (выбранный голос)
         TTS-->>App: MP3-поток
-        App-->>User: Кастомный HTML5-плеер
+        App-->>User: Floating HTML5-плеер
+    end
+
+    rect rgb(255, 250, 230)
+        note right of Profile: Личный кабинет
+        User->>App: Кнопка «Профиль»
+        App->>Profile: render_profile_page()
+        Profile->>Supabase: SELECT profiles WHERE id=user.id
+        Supabase-->>Profile: email, plan, created_at
+        Profile-->>User: Данные профиля + Danger Zone
     end
 ```
 
 ## Ключевые Компоненты
 
 ### 1. `app.py` (Оркестратор)
-Главный файл (~1050 строк). Управляет всем жизненным циклом:
-- **Роутинг**: Разделение через авторизацию. Анонимным пользователям показывается современный лендинг (Лендинг 3.0), авторизованным — полнофункциональный интерфейс генератора сказок.
-- **Генерация**: Cascade-модель — перебор Gemini-моделей (`flash-lite` → `flash` → `flash-latest`).
-- **Prompt Engineering**: Продвинутая адаптация под возраст (**6 групп: 0-12м, 1-3г, 4-7л, 8-12л, 13-17л, 18+**) и **контекстное склонение имен героев**.
-- **Длительность сказки**: Ползунок выбора (1 мин ~150 слов, 5 мин ~700 слов, 15 мин ~2000 слов).
-- **Озвучка**: Выбор голоса (мужской/женский) с preview.
-- **Плеер**: `display_audio_player()` — HTML5/JS компонент с поддержкой скорости, повтора и скачивания.
-- **Локальная библиотека**: Сохранение, просмотр и удаление сказок (JSON-based, будущая миграция на Supabase).
-- **Интеграция**: Связывает `auth.py`, `storage.py` и `styles.py`.
-- **Логирование**: Всё записывается в `app.log` для дебага (модель, ошибки, статусы генерации).
+Главный файл (~1470 строк). Управляет всем жизненным циклом:
+- **Роутинг**: `current_page` в `st.session_state` — `landing` / `generator` / `profile` / `privacy` / `terms`.
+- **Генерация**: Cascade-модель — перебор Gemini-моделей (`flash-2.0-lite` → `flash-lite` → `flash`).
+- **Prompt Engineering**: 6 возрастных групп (0-12м, 1-3г, 4-7л, 8-12л, 13-17л, 18+) + 12 жанров + контекстное склонение имён.
+- **Длительность**: Выбор (1, 5, 15 мин), маппинг в кол-во слов через `STORY_LENGTH_MAP`.
+- **Сайдбар**: Кнопка профиля (ghost, `type="tertiary"`) в верхней части; кнопка выхода (`type="secondary"`) — в самом низу.
+- **Плеер**: `display_audio_player()` — HTML5/JS с поддержкой скорости, повтора, скачивания.
+- **Выход**: После `sign_out()` явно устанавливает `current_page = 'landing'` перед `st.rerun()`.
 
-### 2. `auth.py` (Безопасность)
-Обёртка над Supabase Client:
-- `sign_up()`, `sign_in()`, `sign_out()`, `is_authenticated()`, `handle_oauth_redirect()`.
-- **PKCE Flow**: Использование стандартного серверного потока авторизации (`flow_type='pkce'`) вместо клиентского JS-парсинга хэшей.
-- **StreamlitStorage**: Кастомная реализация `SyncSupportedStorage`, связывающая сессию Supabase напрямую со `st.session_state`. Это обеспечивает сохранение авторизации при перезагрузке страниц Streamlit.
-- Безопасный импорт: `_SUPABASE_AVAILABLE` — приложение работает и без Supabase.
+### 2. `landing.py` (Маркетинг — Landing 3.0)
+Полностью кастомный HTML/CSS/JS внутри Streamlit-контейнеров:
+- Секции: Hero (типизирующие сниппеты), Stats, Features, How It Works, Examples, Testimonials, Pricing, Auth, FAQ, Footer.
+- **Hero-карточки сниппетов**: Заголовки и badges вшиваются через Python (мгновенно), текст — JS typing-эффект.
+- **Фиксированные размеры сниппетов**: `height: 7.5em` в CSS — карточки не прыгают при анимации.
+- **Лендинг i18n**: полный перевод через `landing_i18n.py` + локальная функция `t(key)`.
+- **Динамические тарифы**: Мультивалюта (RUB/EUR/USD) через API курсов валют, конвертация из RUB.
 
-### 3. `landing.py` (Маркетинг - Landing 3.0)
-Осoбая структура "Landing 3.0", совмещающая Streamlit и кастомный CSS/JS для "Wow-эффекта".
-- Hybrid Rendering: HTML/CSS для визуалов + Streamlit для интерактива.
-- Glassmorphism, mesh-градиенты, scroll-анимации, parallax bg-компоненты.
-- Инкапсулированные стили через `inject_landing_styles()`
-- Секции: Hero, Pricing, FAQ, Feature Showcase, Auth-формы.
+### 3. `profile_page.py` (Личный Кабинет)
+- Получает данные из `auth.users` и `public.profiles` через Supabase.
+- Отображает: email, дату регистрации (с количеством дней), тарифный план, дату последнего входа.
+- **Danger Zone**: Удаление аккаунта с подтверждением словом на языке пользователя (УДАЛИТЬ / DELETE / ELIMINAR / SUPPRIMER / LÖSCHEN / EXCLUIR / 删除 / हटाएं).
+- **Локализация**: Полный словарь `L` на 8 языков (ru/en/es/fr/de/pt/zh-CN/hi) для всех строк.
 
-### 4. `styles.py` (Глобальный Дизайн)
+### 4. `auth.py` (Авторизация и Безопасность)
+- **SessionBounded PKCE Flow**: Безопасная работа в многопользовательской среде Streamlit.
+- **IsolatedDiskStorage**: Привязка сессий к Cookie `client_id` для авто-логина.
+- Методы: `sign_up()`, `sign_in()`, `sign_out()`, `is_authenticated()`, `handle_oauth_callback()`, `delete_current_account()`.
+- **Graceful fallback**: `_SUPABASE_AVAILABLE` — гостевой режим при ошибках импорта.
+
+### 5. `styles.py` (Глобальный Дизайн)
 CSS-стили для интерфейса генератора (~1660 строк):
-- **Premium UI**: Glassmorphism inputs, анимированные градиентные кнопки (Gradient Shift), кастомные Selectbox и Sliders.
-- **Clean UI**: Полное скрытие стандартных элементов Streamlit (Footer, MainMenu, Toolbar) для эффекта «нативного» приложения.
-- **Sidebar Toggle**: Кастомная, стилизованная кнопка управления боковой панелью.
-- **Темы**: Полная поддержка Light/Dark режимов (`DARK_THEME`, `LIGHT_THEME` словари).
-- **Анимации**: Hover-эффекты, Pulse, Glow для интерактивных элементов.
-- **Toolbar-панель**: Glassmorphism-контейнер для кнопок действий (`toolbar_download`, `toolbar_voice`, `toolbar_save`) с вертикальными разделителями и hover-glow. CSS-специфичность override `(0,3,3)` перебивает глобальный secondary-стиль.
-- **RTL-поддержка**: `get_rtl_styles()` — стили для арабского языка (справа-налево).
-- **Dropdown Fix**: JavaScript-фикс для корректного закрытия selectbox при повторном клике.
-- `get_app_styles(dark_mode)` — основная функция генерации CSS (f-string с условными значениями).
-- `get_dropdown_fix_js()` — JavaScript для исправления поведения dropdown в формах.
+- **Premium UI**: Glassmorphism inputs, анимированные градиентные кнопки, кастомные Selectbox и Sliders.
+- **Темы**: Полная поддержка Dark/Light (`DARK_THEME`, `LIGHT_THEME` словари).
+- **Toolbar**: Glassmorphism-контейнер для кнопок действий (download, voice, save).
+- **RTL**: `get_rtl_styles()` — поддержка языков с письмом справа налево.
+- `get_app_styles(dark_mode)` — основная функция генерации CSS.
 
-### 5. `utils.py` (Утилиты)
-- `get_user_currency()` — определение валюты по IP (ipapi.co)
-- `get_user_language()` — определение языка пользователя (Accept-Language → IP → дефолт)
-- `format_price()` — форматирование с разделителями тысяч
-- Поддержка валют: RUB, USD, EUR, KZT, BYN, UZS
-- Поддержка языков: ru, en
-
-### 6. `i18n.py` & `legal_i18n.py` (Интернационализация)
-Система переводов для многоязычного интерфейса и документов:
-- **TRANSLATIONS**: Словарь в `i18n.py` для 8 языков UI (~3.5 млрд носителей).
-- **LEGAL_TRANSLATIONS**: Словарь в `legal_i18n.py` с полными текстами «Политики конфиденциальности» и «Условий использования».
-- **STORY_PROMPTS**: Промпты для генерации сказок на всех поддерживаемых языках.
-- **t(key, lang)**: Функция получения перевода по ключу.
-- **routing**: Параметр `lang` в URL синхронизируется с `st.session_state` и сохраняется при переходах между лендингом и документами.
+### 6. `i18n.py`, `landing_i18n.py`, `legal_i18n.py` (Интернационализация)
+- **TRANSLATIONS**: Словарь UI-переводов для 8 языков.
+- **LANDING_TRANSLATIONS**: Переводы всех секций лендинга.
+- **LEGAL_TRANSLATIONS**: Полные тексты «Privacy Policy» и «Terms of Service».
+- **t(key, lang)**: Функция получения перевода с fallback: `lang → en → ru`.
 
 ### 7. `storage.py` (Уровень данных)
-Инкапсулирует логику работы с сохраненными историями:
-- **Local Persistence**: Чтение/запись в `stories.json`.
-- **CRUD**: Функции `save_story`, `load_stories`, `delete_story`.
-- **Sort**: Автоматическая сортировка по дате создания (новые сверху).
-- **ID**: Генерация UUID для каждой сохраненной записи.
+Гибридное хранилище (Dual Mode):
+- **Авторизованные**: Supabase PostgreSQL (таблица `stories`).
+- **Гости**: Локальный `stories.json` (UUID, дата, title, body).
+- CRUD: `save_story()`, `load_stories()`, `delete_story()`.
 
 ### 8. `export.py` (Мультиформатный Экспорт)
-Модуль генерации файлов сказок для электронных книг и устройств:
-- **TXT** — простой текст UTF-8, универсальный формат
-- **PDF** — через `fpdf2`, с поддержкой Unicode/кириллицы (Arial Windows / DejaVu Linux)
-- **EPUB** — через `ebooklib`, EPUB3 с CSS-стилями; поддерживается Kindle, Kobo, PocketBook, Apple Books
-- **FB2** — FictionBook2 через `xml.etree.ElementTree` (без внешних зависимостей); популярен в СНГ
+- **TXT** — простой текст UTF-8
+- **PDF** — через `fpdf2`, с поддержкой Unicode/кириллицы
+- **EPUB** — через `ebooklib`, EPUB3; совместим с Kindle, Kobo, Apple Books
+- **FB2** — FictionBook2 через `xml.etree` (без зависимостей); популярен в СНГ
 - **Архитектура**: каждый генератор — чистая функция `(title, body, lang) → bytes`
-- **Кэширование**: файлы кэшируются в `st.session_state`, сбрасываются при новой генерации
-- **`EXPORT_FORMATS`**: публичный словарь форматов с метаданными (MIME, расширение, help-текст)
-- **`get_export_data(fmt, title, body, lang)`**: безопасная обёртка с логированием ошибок
+- **Кэширование**: файлы кэшируются в `st.session_state`
 
 ### 9. `config.py` (Конфигурация)
-Централизованное хранение всех констант приложения:
-- **GEMINI_MODEL_CASCADE**: Каскад моделей для генерации (flash-lite → flash-latest).
-- **STORY_LENGTH_MAP**: Длительности сказок (1/3/5 мин → количество слов).
-- **AGE_RANGES**: Возрастные группы (0-12м, 1-3г, 4-7л, 8-12л, 13-17л, 18+).
-- **AVAILABLE_VOICES**: Доступные голоса TTS.
-- **TTS_VOICES_BY_LANGUAGE**: Голоса TTS для каждого языка (ru, en).
-- **SUPPORTED_LANGUAGES**: Поддерживаемые языки интерфейса.
-- **NAME_PATTERN**: Regex для валидации имени ребёнка.
-- **APP_VERSION, APP_YEAR**: Версия приложения.
-- **Сетевые настройки**: timeout, URL для IP API.
+- **GEMINI_MODEL_CASCADE**: Каскад моделей (flash-2.0-lite → flash-lite → flash).
+- **STORY_LENGTH_MAP**: 1/5/15 мин → количество слов.
+- **AGE_RANGES**: 6 возрастных групп.
+- **TTS_VOICES_BY_LANGUAGE**: Голоса для каждого из 8 языков.
+- **SUPPORTED_LANGUAGES**: 8 языков интерфейса.
+- **APP_VERSION**: Текущая версия (`v3.4`).
 
-### 9. Логирование и Тестирование
-- **Логирование**: Python `logging` → `console` + `app.log`. Логируются: статусы API, ошибки генерации, переключения моделей и действия пользователей.
-- **Скрипты**: `scripts/smoke_test_format.py` — быстрая проверка корректности форматирования JSON и строк.
-- **Тесты**: 
-  - `tests/test_utils.py` — утилиты (валюта, язык, форматирование)
-  - `tests/test_config.py` — конфигурация и константы
-  - `tests/test_storage.py` — хранение данных
-  - `tests/test_i18n.py` — интернационализация
-- **Запуск**: `pytest tests/ -v`
+### 10. Тестирование
+```
+tests/
+├── test_config.py    — конфигурация и константы
+├── test_i18n.py      — система переводов
+├── test_storage.py   — хранение данных
+└── test_utils.py     — утилиты (валюта, язык, форматирование)
+```
+Запуск: `pytest tests/ -v`
+
+## Роутинг — Текущее Состояние
+| Страница | Ключ | Файл | Доступ |
+|---|---|---|---|
+| Лендинг | `landing` | `landing.py` | Все |
+| Генератор | `generator` | `app.py` | Авторизованные |
+| Профиль | `profile` | `profile_page.py` | Авторизованные |
+| Конфиденциальность | `privacy` | `legal.py` | Все |
+| Условия | `terms` | `legal.py` | Все |
+
+Переключение через `st.session_state.current_page` + `st.rerun()`.
+
+## Адаптация по Возрасту (Prompt Engineering)
+
+| Группа | Возраст | Сложность |
+|--------|---------|-----------|
+| Младенцы | 0-12 мес | Колыбельная, ритмичная, 50-100 слов |
+| Малыши | 1-3 года | Игривая, сенсорная, ~150 слов |
+| Дошкольники | 4-7 лет | Волшебная, мораль, ~300 слов |
+| Школьники | 8-12 лет | Динамичная, диалоги, ~300+ слов |
+| Подростки | 13-17 лет | Современная, эмоциональная, ~300+ слов |
+| Взрослые | 18+ лет | Литературная, философская, ~300+ слов |
+
+## Тарификация (Фаза 4 — В планах)
+- **🆓 Free**: 3 генерации/день, 5 мин, 1 голос
+- **⭐ Pro (499₽/мес)**: Без лимита, до 15 мин, все голоса, до 3 профилей
+- **👨‍👩‍👧‍👦 Family (799₽/мес)**: Всё из Pro + клон голоса + AI-иллюстрации + до 5 профилей
 
 ## Планируемые Изменения
 Подробный план: см. [ROADMAP.md](ROADMAP.md)
-
-### Адаптация по Возрасту (Prompt Engineering 3.0)
-Система использует **6 возрастных групп** с уникальной адаптацией для каждой:
-
-| Группа | Возраст | Сложность | Примеры тем |
-|--------|---------|-----------|------------|
-| **Младенцы** | 0-12 мес | Колыбельная, ритмичная, 50-100 слов | Звуки, сон, уют |
-| **Кроватки** | 1-3 года | Игривая, сенсорная, 150 слов | Цвета, действия, друзья |
-| **Дошкол.** | 4-7 лет | Волшебная, моратль, ~300 слов | Приключения, помощь, добро |
-| **Школа** | 8-12 лет | Динамичная, диалоги, ~300+ слов | Загадки, команда, вызовы |
-| **Подростки** | 13-17 лет | Современная, эмоциональная, ~300+ слов | Дружба, выбор, поиск себя |
-| **Взрослые** | 18+ лет | Литературная, философская, ~300+ слов | Психология, ирония, смысл |
-
-### Жанры (12 категорий)
-Выбор жанра влияет на стиль и сюжет: Сказка, Приключение, Фантастика, Детектив, Фэнтези, Супергероика, Поучительная история, Колыбельная, Мистика, Киберпанк, Философская притча, Романтика.
-
-### Тарификация (Фаза 4 - В планах)
-- **🆓 Free**: 3 генерации/день, фиксированная длина 3 мин, 1 голос, локальная библиотека (JSON)
-- **⭐ Pro (499₽/мес)**: ♾ генерации, до 10 мин, все голоса, до 3 профилей детей
-- **👨‍👩‍👧‍👦 Family (799₽/мес)**: ♾ генерации, до 20 мин, все голоса + клон, до 5 профилей, AI-обложки
-
-### Текущий Статус (Фаза 3-4)
-- ✅ Free/Pro/Family структура определена.
-- ✅ Google OAuth: Реализован через PKCE, исправлены ошибки редиректа и потери сессии.
-- ✅ История сказок: Сохранение в Supabase (для авторизованных) и Local JSON (для гостей).
-- ⏳ Rate-Limiting и счётчики (Фаза 4).
-- ⏳ Тарификация и платежные шлюзы (ЮKassa/Paddle).
-
-### Роутинг - Текущее Состояние
-- **Лендинг** (`landing.py`): Landing 3.0. Основная точка входа.
-- **Юридические документы** (`legal.py`): Локализованные страницы (?page=privacy, ?page=terms).
-- **Генератор** (`app.py`): Полнофункциональный интерфейс создания сказок.
-- **Логика перехода**: Параметры `page` и `lang` обрабатываются централизованно в начале `app.py` с сохранением состояния в `st.session_state` и очисткой URL через `st.rerun()`.

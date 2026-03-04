@@ -83,7 +83,10 @@ if qp_page and qp_page in ['landing', 'generator', 'privacy', 'terms']:
         needs_rerun = True
 
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'landing'
+    if auth.is_authenticated():
+        st.session_state.current_page = 'generator'
+    else:
+        st.session_state.current_page = 'landing'
 
 # Если параметры обработаны - очищаем URL для красоты и делаем один rerun
 # УБРАНА ОЧИСТКА ЗДЕСЬ, чтобы не сбросить access_token от Supabase
@@ -101,214 +104,13 @@ from styles import get_app_styles, get_dropdown_fix_js, get_rtl_styles
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
 
-# Применяем стили на основе текущей темы
-# CSS Version: 2026-02-16-v3 - Radio buttons Firefox fix
+# Применяем стили на основе текущей темы (Standard Load)
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
 # RTL Support removed
+# Все стили теперь централизованно управляются в styles.py
+# для поддержания чистоты кода и единого архитектурного стандарта.
 
-# DARK THEME FIX: Дополнительные стили для исправления контраста в sidebar
-# Применяем ПОСЛЕ основных стилей, чтобы перекрыть их
-if st.session_state.dark_mode:
-    st.markdown("""
-    <style>
-    /* Fix for story library cards in dark theme - override emotion-cache backgrounds */
-    section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
-        background: transparent !important;
-        background-color: transparent !important;
-    }
-    
-    /* Static state for story library buttons in dark theme - subtle button appearance */
-    /* Исключаем кнопку удаления (del_) из общих стилей */
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border-radius: 14px !important;
-        padding: 2px !important;
-        margin: 2px 0 !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    /* Hover effect for story library buttons in dark theme */
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]):hover {
-        background: rgba(102, 126, 234, 0.15) !important;
-        border-color: rgba(102, 126, 234, 0.4) !important;
-        box-shadow: 0 0 12px rgba(102, 126, 234, 0.2) !important;
-    }
-    
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) > button:hover {
-        box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(16, 185, 129, 0.4) !important;
-    }
-    
-    /* Кнопка удаления - только крестик без фона, красный при наведении */
-    section[data-testid="stSidebar"] [class*="del_"] {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        display: inline-flex !important;
-        width: auto !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        min-width: unset !important;
-        width: auto !important;
-        height: auto !important;
-        border-radius: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button:hover,
-    section[data-testid="stSidebar"] [class*="del_"] button:active,
-    section[data-testid="stSidebar"] [class*="del_"] button:focus {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button p {
-        color: rgba(255, 255, 255, 0.5) !important;
-        font-size: 18px !important;
-        font-weight: bold !important;
-        transition: color 0.2s ease !important;
-        line-height: 1 !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button:hover p {
-        color: #ef4444 !important;
-    }
-    
-    /* Radio buttons fix for Firefox - Dark theme */
-    section[data-testid="stSidebar"] input[type="radio"],
-    section[data-testid="stSidebar"] input[type="checkbox"],
-    section[data-testid="stSidebar"] .stRadio input[type="radio"],
-    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"],
-    div[data-testid="stRadio"] input[type="radio"],
-    div[data-testid="stCheckbox"] input[type="checkbox"] {
-        accent-color: #e8eaed !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px !important;
-        min-height: 16px !important;
-        border: 2px solid rgba(255, 255, 255, 0.7) !important;
-        border-radius: 50% !important;
-        background-color: #1a1a2e !important;
-        cursor: pointer !important;
-        outline: none !important;
-        display: inline-block !important;
-    }
-    section[data-testid="stSidebar"] input[type="radio"]:checked,
-    section[data-testid="stSidebar"] input[type="checkbox"]:checked,
-    section[data-testid="stSidebar"] .stRadio input[type="radio"]:checked,
-    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"]:checked,
-    div[data-testid="stRadio"] input[type="radio"]:checked,
-    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
-        border-color: #667eea !important;
-        background-color: #667eea !important;
-        box-shadow: inset 0 0 0 3px #1a1a2e !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    # LIGHT THEME FIX: Стили для кнопок библиотеки сказок в светлой теме
-    st.markdown("""
-    <style>
-    /* Fix for story library cards in light theme - override emotion-cache backgrounds */
-    section[data-testid="stSidebar"] [class*="st-emotion-cache"] {
-        background: transparent !important;
-        background-color: transparent !important;
-    }
-    
-    /* Static state for story library buttons in light theme - subtle button appearance */
-    /* Исключаем кнопку удаления (del_) из общих стилей */
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) {
-        background: rgba(79, 70, 229, 0.05) !important;
-        border-radius: 14px !important;
-        padding: 2px !important;
-        margin: 2px 0 !important;
-        border: 1px solid rgba(79, 70, 229, 0.15) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    /* Hover effect for story library buttons in light theme */
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]):hover {
-        background: rgba(102, 126, 234, 0.12) !important;
-        border-color: rgba(102, 126, 234, 0.4) !important;
-        box-shadow: 0 0 12px rgba(102, 126, 234, 0.15) !important;
-    }
-    
-    section[data-testid="stSidebar"] div.stButton:not([class*="del_"]) > button:hover {
-        box-shadow: 0 0 0 1px rgba(102, 126, 234, 0.5), 0 4px 15px rgba(79, 70, 229, 0.35) !important;
-    }
-    
-    /* Кнопка удаления - только крестик без фона */
-    section[data-testid="stSidebar"] [class*="del_"] {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        min-width: 24px !important;
-        width: 24px !important;
-        height: 24px !important;
-        border-radius: 50% !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button:hover {
-        background: rgba(239, 68, 68, 0.15) !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button p {
-        color: rgba(0, 0, 0, 0.4) !important;
-        font-size: 14px !important;
-    }
-    section[data-testid="stSidebar"] [class*="del_"] button:hover p {
-        color: #ef4444 !important;
-    }
-    
-    /* Radio buttons fix for Firefox - Light theme */
-    section[data-testid="stSidebar"] input[type="radio"],
-    section[data-testid="stSidebar"] input[type="checkbox"],
-    section[data-testid="stSidebar"] .stRadio input[type="radio"],
-    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"],
-    div[data-testid="stRadio"] input[type="radio"],
-    div[data-testid="stCheckbox"] input[type="checkbox"] {
-        accent-color: #4f46e5 !important;
-        -moz-appearance: none !important;
-        appearance: none !important;
-        -webkit-appearance: none !important;
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px !important;
-        min-height: 16px !important;
-        border: 2px solid rgba(79, 70, 229, 0.7) !important;
-        border-radius: 50% !important;
-        background-color: #ffffff !important;
-        cursor: pointer !important;
-        outline: none !important;
-        display: inline-block !important;
-    }
-    section[data-testid="stSidebar"] input[type="radio"]:checked,
-    section[data-testid="stSidebar"] input[type="checkbox"]:checked,
-    section[data-testid="stSidebar"] .stRadio input[type="radio"]:checked,
-    section[data-testid="stSidebar"] .stCheckbox input[type="checkbox"]:checked,
-    div[data-testid="stRadio"] input[type="radio"]:checked,
-    div[data-testid="stCheckbox"] input[type="checkbox"]:checked {
-        border-color: #667eea !important;
-        background-color: #667eea !important;
-        box-shadow: inset 0 0 0 3px #ffffff !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     # Применяем JavaScript для исправления dropdown (через components для работы JS)
 st.components.v1.html(get_dropdown_fix_js(), height=0)
@@ -907,6 +709,10 @@ if st.session_state.current_page in ['privacy', 'terms']:
     from legal import render_legal_page
     render_legal_page(st.session_state.current_page)
     st.stop()
+elif st.session_state.current_page == 'profile':
+    import profile_page
+    profile_page.render_profile_page()
+    st.stop()
 elif st.session_state.current_page == 'landing':
     import landing
     landing.render_full_landing_page()
@@ -914,8 +720,22 @@ elif st.session_state.current_page == 'landing':
     
 # --- Генератор (если не лендинг) ---
 with st.sidebar:
-    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: -2rem;'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
     
+    # Компактная кнопка профиля (только если авторизован)
+    if is_authenticated():
+        profile_labels = {'ru': '👤 Профиль', 'en': '👤 Profile', 'es': '👤 Perfil', 'fr': '👤 Profil', 'pt': '👤 Perfil', 'zh-CN': '👤 资料', 'hi': '👤 प्रोफ़ाइल', 'de': '👤 Profil'}
+        profile_label = profile_labels.get(user_lang, '👤 Profile')
+        # Ghost-style tertiary — лаконично, без визуального шума
+        st.markdown("<div style='margin-top: -1.2rem; margin-bottom: 0.4rem;'></div>", unsafe_allow_html=True)
+        if st.button(profile_label, key="nav_profile", use_container_width=True, type="tertiary"):
+            st.session_state.current_page = 'profile'
+            st.rerun()
+        st.markdown("<hr style='border: none; border-top: 1px solid rgba(130,130,150,0.18); margin: 0.1rem 0 0.8rem 0;'>", unsafe_allow_html=True)
+
+    # Заголовок настроек теперь ПОД ссылками
+    margin_top = "0rem" if is_authenticated() else "-2rem"
+    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
+
     # 0. Переключатель языка
     # Языки с флагами и названиями
     lang_display_names = {
@@ -1076,22 +896,32 @@ with st.sidebar:
     st.link_button(t('donate_btn', user_lang), "https://www.buymeacoffee.com")
     
     st.divider()
-    st.markdown(f"<p style='text-align: center; color: var(--text-color); opacity: 0.6; font-size: 0.8rem; margin-top: 1rem;'>{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}</p>", unsafe_allow_html=True)
 
-
-# --- Верхняя панель (Навигация) ---
-user_email = st.session_state.get('user_email', None)
-cols = st.columns([6, 2, 2])
-with cols[0]:
-    pass  # Spacer
-with cols[1]:
-    if user_email:
-        st.markdown(f"<div style='text-align:right; padding-top: 10px; opacity: 0.7'>{user_email}</div>", unsafe_allow_html=True)
-with cols[2]:
+    # Кнопка выхода — в самом низу панели, ненавязчиво
     if is_authenticated():
-        if st.button(t('logout_btn', user_lang), key="logout_btn", use_container_width=True):
+        logout_txt = t('logout_btn', user_lang)
+        logout_label = logout_txt if "🚪" in logout_txt else f"🚪 {logout_txt}"
+        st.markdown("""
+            <style>
+            div[data-testid="stButton"].sidebar-logout-btn > button {
+                color: rgba(180, 80, 80, 0.75) !important;
+                border-color: rgba(180, 80, 80, 0.2) !important;
+                font-size: 0.82rem !important;
+            }
+            div[data-testid="stButton"].sidebar-logout-btn > button:hover {
+                color: rgba(220, 60, 60, 0.95) !important;
+                border-color: rgba(200, 60, 60, 0.4) !important;
+                background: rgba(200, 60, 60, 0.06) !important;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        if st.button(logout_label, key="nav_logout", use_container_width=True, type="secondary"):
             sign_out()
+            st.session_state.current_page = 'landing'
             st.rerun()
+        st.markdown("<div style='margin-top: 0.3rem;'></div>", unsafe_allow_html=True)
+
+    st.markdown(f"<p style='text-align: center; color: var(--text-color); opacity: 0.6; font-size: 0.8rem; margin-top: 0.2rem;'>{t('version_label', user_lang)}: {APP_VERSION} | {APP_YEAR}</p>", unsafe_allow_html=True)
 
 # --- Хедер ---
 # Используем HTML для полного контроля над выравниванием и анимацией

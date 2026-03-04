@@ -27,8 +27,13 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# Local Data
+# Local Data (generated at runtime)
 stories.json
+.auth_storage.json
+.auth_sessions/
+
+# Test / CI artefacts
+.pytest_cache/
 
 # Temporary Files
 temp_original.py

@@ -697,8 +697,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
     }}
 
     /* Secondary button — BOLD, high-contrast, unmissable */
-    /* Exclude: delete buttons (st-key-del_) and toolbar buttons (st-key-toolbar_ is on parent stElementContainer) */
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) {{
+    /* Exclude: delete (del_), navigation (nav_profile/logout), and toolbar (toolbar_) labels */
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]) {{
         background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
         color: white !important;
         border: none !important;
@@ -709,17 +709,17 @@ def get_app_styles(dark_mode: bool = True) -> str:
         box-shadow: {'0 4px 15px rgba(16, 185, 129, 0.4)' if dark_mode else '0 4px 15px rgba(79, 70, 229, 0.35)'} !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }}
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) p,
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]) span {{
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]) p,
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]) span {{
         color: white !important;
     }}
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover {{
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]):hover {{
         background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
         transform: translateY(-3px) scale(1.02) !important;
         box-shadow: {'0 8px 25px rgba(16, 185, 129, 0.55)' if dark_mode else '0 8px 25px rgba(79, 70, 229, 0.5)'} !important;
     }}
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover p,
-    div.stButton:not([class*="st-key-del_"]) > button:not([kind="primary"]):hover span {{
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]):hover p,
+    div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]) > button:not([kind="primary"]):hover span {{
         color: white !important;
     }}
 
@@ -1256,8 +1256,8 @@ def get_app_styles(dark_mode: bool = True) -> str:
     /* Sidebar regular buttons (stButton) - Fix for dark theme contrast */
     /* Covers both default buttons and secondary buttons */
     /* Exclude delete buttons (.st-key-del_*) from gradient styling */
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"] {{
         background: {'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)' if dark_mode else 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'} !important;
         color: white !important;
         border: none !important;
@@ -1270,28 +1270,89 @@ def get_app_styles(dark_mode: bool = True) -> str:
         justify-content: center !important;
     }}
     /* Fix for stMarkdownContainer inside buttons - remove light background in dark theme only */
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button [data-testid="stMarkdownContainer"],
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] [data-testid="stMarkdownContainer"] {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"] [data-testid="stMarkdownContainer"] {{
         background: {'transparent' if dark_mode else 'inherit'} !important;
         background-color: {'transparent' if dark_mode else 'inherit'} !important;
     }}
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button p,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button span,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] p,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"] span {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button span,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"] p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"] span {{
         color: white !important;
     }}
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button:hover,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"]:hover {{
         background: {'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)' if dark_mode else 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)'} !important;
         transform: translateY(-2px) scale(1.02) !important;
         box-shadow: {'0 6px 20px rgba(16, 185, 129, 0.55)' if dark_mode else '0 6px 20px rgba(79, 70, 229, 0.5)'} !important;
     }}
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover p,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button:hover span,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover p,
-    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]) > button[kind="secondary"]:hover span {{
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button:hover p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button:hover span,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"]:hover p,
+    section[data-testid="stSidebar"] div.stButton:not([class*="st-key-del_"]):not([class*="st-key-nav_"]):not([class*="st-key-load_"]) > button[kind="secondary"]:hover span {{
         color: white !important;
+    }}
+
+    /* ========== LIBRARY BUTTONS (Story Cards) ========== */
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] > button {{
+        background: {'rgba(255, 255, 255, 0.03)' if dark_mode else 'rgba(79, 70, 229, 0.05)'} !important;
+        border: 1px solid {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(79, 70, 229, 0.15)'} !important;
+        border-radius: 12px !important;
+        padding: 8px 12px !important;
+        transition: all 0.3s ease !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        color: {t['text']} !important;
+        box-shadow: none !important;
+    }}
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] > button:hover {{
+        background: {'rgba(102, 126, 234, 0.15)' if dark_mode else 'rgba(102, 126, 234, 0.1)'} !important;
+        border-color: rgba(102, 126, 234, 0.4) !important;
+        transform: translateX(4px) !important;
+        box-shadow: 0 4px 12px {'rgba(0, 0, 0, 0.3)' if dark_mode else 'rgba(79, 70, 229, 0.1)'} !important;
+    }}
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] > button p,
+    section[data-testid="stSidebar"] div[class*="st-key-load_"] > button span {{
+        color: {t['text']} !important;
+        font-size: 0.88rem !important;
+        font-weight: 400 !important;
+    }}
+    
+    /* ========== NAV BUTTONS (Profile, Logout) - NEUTRAL PROJECT STYLE ========== */
+    section[data-testid="stSidebar"] div[class*="st-key-nav_"] > button {{
+        background: {t['btn_secondary_bg']} !important;
+        border: 1px solid {t['btn_secondary_border']} !important;
+        border-radius: 12px !important;
+        padding: 4px 12px !important;
+        min-height: 0 !important;
+        height: 34px !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        color: {t['text_secondary']} !important;
+        opacity: 0.9 !important;
+    }}
+    
+    /* Hover state - subtle lift and color enrichment */
+    section[data-testid="stSidebar"] div[class*="st-key-nav_"] > button:hover {{
+        background: {'rgba(255, 255, 255, 0.08)' if dark_mode else 'rgba(0, 0, 0, 0.04)'} !important;
+        border-color: {t['text_secondary']} !important;
+        transform: translateY(-1px) !important;
+        color: {t['text']} !important;
+        opacity: 1 !important;
+    }}
+
+    section[data-testid="stSidebar"] div[class*="st-key-nav_"] > button p,
+    section[data-testid="stSidebar"] div[class*="st-key-nav_"] > button span {{
+        color: inherit !important;
+        font-size: 0.82rem !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }}
     
     /* DARK THEME ONLY: Fix for emotion-cache classes with light backgrounds in sidebar */

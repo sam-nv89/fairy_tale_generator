@@ -684,7 +684,9 @@ section[data-testid="stSidebar"] {
     font-size: 0.88rem;
     color: #cbd5e1;
     line-height: 1.7;
-    min-height: 3.2em;
+    /* Фиксированная высота — карточки не прыгают при typing-анимации */
+    height: 7.5em;
+    overflow: hidden;
 }
 .story-snippet-text .typing-cursor {
     display: inline-block;
@@ -1179,6 +1181,24 @@ def render_navbar():
 """, height=0, scrolling=False)
 
 def render_hero():
+    # Строим тот же отсортированный список историй, что и в render_scripts(),
+    # чтобы вставить заголовки и badges прямо в HTML — без ожидания JS.
+    _lang_names = {
+        "de": "Deutsch", "en": "English", "es": "Español", "fr": "Français",
+        "pt": "Português", "ru": "Русский", "hi": "हिन्दी", "zh-CN": "中文"
+    }
+    _stories = [
+        {"lang": "de", "badge": "DE", "title": "Märchenauszug"},
+        {"lang": "en", "badge": "EN", "title": "Story snippet"},
+        {"lang": "es", "badge": "ES", "title": "Fragmento de cuento"},
+        {"lang": "fr", "badge": "FR", "title": "Extrait de conte"},
+        {"lang": "pt", "badge": "PT", "title": "Trecho de conto"},
+        {"lang": "ru", "badge": "RU", "title": t("story_snippet_title")},
+        {"lang": "hi", "badge": "HI", "title": "कहानी का अंश"},
+        {"lang": "zh-CN", "badge": "ZH", "title": "故事片段"},
+    ]
+    _stories.sort(key=lambda x: _lang_names.get(x["lang"], ""))
+
     st.html(f"""
 <div class="landing-wrapper">
 <div class="hero-section">
@@ -1244,8 +1264,8 @@ def render_hero():
 """ + "".join([f"""
     <div class="story-snippet">
         <div class="story-snippet-header">
-            <span id="typing-title-{i}">✨ {t("story_snippet_title")}</span>
-            <span class="lang-badge" id="typing-lang-{i}"></span>
+            <span id="typing-title-{i}">✨ {_stories[i]['title']}</span>
+            <span class="lang-badge" id="typing-lang-{i}">{_stories[i]['badge']}</span>
         </div>
         <div class="story-snippet-text" id="typing-target-{i}"><span class="typing-cursor"></span></div>
     </div>
@@ -1987,12 +2007,13 @@ a.oauth-btn:hover {
                             with st.spinner(t("auth_creating")):
                                 res = sign_up(email, password)
                                 if res['success']:
-                                    st.session_state.user = res['user']
-                                    st.session_state.user_email = email
-                                    st.success(t("auth_signup_success"))
-                                    st.session_state.current_page = 'generator'
-                                    st.query_params.clear()
-                                    st.rerun()
+                                    if st.session_state.get('authenticated'):
+                                        st.success(t("auth_signup_success"))
+                                        st.session_state.current_page = 'generator'
+                                        st.query_params.clear()
+                                        st.rerun()
+                                    else:
+                                        st.info("Регистрация успешна! Для входа требуется подтверждение email (ссылка отправлена на почту).")
                                 else:
                                     st.error(res['error'])
 
@@ -2331,20 +2352,8 @@ def render_scripts():
     function initTypingEffect() {
         var stories = __STORIES_JSON__;
         
-        // 1. Pre-fill to calculate max height naturally
-        stories.forEach(function(story, i) {
-            var el = doc.getElementById('typing-target-' + i);
-            var headEl = doc.getElementById('typing-lang-' + i);
-            var titleEl = doc.getElementById('typing-title-' + i);
-            if (!el || !headEl || !titleEl) return;
-            
-            headEl.textContent = story.badge;
-            titleEl.textContent = '✨ ' + story.title;
-            el.innerHTML = story.text;
-        });
-        
-        // 2. Lock equal heights based on the longest snippet
-        equalizeCards('.story-snippet');
+        // Note: titles and badges are already rendered server-side (Python).
+        // Heights are fixed via CSS. Just start the typing animation directly.
         
         // 3. Clear and start animation
         stories.forEach(function(story, i) {
@@ -2374,8 +2383,13 @@ def render_scripts():
     var pollCount = 0;
     var pollId = setInterval(function() {
         initAll();
-        if (pollCount === 0) {
-            initTypingEffect();
+        // Retry initTypingEffect until it can find the DOM nodes (Streamlit renders async)
+        if (!window.__typingInited) {
+            var firstTitle = doc.getElementById('typing-title-0');
+            if (firstTitle) {
+                window.__typingInited = true;
+                initTypingEffect();
+            }
         }
         pollCount++;
         // Keep polling for a few seconds to catch all lazy-loaded .reveal blocks
