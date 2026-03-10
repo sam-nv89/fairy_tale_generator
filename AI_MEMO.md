@@ -92,3 +92,12 @@ st.rerun()
 ### Технический долг
 - [ ] **Аудио в JSON**: `BytesIO` не сериализуется в `stories.json`. Сказки в библиотеке без привязанного аудио. В Supabase — хранить URL на mp3 в Storage.
 - [ ] **Профили детей**: Реализация отложена на Фазу 4.
+
+---
+### 🔄 Миграция на google-genai SDK (10.03.2026)
+Проведена миграция с устаревшего `google-generativeai` на современный `google-genai` SDK.  
+**Ключевые изменения для будущих агентов**:
+1. Импорт: `from google import genai`.
+2. Клиент: `client = genai.Client(api_key=api_key)`.
+3. Генерация: `client.models.generate_content(model=model_name, contents=prompt)`.  
+**Внимание**: новый SDK автоматически загружает API-ключ из переменной окружения `GOOGLE_GENAI_API_KEY`, если он не передан в конструктор. В проекте ключ передается явно из `st.secrets`.

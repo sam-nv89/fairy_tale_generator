@@ -4,7 +4,7 @@
 и основной бизнес-логикой (интеграция с LLM и TTS).
 """
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 import edge_tts
 import asyncio
 import io
@@ -1068,9 +1068,9 @@ if submit_btn:
         st.stop()
 
     try:
-        # 2. Настройка модели (google-generativeai SDK)
+        # 2. Настройка модели (google-genai SDK)
         logger.info("Initializing GenAI SDK")
-        genai.configure(api_key=api_key, transport='rest')
+        client = genai.Client(api_key=api_key)
         
         # 3. Генерация текста
         response_text = None
@@ -1162,8 +1162,10 @@ if submit_btn:
                     )
                     
                     # Вызов API
-                    model = genai.GenerativeModel(model_name)
-                    response = model.generate_content(prompt)
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt
+                    )
                     response_text = response.text
                     used_model_name = model_name
                     break 
@@ -1260,7 +1262,7 @@ if 'current_story' in st.session_state:
                         for model_name in GEMINI_MODEL_CASCADE:
                             try:
                                 logger.info(f"Attempting translation with model: {model_name}")
-                                model = genai.GenerativeModel(model_name)
+                                client = genai.Client(api_key=api_key)
                                 target_lang_name = get_language_name(user_lang)
                                 
                                 prompt = (
@@ -1271,7 +1273,10 @@ if 'current_story' in st.session_state:
                                     f"Here is the story to translate:\n\n{story['title']}\n\n{story['body']}"
                                 )
                                 
-                                response = model.generate_content(prompt)
+                                response = client.models.generate_content(
+                                    model=model_name,
+                                    contents=prompt
+                                )
                                 full_txt = response.text.strip()
                                 break
                             except Exception as e:
