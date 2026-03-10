@@ -9,9 +9,24 @@ import edge_tts
 import asyncio
 import io
 import re
+import uuid
+import json
 import base64
 import logging
+from typing import Union, Tuple
 
+# Logging setup must come BEFORE any logger usage below.
+# Using RotatingFileHandler to prevent unbounded log growth.
+from logging.handlers import RotatingFileHandler
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        RotatingFileHandler("app.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding='utf-8'),
+    ]
+)
 logger = logging.getLogger(__name__)
 
 # Импорт модуля мультиформатного экспорта
@@ -107,24 +122,14 @@ if 'dark_mode' not in st.session_state:
 # Применяем стили на основе текущей темы (Standard Load)
 st.markdown(get_app_styles(st.session_state.dark_mode), unsafe_allow_html=True)
 
-# RTL Support removed
+# RTL Support removed.
 # Все стили теперь централизованно управляются в styles.py
 # для поддержания чистоты кода и единого архитектурного стандарта.
 
-
-    # Применяем JavaScript для исправления dropdown (через components для работы JS)
+# Применяем JavaScript для исправления dropdown (через components для работы JS)
 st.components.v1.html(get_dropdown_fix_js(), height=0)
 
-# Конфигурация логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("app.log", encoding='utf-8')
-    ]
-)
-logger = logging.getLogger(__name__)
+# Logging уже сконфигурирован в начале файла (см. импорты).
 
 # Диагностический блок для захвата "призрачных" ошибок
 try:
@@ -150,9 +155,7 @@ if not _SUPABASE_AVAILABLE:
 
 # --- Функция для создания красивого плеера ---
 def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", autoplay=False, file_name="skazka.mp3", sync_text_id=None, story_html=None, word_boundaries=None):
-    import uuid
-    import base64
-    import json
+    # uuid, base64, json импортированы на уровне модуля (см. начало файла).
     
     audio_base64 = base64.b64encode(audio_bytes.getvalue()).decode()
     player_id = uuid.uuid4().hex[:8]
@@ -655,7 +658,7 @@ def display_audio_player(audio_bytes, label="🎧 Аудио-сказка", auto
     st.components.v1.html(html_code, height=component_height, scrolling=False)
 
 # --- Вспомогательная функция для озвучки (Text-to-Speech) ---
-from typing import Union, Tuple
+# Union, Tuple импортированы на уровне модуля (см. начало файла).
 
 async def generate_audio_stream(text: str, voice: str, return_boundaries: bool = False) -> Union[io.BytesIO, Tuple[io.BytesIO, list]]:
     """

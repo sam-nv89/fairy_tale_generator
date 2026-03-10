@@ -72,6 +72,7 @@ def get_user_currency() -> Tuple[str, str]:
         return 'USD', '$'
 
 
+@st.cache_data(ttl=3600 * 12)  # Кэш на 12 часов — IP пользователя меняется редко
 def get_user_language(accept_language: Optional[str] = None) -> str:
     """
     Определяет язык пользователя по приоритету:
