@@ -755,19 +755,25 @@ with st.sidebar:
     # Отслеживаем предыдущий язык для сброса голоса
     prev_lang = st.session_state.get('prev_lang', user_lang)
     
-    current_lang_index = SUPPORTED_LANGUAGES.index(user_lang) if user_lang in SUPPORTED_LANGUAGES else 0
-    # Language selector - show only "Language" for English, show "Язык / Language" for others
+    # Сортируем только для отображения — порядок в config.SUPPORTED_LANGUAGES не меняем,
+    # чтобы не затронуть логику голосов/i18n, которая зависит от этого списка.
+    sorted_langs = sorted(SUPPORTED_LANGUAGES, key=lambda code: lang_display_names.get(code, code))
+    current_lang_index = sorted_langs.index(user_lang) if user_lang in sorted_langs else 0
+
+    # Language selector - "Language" для английского, "Язык / Language" для остальных
     lang_label = f"{t('language_label', user_lang)}" if user_lang == 'en' else f"{t('language_label', user_lang)} / Language"
     st.markdown(f"<p class='sidebar-header'>{lang_label}</p>", unsafe_allow_html=True)
-    
+
     selected_lang = st.selectbox(
+
         "hidden_lang_label",
-        options=SUPPORTED_LANGUAGES,
+        options=sorted_langs,
         index=current_lang_index,
         format_func=lambda x: lang_display_names.get(x, x),
         key="lang_select",
         label_visibility="collapsed"
     )
+
     
     # Обновляем язык при изменении
     if selected_lang != user_lang:
