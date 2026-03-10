@@ -1582,7 +1582,7 @@ def format_price(rub_price, currency):
         return "0₽" if currency == 'RUB' else ("€0" if currency == 'EUR' else "$0")
     
     if currency == 'RUB':
-        return f"{rub_price}₽"
+        return f"{rub_price:,}₽".replace(',', '\u202f')  # \u202f = narrow no-break space (ГОСТ разделитель разрядов)
     
     rates = get_exchange_rates()
     rate = rates.get(currency, rates.get('USD', 0.011))
