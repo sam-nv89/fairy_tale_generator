@@ -1604,10 +1604,11 @@ def render_pricing():
     currency = get_currency_for_lang(user_lang)
     
     free_price = format_price(0, currency)
-    pro_mo = format_price(499, currency)
-    pro_yr = format_price(399, currency)
-    fam_mo = format_price(799, currency)
-    fam_yr = format_price(649, currency)
+    pro_mo = format_price(699, currency)   # Было 499₽. Повышено до рыночного: конкуренты берут $9–14.
+    pro_yr = format_price(549, currency)   # Было 399₽. Скидка ~21% при годовом плане сохранена.
+    fam_mo = format_price(1199, currency)  # Было 799₽. Рядом со StoriesForKids без TTS ($14).
+    fam_yr = format_price(949, currency)   # Было 649₽. Скидка ~21% при годовом плане сохранена.
+
 
     st.html("""
 <style>
