@@ -1948,8 +1948,6 @@ a.oauth-btn:hover {
 </style>
 """)
             
-            tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
-            
             # Генерация ссылки Google Auth
             import auth
             google_res = auth.sign_in_with_google()

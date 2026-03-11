@@ -39,12 +39,24 @@ except Exception as e:
 
 try:
     from gotrue import SyncSupportedStorage
+    logger.debug("[Auth] SyncSupportedStorage: gotrue OK")
 except ImportError:
-    class SyncSupportedStorage:  # type: ignore
-        """Minimal duck-type fallback if gotrue is not installed."""
-        def get_item(self, key: str) -> str | None: return None
-        def set_item(self, key: str, value: str) -> None: pass
-        def remove_item(self, key: str) -> None: pass
+    try:
+        # supabase 2.28+ переехал с gotrue на supabase_auth
+        from supabase_auth import SyncSupportedStorage  # type: ignore
+        logger.debug("[Auth] SyncSupportedStorage: supabase_auth OK")
+    except ImportError:
+        # Финальный duck-type fallback (интерфейс идентичен)
+        logger.warning(
+            "[Auth] gotrue и supabase_auth не найдены. "
+            "Используется duck-type заглушка SyncSupportedStorage. "
+            "Добавьте 'gotrue>=2.9.0' в requirements.txt."
+        )
+        class SyncSupportedStorage:  # type: ignore
+            """Minimal duck-type fallback if neither gotrue nor supabase_auth is installed."""
+            def get_item(self, key: str) -> str | None: return None
+            def set_item(self, key: str, value: str) -> None: pass
+            def remove_item(self, key: str) -> None: pass
 
 
 # ============================================================================
@@ -556,15 +568,27 @@ def get_auth_diagnostics() -> dict:
         results['disk_writable'] = False
         results['disk_error'] = f'{type(e).__name__}: {e}'
 
-    # 4. Создание клиента
+    # 4. Создание клиента (с прямым перехватом ошибки)
     if _SUPABASE_AVAILABLE and results.get('secrets_url') and results.get('secrets_key'):
         try:
-            client = get_supabase_client()
+            url_val = st.secrets.get("SUPABASE_URL")
+            key_val = st.secrets.get("SUPABASE_KEY")
+            client_id = st.session_state.get('client_id', uuid.uuid4().hex)
+
+            class _DiagStorage:
+                def get_item(self, key): return None
+                def set_item(self, key, value): pass
+                def remove_item(self, key): pass
+
+            opts = ClientOptions(flow_type='pkce', storage=_DiagStorage())
+            client = create_client(url_val, key_val, options=opts)
             results['client_created'] = client is not None
-            results['client_error'] = None
+            results['client_error'] = None if client else 'create_client вернул None'
         except Exception as e:
+            import traceback
             results['client_created'] = False
             results['client_error'] = f'{type(e).__name__}: {e}'
+            results['client_traceback'] = traceback.format_exc()[-500:]
     else:
         results['client_created'] = False
         results['client_error'] = 'Предварительные проверки не пройдены'
@@ -576,11 +600,15 @@ def get_auth_diagnostics() -> dict:
     except Exception:
         results['supabase_version'] = 'error'
 
-    try:
-        import gotrue as _gt
-        results['gotrue_version'] = getattr(_gt, '__version__', 'unknown')
-    except Exception:
-        results['gotrue_version'] = 'not installed'
+    for pkg_name in ('gotrue', 'supabase_auth'):
+        try:
+            pkg = __import__(pkg_name)
+            results[f'{pkg_name}_version'] = getattr(pkg, '__version__', 'installed')
+        except ImportError:
+            results[f'{pkg_name}_version'] = 'not installed'
+        except Exception as e:
+            results[f'{pkg_name}_version'] = f'error: {e}'
 
     return results
+
 
