@@ -3,19 +3,17 @@
 
 
 ## 11.03.2026
-### 🐛 Bug Fix: Google OAuth — ошибка code_verifier и невидимое сообщение об ошибке
+### 🐛 Bug Fix: Google OAuth — «тихое» обновление без ошибок и входа (v4)
 **Статус**: Выполнено
 
 #### Причина:
-**Потеря `client_id` при OAuth редиректе (PKCE flow):** При переходе на Google OAuth и обратно `session_state` Streamlit сбрасывается. `get_client_id()` генерировал **новый** UUID, поэтому `IsolatedDiskStorage` смотрел не в тот файл → `code_verifier` не найден → `exchange_code_for_session()` падал с ошибкой.
+Предыдущая попытка передавать `client_id` через `query_params: {state: client_id}` конфликтовала с внутренним использованием `state` в PKCE flow Supabase. OAuth state — это security механизм PKCE, его нельзя перезаписывать. В результате Supabase тихо отклонял запрос: не было ни входа, ни ошибки.
 
-**Невидимое сообщение об ошибке:** `st.error()` вызывался из `handle_oauth_callback()` в начале `app.py` (до рендеринга), что помещало сообщение в самый верх страницы — под glassmorphism навбар.
-
-#### Изменения:
-- **`auth.py` — `sign_in_with_google()`**: `client_id` теперь передаётся как `state` параметр в OAuth URL через `query_params`. Google возвращает его обратно в `?state=`.
-- **`auth.py` — `handle_oauth_callback()`**: `client_id` восстанавливается из `?state=` и записывается в `session_state` **до** создания Supabase клиента → правильный `IsolatedDiskStorage` → `code_verifier` найден.
-- **`auth.py` — обработка ошибок**: Заменён `st.error()` на запись в `session_state['auth_error']`. Ошибки больше не появляются под навбаром.
-- **`landing.py` — `render_auth()`**: Добавлено отображение `session_state['auth_error']` внутри секции авторизации — там, где пользователь их ожидает увидеть.
+#### Правильное решение:
+`client_id` теперь встраивается в `redirect_to` URL как `?auth_cid=<id>`:
+- **`sign_in_with_google()`**: `redirect_to = f"{base_url}?auth_cid={client_id}"`  
+- Supabase добавит `?code=XXX` к этому URL → финальный callback: `?auth_cid=abc&code=XXX`
+- **`handle_oauth_callback()`**: читает `auth_cid` из query params → восстанавливает `client_id` в session_state → `get_supabase_client()` создаёт клиент с правильным `IsolatedDiskStorage` → `code_verifier` найден → `exchange_code_for_session()` успешен.
 
 ## 10.03.2026 (Part 3)
 

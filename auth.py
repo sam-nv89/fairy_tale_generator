@@ -274,27 +274,31 @@ def get_supabase_client() -> "Client | None":
 def sign_in_with_google() -> dict:
     """Инициирует Google OAuth PKCE flow.
 
-    client_id передаётся как state-параметр в URL, чтобы при возврате
-    от Google восстановить правильное IsolatedDiskStorage (с code_verifier).
+    client_id встраивается в redirect_to URL как ?auth_cid=<id>.
+    Supabase сохраняет исходные query-параметры redirect_to и передаёт
+    их обратно при callback — так client_id выживает после редиректа.
+
+    ВАЖНО: нельзя использовать query_params['state'] — PKCE использует
+    его внутренне, перезапись ломает exchange_code_for_session.
     """
     client = get_supabase_client()
     if not client:
         return {'success': False, 'url': None, 'error': 'Сервис авторизации недоступен'}
 
     try:
-        redirect_uri = get_site_url()
         client_id = get_client_id()
+        base_url = get_site_url()
+        # Встраиваем client_id в redirect_to; Supabase добавит ?code= к этому URL
+        redirect_with_cid = f"{base_url}?auth_cid={client_id}"
 
         res = client.auth.sign_in_with_oauth({
             "provider": "google",
             "options": {
-                "redirect_to": redirect_uri,
-                # Передаём client_id как state — Google вернёт его обратно.
-                # Это позволяет найти правильный IsolatedDiskStorage с code_verifier.
-                "query_params": {"state": client_id}
+                "redirect_to": redirect_with_cid
+                # НЕ переопределяем query_params['state'] — это сломает PKCE!
             }
         })
-        logger.info(f"[Google OAuth] URL подготовлен для client_id={client_id}")
+        logger.info(f"[Google OAuth] URL подготовлен, client_id={client_id}")
         return {'success': True, 'url': res.url}
     except Exception as e:
         logger.error(f"[Google OAuth] Ошибка: {type(e).__name__}: {e}")
@@ -303,10 +307,9 @@ def sign_in_with_google() -> dict:
 def handle_oauth_callback():
     """Обрабатывает ?code= от Google.
 
-    Восстанавливает client_id из ?state= параметра (который мы передали
-    при генерации OAuth URL). Это решает проблему потери code_verifier.
+    Восстанавливает client_id из ?auth_cid= параметра (мы встроили его в redirect_to).
     Ошибки сохраняются в session_state['auth_error'] для отображения
-    в нужном месте UI (не в самом верху страницы под навбаром).
+    в правильном месте UI (не под навбаром).
     """
     qp = st.query_params
     code = qp.get('code')
@@ -314,15 +317,15 @@ def handle_oauth_callback():
     if not code:
         return
 
-    # Восстанавливаем client_id из state-параметра (Google вернул его обратно)
-    state_client_id = qp.get('state')
-    if state_client_id:
-        # Используем client_id из state — это тот же ID, что был до редиректа
-        st.session_state['client_id'] = state_client_id
-        logger.info(f"[OAuth Callback] client_id восстановлен из state: {state_client_id}")
+    # Восстанавливаем client_id из ?auth_cid= (мы встроили в redirect_to URL)
+    # Supabase сохраняет все исходные параметры и передаёт их обратно
+    auth_cid = qp.get('auth_cid')
+    if auth_cid:
+        st.session_state['client_id'] = auth_cid
+        logger.info(f"[OAuth Callback] client_id восстановлен из auth_cid: {auth_cid}")
     else:
-        state_client_id = get_client_id()
-        logger.warning(f"[OAuth Callback] state не передан, используется get_client_id(): {state_client_id}")
+        fallback_id = get_client_id()
+        logger.warning(f"[OAuth Callback] auth_cid не получен, fallback client_id: {fallback_id}")
 
     # Защита от F5 / случайных релоадов
     last_code = st.session_state.get('last_processed_auth_code')
@@ -330,7 +333,7 @@ def handle_oauth_callback():
         st.query_params.clear()
         return
 
-    logger.info(f"[OAuth Callback] Обработка code для client_id={state_client_id}")
+    logger.info(f"[OAuth Callback] Обработка code, auth_cid={auth_cid}")
 
     client = get_supabase_client()
     if not client:
