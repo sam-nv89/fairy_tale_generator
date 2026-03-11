@@ -2044,41 +2044,24 @@ div[data-testid="InputInstructions"] {
                         const t_mismatch = '{t("auth_pass_mismatch")}';
                         
                         function init() {{
-                            const tabs = doc.querySelectorAll('[data-testid="stTab"]');
-                            const signupTab = tabs.length >= 2 ? tabs[1] : doc;
-                            
-                            const passInputs = signupTab.querySelectorAll('input[type="password"]');
+                            const passInputs = doc.querySelectorAll('input[type="password"]');
                             if (passInputs.length < 2) return; 
                             
-                            const pass1 = passInputs[0];
-                            const pass2 = passInputs[1];
+                            // Последние два поля пароля на странице (отвечают за регистрацию)
+                            const pass1 = passInputs[passInputs.length - 2];
+                            const pass2 = passInputs[passInputs.length - 1];
                             const msg = document.getElementById('pass-match-msg');
                             
-                            // 1. Форсируем параметры для Chrome Password Manager (он ищет атрибут name="new-password")
-                            pass1.setAttribute('name', 'new-password');
-                            pass1.setAttribute('autocomplete', 'new-password');
-                            pass2.setAttribute('name', 'new-password-confirm');
-                            pass2.setAttribute('autocomplete', 'new-password');
+                            // Постоянно проверяем и устанавливаем атрибуты для Chrome эвристики
+                            if(!pass1.hasAttribute('name')) pass1.setAttribute('name', 'new-password');
+                            if(!pass2.hasAttribute('name')) pass2.setAttribute('name', 'new-password-confirm');
                             
-                            // 2. Найдем соответствующий email в этом табе
-                            const emailInput = signupTab.querySelector('input[key*="reg_email"]') || signupTab.querySelector('input[type="text"]');
-                            if(emailInput) {{
-                                emailInput.setAttribute('name', 'username');
-                                emailInput.setAttribute('autocomplete', 'username');
-                            }}
-                            
-                            // 3. КРИТИЧЕСКИЙ МОМЕНТ: Оборачиваем в реальный тег <form>, так как st.form от Streamlit — это просто div.
-                            // Chrome почти никогда не предлагает "Generate Password" вне тега <form>.
-                            const stForm = signupTab.querySelector('[data-testid="stForm"]');
-                            if (stForm && stForm.tagName !== 'FORM' && !stForm.querySelector('form')) {{
-                                const realForm = doc.createElement('form');
-                                realForm.setAttribute('action', 'javascript:void(0);');
-                                realForm.setAttribute('autocomplete', 'on');
-                                realForm.style.display = 'contents'; // Сохраняем верстку
-                                while (stForm.firstChild) {{
-                                    realForm.appendChild(stForm.firstChild);
+                            const emailInputs = doc.querySelectorAll('input[type="text"]');
+                            for (let i = emailInputs.length - 1; i >= 0; i--) {{
+                                if (emailInputs[i].getAttribute('autocomplete') === 'username') {{
+                                    if(!emailInputs[i].hasAttribute('name')) emailInputs[i].setAttribute('name', 'username');
+                                    break;
                                 }}
-                                stForm.appendChild(realForm);
                             }}
                             
                             function update() {{
@@ -2095,20 +2078,21 @@ div[data-testid="InputInstructions"] {
                                 }}
                             }}
                             
-                            if (!pass1.hasAttribute('data-hooked')) {{
+                            if (pass1.getAttribute('data-hooked') !== 'true') {{
                                 pass1.addEventListener('input', update);
                                 pass2.addEventListener('input', update);
                                 pass1.setAttribute('data-hooked', 'true');
+                                pass2.setAttribute('data-hooked', 'true');
                             }}
+                            
+                            // Важно: в React элементе нужно иногда насильно обновлять
                             update();
                         }}
                         
-                        const interval = setInterval(() => {{
-                            if (doc.querySelectorAll('input[type="password"]').length >= 2) {{
-                                clearInterval(interval);
-                                init();
-                            }}
-                        }}, 200);
+                        // Используем постоянный интервал без clearInterval, так как Streamlit может перерендерить элементы
+                        setInterval(() => {{
+                            init();
+                        }}, 500);
                     </script>
                     """
                     components.html(js_code, height=35)
