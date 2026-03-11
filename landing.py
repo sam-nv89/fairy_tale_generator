@@ -1947,7 +1947,8 @@ a.oauth-btn:hover {
 }
 </style>
 """)
-            
+            tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
+
             # Генерация ссылки Google Auth
             import auth
             google_res = auth.sign_in_with_google()
@@ -1963,6 +1964,7 @@ a.oauth-btn:hover {
 | Библиотека supabase | {'✅' if diag.get('supabase_available') else '❌ НЕ УСТАНОВЛЕНА'} |
 | Версия supabase | `{diag.get('supabase_version', '?')}` |
 | Версия gotrue | `{diag.get('gotrue_version', '?')}` |
+| Версия supabase_auth | `{diag.get('supabase_auth_version', '?')}` |
 | SUPABASE_URL в secrets | {'✅' if diag.get('secrets_url') else '❌ ОТСУТСТВУЕТ'} |
 | SUPABASE_KEY в secrets | {'✅' if diag.get('secrets_key') else '❌ ОТСУТСТВУЕТ'} |
 | URL preview | `{diag.get('url_preview', 'N/A')}` |
