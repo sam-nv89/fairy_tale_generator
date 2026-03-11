@@ -72,19 +72,13 @@ def get_user_currency() -> Tuple[str, str]:
         return 'USD', '$'
 
 
-@st.cache_data(ttl=3600 * 12)  # Кэш на 12 часов — IP пользователя меняется редко
+@st.cache_data(ttl=3600 * 12)  # Кэш на 12 часов
 def get_user_language(accept_language: Optional[str] = None) -> str:
     """
     Определяет язык пользователя по приоритету:
     1. HTTP заголовок Accept-Language (если передан)
-    2. IP-геолокация (страна)
+    2. IP-геолокация (отключена, так как на сервере выдает IP сервера)
     3. Дефолт: русский
-    
-    Args:
-        accept_language: HTTP заголовок Accept-Language из браузера
-    
-    Returns:
-        str: Код языка ('ru', 'en', и т.д.)
     """
     # 1. Проверяем Accept-Language заголовок
     if accept_language:
@@ -107,42 +101,8 @@ def get_user_language(accept_language: Optional[str] = None) -> str:
             if lang == 'zh':
                 return 'zh-CN'
     
-    # 2. Fallback: IP-геолокация
-    try:
-        response = requests.get(IP_API_URL, timeout=IP_API_TIMEOUT)
-        
-        if response.status_code != 200:
-            logger.warning(f"IP API returned status {response.status_code}, using default language")
-            return DEFAULT_LANGUAGE
-        
-        try:
-            data = response.json()
-        except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse JSON response: {e}")
-            return DEFAULT_LANGUAGE
-        
-        country = data.get('country_code')
-        
-        if not country:
-            logger.warning("Country code not found in response")
-            return DEFAULT_LANGUAGE
-        
-        # Маппинг страны на язык
-        detected_lang = COUNTRY_TO_LANGUAGE.get(country, DEFAULT_LANGUAGE)
-        
-        # Если язык не поддерживается, используем дефолт
-        if detected_lang not in SUPPORTED_LANGUAGES:
-            detected_lang = DEFAULT_LANGUAGE
-        
-        logger.info(f"Language detected from IP ({country}): {detected_lang}")
-        return detected_lang
-        
-    except requests.RequestException as e:
-        logger.warning(f"Failed to detect language (network error): {e}")
-        return DEFAULT_LANGUAGE
-    except Exception as e:
-        logger.exception(f"Unexpected error while detecting language: {e}")
-        return DEFAULT_LANGUAGE
+    # 2. Дефолтный fallback (на сервере IP-адрес сервера всегда US, поэтому возвращаем исходный язык)
+    return DEFAULT_LANGUAGE
 
 
 def format_price(amount: Union[int, float], currency_symbol: str) -> str:

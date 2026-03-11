@@ -2030,9 +2030,9 @@ div[data-testid="InputInstructions"] {
                 # Используем st.form — это критически важно для Chrome, чтобы он 
                 # автоматически распознал форму регистрации и предложил генерацию надежного пароля.
                 with st.form("signup_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="username")
-                    password = st.text_input(t("auth_pass_signup"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
-                    password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
+                    email = st.text_input("Email", placeholder="user@example.com")
+                    password = st.text_input(t("auth_pass_signup"), type="password", placeholder=t("auth_pass_len"))
+                    password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"))
                     
                     # Истинная realtime проверка с помощью JS client-side (без задержек на запросы к серверу).
                     js_code = f"""
@@ -2051,22 +2051,6 @@ div[data-testid="InputInstructions"] {
                             const pass1 = passInputs[passInputs.length - 2];
                             const pass2 = passInputs[passInputs.length - 1];
                             const msg = document.getElementById('pass-match-msg');
-                            
-                            // Постоянно проверяем и устанавливаем атрибуты для Chrome эвристики
-                            if(pass1.getAttribute('name') !== 'new-password') pass1.setAttribute('name', 'new-password');
-                            if(pass1.getAttribute('autocomplete') !== 'new-password') pass1.setAttribute('autocomplete', 'new-password');
-                            
-                            if(pass2.getAttribute('name') !== 'new-password-confirm') pass2.setAttribute('name', 'new-password-confirm');
-                            if(pass2.getAttribute('autocomplete') !== 'new-password') pass2.setAttribute('autocomplete', 'new-password');
-                            
-                            const emailInputs = doc.querySelectorAll('input[type="text"]');
-                            for (let i = emailInputs.length - 1; i >= 0; i--) {{
-                                if (emailInputs[i].getAttribute('autocomplete') === 'username' || emailInputs[i].getAttribute('name') === 'username') {{
-                                    if(emailInputs[i].getAttribute('name') !== 'username') emailInputs[i].setAttribute('name', 'username');
-                                    if(emailInputs[i].getAttribute('autocomplete') !== 'username') emailInputs[i].setAttribute('autocomplete', 'username');
-                                    break;
-                                }}
-                            }}
                             
                             function update() {{
                                 const v1 = pass1.value;

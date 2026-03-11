@@ -89,7 +89,15 @@ if qp_lang and qp_lang in SUPPORTED_LANGUAGES:
         needs_rerun = True
 
 if 'user_lang' not in st.session_state:
-    st.session_state.user_lang = get_user_language()
+    # Пытаемся получить язык из браузера через st.context (работает в новых версиях Streamlit)
+    accept_lang = None
+    try:
+        if hasattr(st, "context") and hasattr(st.context, "headers"):
+            accept_lang = st.context.headers.get("Accept-Language")
+    except Exception as e:
+        logger.debug(f"Could not retrieve Accept-Language headers: {e}")
+        
+    st.session_state.user_lang = get_user_language(accept_language=accept_lang)
 
 # 2. Обработка маршрутизации
 if qp_page and qp_page in ['landing', 'generator', 'privacy', 'terms']:
