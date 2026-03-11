@@ -2053,13 +2053,17 @@ div[data-testid="InputInstructions"] {
                             const msg = document.getElementById('pass-match-msg');
                             
                             // Постоянно проверяем и устанавливаем атрибуты для Chrome эвристики
-                            if(!pass1.hasAttribute('name')) pass1.setAttribute('name', 'new-password');
-                            if(!pass2.hasAttribute('name')) pass2.setAttribute('name', 'new-password-confirm');
+                            if(pass1.getAttribute('name') !== 'new-password') pass1.setAttribute('name', 'new-password');
+                            if(pass1.getAttribute('autocomplete') !== 'new-password') pass1.setAttribute('autocomplete', 'new-password');
+                            
+                            if(pass2.getAttribute('name') !== 'new-password-confirm') pass2.setAttribute('name', 'new-password-confirm');
+                            if(pass2.getAttribute('autocomplete') !== 'new-password') pass2.setAttribute('autocomplete', 'new-password');
                             
                             const emailInputs = doc.querySelectorAll('input[type="text"]');
                             for (let i = emailInputs.length - 1; i >= 0; i--) {{
-                                if (emailInputs[i].getAttribute('autocomplete') === 'username') {{
-                                    if(!emailInputs[i].hasAttribute('name')) emailInputs[i].setAttribute('name', 'username');
+                                if (emailInputs[i].getAttribute('autocomplete') === 'username' || emailInputs[i].getAttribute('name') === 'username') {{
+                                    if(emailInputs[i].getAttribute('name') !== 'username') emailInputs[i].setAttribute('name', 'username');
+                                    if(emailInputs[i].getAttribute('autocomplete') !== 'username') emailInputs[i].setAttribute('autocomplete', 'username');
                                     break;
                                 }}
                             }}
