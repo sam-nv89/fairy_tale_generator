@@ -506,9 +506,9 @@ section[data-testid="stSidebar"] {
     user-select: none;
 }
 
-/* Feature showcase cards */
+/* Feature showcase cards - Minimalist version */
 .feature-card {
-    padding: 1.5rem 1.3rem;
+    padding: 2rem 1.5rem;
     text-align: center;
     height: 100%;
     min-height: 160px;
@@ -519,21 +519,26 @@ section[data-testid="stSidebar"] {
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.feature-card:hover {
+    transform: translateY(-8px) scale(1.02);
 }
 .feature-card .feature-icon {
-    font-size: 2rem;
-    margin-bottom: 0.6rem;
+    font-size: 3rem;
+    margin-bottom: 1rem;
     line-height: 1;
+    filter: drop-shadow(0 4px 10px rgba(139, 92, 246, 0.3));
 }
 .feature-card h3 {
-    font-size: 1.15rem;
-    margin-bottom: 0.6rem;
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
     color: #f8fafc;
     font-family: 'Comfortaa', cursive;
 }
 .feature-card p {
     color: #94a3b8;
-    font-size: 0.95rem;
+    font-size: 1rem;
     line-height: 1.6;
     margin: 0;
 }
@@ -1317,7 +1322,7 @@ def render_features():
     
     with c1:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0s;">
+<div class="feature-card reveal" style="--reveal-delay: 0s;">
 <div class="feature-icon">🎭</div>
 <h3>{t("feat_1")}</h3>
 <p>{t("feat_1_sub")}</p>
@@ -1325,7 +1330,7 @@ def render_features():
 """)
     with c2:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
+<div class="feature-card reveal" style="--reveal-delay: 0.1s;">
 <div class="feature-icon">🌍</div>
 <h3>{t("feat_2")}</h3>
 <p>{t("feat_2_sub")}</p>
@@ -1333,7 +1338,7 @@ def render_features():
 """)
     with c3:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
+<div class="feature-card reveal" style="--reveal-delay: 0.2s;">
 <div class="feature-icon">🎙️</div>
 <h3>{t("feat_3")}</h3>
 <p>{t("feat_3_sub")}</p>
@@ -1345,7 +1350,7 @@ def render_features():
     
     with c4:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0.1s;">
+<div class="feature-card reveal" style="--reveal-delay: 0.1s;">
 <div class="feature-icon">📲</div>
 <h3>{t("feat_4")}</h3>
 <p>{t("feat_4_sub")}</p>
@@ -1353,7 +1358,7 @@ def render_features():
 """)
     with c5:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0.2s;">
+<div class="feature-card reveal" style="--reveal-delay: 0.2s;">
 <div class="feature-icon">👨‍👩‍👧‍👦</div>
 <h3>{t("feat_5")}</h3>
 <p>{t("feat_5_sub")}</p>
@@ -1361,7 +1366,7 @@ def render_features():
 """)
     with c6:
         st.html(f"""
-<div class="glass-card feature-card reveal" style="--reveal-delay: 0.3s;">
+<div class="feature-card reveal" style="--reveal-delay: 0.3s;">
 <div class="feature-icon">🧠</div>
 <h3>{t("feat_6")}</h3>
 <p>{t("feat_6_sub")}</p>
