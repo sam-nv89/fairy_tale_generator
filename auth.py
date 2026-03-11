@@ -272,42 +272,65 @@ def get_supabase_client() -> "Client | None":
 #  GOOGLE OAUTH (PKCE Flow)
 # ============================================================================
 def sign_in_with_google() -> dict:
+    """Инициирует Google OAuth PKCE flow.
+
+    client_id передаётся как state-параметр в URL, чтобы при возврате
+    от Google восстановить правильное IsolatedDiskStorage (с code_verifier).
+    """
     client = get_supabase_client()
     if not client:
         return {'success': False, 'url': None, 'error': 'Сервис авторизации недоступен'}
 
     try:
         redirect_uri = get_site_url()
+        client_id = get_client_id()
+
         res = client.auth.sign_in_with_oauth({
             "provider": "google",
             "options": {
-                "redirect_to": redirect_uri
+                "redirect_to": redirect_uri,
+                # Передаём client_id как state — Google вернёт его обратно.
+                # Это позволяет найти правильный IsolatedDiskStorage с code_verifier.
+                "query_params": {"state": client_id}
             }
         })
-        logger.info(f"[Google OAuth] Подготовлен URL для client_id={get_client_id()}")
+        logger.info(f"[Google OAuth] URL подготовлен для client_id={client_id}")
         return {'success': True, 'url': res.url}
     except Exception as e:
-        logger.error(f"Ошибка Google Auth: {e}")
+        logger.error(f"[Google OAuth] Ошибка: {type(e).__name__}: {e}")
         return {'success': False, 'url': None, 'error': str(e)}
 
 def handle_oauth_callback():
     """Обрабатывает ?code= от Google.
-    Игнорирует случайные F5 (когда код уже использован)."""
+
+    Восстанавливает client_id из ?state= параметра (который мы передали
+    при генерации OAuth URL). Это решает проблему потери code_verifier.
+    Ошибки сохраняются в session_state['auth_error'] для отображения
+    в нужном месте UI (не в самом верху страницы под навбаром).
+    """
     qp = st.query_params
     code = qp.get('code')
 
     if not code:
         return
 
-    client_id = get_client_id()
-    
-    # Защита от F5/Случайных релоадов (если код тот же самый)
+    # Восстанавливаем client_id из state-параметра (Google вернул его обратно)
+    state_client_id = qp.get('state')
+    if state_client_id:
+        # Используем client_id из state — это тот же ID, что был до редиректа
+        st.session_state['client_id'] = state_client_id
+        logger.info(f"[OAuth Callback] client_id восстановлен из state: {state_client_id}")
+    else:
+        state_client_id = get_client_id()
+        logger.warning(f"[OAuth Callback] state не передан, используется get_client_id(): {state_client_id}")
+
+    # Защита от F5 / случайных релоадов
     last_code = st.session_state.get('last_processed_auth_code')
     if code == last_code:
         st.query_params.clear()
         return
 
-    logger.info(f"[OAuth Callback] Обработка code для client_id={client_id}")
+    logger.info(f"[OAuth Callback] Обработка code для client_id={state_client_id}")
 
     client = get_supabase_client()
     if not client:
@@ -316,33 +339,38 @@ def handle_oauth_callback():
 
     try:
         res = client.auth.exchange_code_for_session({"auth_code": code})
-        st.session_state['last_processed_auth_code'] = code  # Защита от F5
-        
+        st.session_state['last_processed_auth_code'] = code
+
         if res and res.user:
             st.session_state.user = res.user
             st.session_state.user_email = res.user.email
             st.session_state.authenticated = True
             st.session_state.current_page = 'generator'
-            logger.info(f"[OAuth] ✅ Успех: {res.user.email}")
+            # Очищаем возможную старую ошибку
+            st.session_state.pop('auth_error', None)
+            logger.info(f"[OAuth] ✅ Успешный вход: {res.user.email}")
             st.query_params.clear()
             st.rerun()
-            
+
     except Exception as e:
         error_msg = str(e)
-        logger.error(f"[OAuth] ❌ Ошибка обмена кода: {error_msg}")
+        logger.error(f"[OAuth] ❌ Ошибка обмена кода: {type(e).__name__}: {error_msg}")
         st.query_params.clear()
 
-        # Подавление ошибки "code already exchanged" -> просто обновим UI
+        # Определяем тип ошибки и сохраняем в session_state
+        # (НЕ вызываем st.error() здесь — это верх страницы под навбаром)
         if "already been exchanged" in error_msg.lower() or "400" in error_msg:
-            # Возможно, пользователь уже давно авторизован
             if is_authenticated():
                 st.rerun()
             else:
-                st.error("Ссылка устарела. Попробуйте войти снова.")
+                st.session_state['auth_error'] = "Ссылка устарела. Попробуйте войти снова."
         elif "code verifier" in error_msg.lower() or "non-empty" in error_msg.lower():
-            st.error("Сессия авторизации истекла. Пожалуйста, попробуйте снова.")
+            st.session_state['auth_error'] = (
+                "Сессия авторизации истекла — это может быть связано с очисткой cookies. "
+                "Попробуйте войти ещё раз."
+            )
         else:
-            st.error("Ошибка авторизации. Попробуйте снова.")
+            st.session_state['auth_error'] = f"Ошибка авторизации: {error_msg[:100]}"
 
 
 # ============================================================================

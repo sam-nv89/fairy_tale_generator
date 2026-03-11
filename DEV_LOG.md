@@ -2,7 +2,37 @@
 
 
 
+## 11.03.2026
+### 🐛 Bug Fix: Google OAuth — ошибка code_verifier и невидимое сообщение об ошибке
+**Статус**: Выполнено
+
+#### Причина:
+**Потеря `client_id` при OAuth редиректе (PKCE flow):** При переходе на Google OAuth и обратно `session_state` Streamlit сбрасывается. `get_client_id()` генерировал **новый** UUID, поэтому `IsolatedDiskStorage` смотрел не в тот файл → `code_verifier` не найден → `exchange_code_for_session()` падал с ошибкой.
+
+**Невидимое сообщение об ошибке:** `st.error()` вызывался из `handle_oauth_callback()` в начале `app.py` (до рендеринга), что помещало сообщение в самый верх страницы — под glassmorphism навбар.
+
+#### Изменения:
+- **`auth.py` — `sign_in_with_google()`**: `client_id` теперь передаётся как `state` параметр в OAuth URL через `query_params`. Google возвращает его обратно в `?state=`.
+- **`auth.py` — `handle_oauth_callback()`**: `client_id` восстанавливается из `?state=` и записывается в `session_state` **до** создания Supabase клиента → правильный `IsolatedDiskStorage` → `code_verifier` найден.
+- **`auth.py` — обработка ошибок**: Заменён `st.error()` на запись в `session_state['auth_error']`. Ошибки больше не появляются под навбаром.
+- **`landing.py` — `render_auth()`**: Добавлено отображение `session_state['auth_error']` внутри секции авторизации — там, где пользователь их ожидает увидеть.
+
+## 10.03.2026 (Part 3)
+
+### 🔍 Аудит + Рефакторинг (безопасные исправления)
+**Статус**: Выполнено
+
+#### Выполненные действия:
+- **Аудит проекта**: Полный анализ 22 Python-файлов. Общая оценка: 7/10.
+- **`app.py` — очистка импортов**: `uuid`, `json`, `from typing import Union, Tuple` перенесены на уровень модуля (PEP 8). Убраны дублирующиеся inline-импорты в `display_audio_player`.
+- **`app.py` — исправление логирования**: `logging.basicConfig()` перенесён в начало файла (до первого вызова `logger`). Заменён `FileHandler` на `RotatingFileHandler` (5 МБ × 3 бэкапа) — предотвращает безлимитный рост `app.log`. Устранена двойная инициализация `logger`.
+- **`app.py` — отступ**: Исправлен лишний 4-пробельный отступ у комментария (строка 115).
+- **`utils.py`**: Добавлен `@st.cache_data(ttl=3600*12)` к `get_user_language()` — устраняет лавину HTTP-запросов к `ipapi.co` при `st.rerun()`.
+- **`.gitignore`**: Добавлена `plans/`.
+- **Верификация**: `ast.parse()` — синтаксис валиден.
+
 ## 10.03.2026 (Part 2)
+
 ### 🔄 Миграция на google-genai SDK
 **Статус**: Выполнено
 

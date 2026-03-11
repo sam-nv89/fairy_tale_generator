@@ -1954,6 +1954,12 @@ a.oauth-btn:hover {
             google_res = auth.sign_in_with_google()
             google_url = google_res.get("url", "#") if google_res.get("success") else "#"
 
+            # --- Ошибка OAuth (сохранена из handle_oauth_callback) ---
+            # Отображаем здесь, а не в app.py, чтобы не перекрывалась навбаром
+            auth_error = st.session_state.pop('auth_error', None)
+            if auth_error:
+                st.error(f"⚠️ {auth_error}")
+
             # --- Диагностика (только при ?debug_auth=1 в URL) ---
             if not google_res.get("success") and st.query_params.get("debug_auth") == "1":
                 diag = get_auth_diagnostics()
