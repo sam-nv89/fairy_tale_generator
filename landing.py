@@ -1993,8 +1993,8 @@ a.oauth-btn:hover {
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """, unsafe_allow_html=True)
                 with st.form("signin_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder="••••••••")
+                    email = st.text_input("Email", placeholder="user@example.com", autocomplete="username")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder="••••••••", autocomplete="current-password")
                     st.html("<br>")
                     submit = st.form_submit_button(t("auth_login_btn"), use_container_width=True, type="primary")
                     if submit:
@@ -2023,13 +2023,16 @@ a.oauth-btn:hover {
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """, unsafe_allow_html=True)
                 with st.form("signup_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
+                    email = st.text_input("Email", placeholder="user@example.com", autocomplete="email")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), autocomplete="new-password")
+                    password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"), autocomplete="new-password")
                     st.html("<br>")
                     submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
                     if submit:
                         if not email or len(password) < 6:
                             st.error(t("auth_signup_err"))
+                        elif password != password_confirm:
+                            st.error("Пароли не совпадают. Пожалуйста, проверьте правильность ввода.")
                         else:
                             with st.spinner(t("auth_creating")):
                                 res = sign_up(email, password)
