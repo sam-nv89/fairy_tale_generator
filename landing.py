@@ -1945,6 +1945,9 @@ a.oauth-btn:hover {
 .auth-divider span {
     padding: 0 10px;
 }
+div[data-testid="InputInstructions"] {
+    display: none !important;
+}
 </style>
 """)
             tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
@@ -2027,9 +2030,9 @@ a.oauth-btn:hover {
                 # Используем st.form — это критически важно для Chrome, чтобы он 
                 # автоматически распознал форму регистрации и предложил генерацию надежного пароля.
                 with st.form("signup_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="email")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
-                    password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
+                    email = st.text_input("Email", placeholder="user@example.com")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
+                    password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"))
                     
                     # Истинная realtime проверка с помощью JS client-side (без задержек на запросы к серверу).
                     js_code = f"""
