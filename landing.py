@@ -189,46 +189,35 @@ section[data-testid="stSidebar"] {
     font-weight: 700;
 }
 
-/* Steps cards — компактные */
+/* Steps cards — Minimalist version */
 .step-card {
-    padding: 1.8rem 1.5rem;
+    padding: 2rem 1.5rem;
     text-align: center;
     max-width: 400px;
     width: 100%;
     margin: 0 auto;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.step-card:hover {
+    transform: translateY(-8px) scale(1.02);
 }
 .step-card .step-icon {
-    font-size: 2.5rem;
-    margin-bottom: 0.8rem;
+    font-size: 3.5rem;
+    margin-bottom: 1.2rem;
     line-height: 1;
+    filter: drop-shadow(0 4px 12px rgba(167, 139, 250, 0.3));
 }
 .step-card h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.6rem;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
     color: #f8fafc;
     font-family: 'Comfortaa', cursive;
 }
 .step-card p {
     color: #94a3b8;
-    font-size: 1.05rem;
-    line-height: 1.55;
+    font-size: 1.1rem;
+    line-height: 1.6;
     margin: 0;
-}
-.step-card { transition: all 0.3s ease; }
-.step-1:hover {
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
-    transform: translateY(-5px);
-}
-.step-2:hover {
-    border-color: rgba(167, 139, 250, 0.5);
-    box-shadow: 0 12px 30px rgba(167, 139, 250, 0.15);
-    transform: translateY(-5px);
-}
-.step-3:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
-    transform: translateY(-5px);
 }
 
 /* Stats bar */
@@ -1384,7 +1373,7 @@ def render_how_it_works():
     
     with col1:
         st.html(f"""
-<div class="glass-card step-card step-1 reveal" style="--reveal-delay: 0s;">
+<div class="step-card reveal" style="--reveal-delay: 0s;">
 <div class="step-icon">👶</div>
 <h3>{t("hiw_1_title")}</h3>
 <p>{t("hiw_1_sub")}</p>
@@ -1393,7 +1382,7 @@ def render_how_it_works():
         
     with col2:
         st.html(f"""
-<div class="glass-card step-card step-2 reveal" style="--reveal-delay: 0.15s;">
+<div class="step-card reveal" style="--reveal-delay: 0.15s;">
 <div class="step-icon">🧚‍♀️</div>
 <h3>{t("hiw_2_title")}</h3>
 <p>{t("hiw_2_sub")}</p>
@@ -1402,7 +1391,7 @@ def render_how_it_works():
         
     with col3:
         st.html(f"""
-<div class="glass-card step-card step-3 reveal" style="--reveal-delay: 0.3s;">
+<div class="step-card reveal" style="--reveal-delay: 0.3s;">
 <div class="step-icon">🎧</div>
 <h3>{t("hiw_3_title")}</h3>
 <p>{t("hiw_3_sub")}</p>
