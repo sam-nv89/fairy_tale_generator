@@ -2023,9 +2023,9 @@ a.oauth-btn:hover {
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """, unsafe_allow_html=True)
                 with st.form("signup_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com", autocomplete="email")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), autocomplete="new-password")
-                    password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"), autocomplete="new-password")
+                    email = st.text_input("Email", placeholder="user@example.com")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
+                    password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"))
                     st.html("<br>")
                     submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
                     if submit:
