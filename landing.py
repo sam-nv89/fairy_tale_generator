@@ -2022,30 +2022,46 @@ a.oauth-btn:hover {
                 </a>
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """, unsafe_allow_html=True)
-                with st.form("signup_form", clear_on_submit=True):
-                    email = st.text_input("Email", placeholder="user@example.com")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"))
-                    password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"))
-                    st.html("<br>")
-                    submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
-                    if submit:
-                        if not email or len(password) < 6:
-                            st.error(t("auth_signup_err"))
-                        elif password != password_confirm:
-                            st.error("Пароли не совпадают. Пожалуйста, проверьте правильность ввода.")
-                        else:
-                            with st.spinner(t("auth_creating")):
-                                res = sign_up(email, password)
-                                if res['success']:
-                                    if st.session_state.get('authenticated'):
-                                        st.success(t("auth_signup_success"))
-                                        st.session_state.current_page = 'generator'
-                                        st.query_params.clear()
-                                        st.rerun()
-                                    else:
-                                        st.info("Регистрация успешна! Для входа требуется подтверждение email (ссылка отправлена на почту).")
+                # Используем обычный контейнер вместо формы, чтобы интерфейс реагировал на ввод
+                # и показывал статус совпадения паролей до нажатия кнопки
+                email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="email")
+                password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
+                password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
+                
+                # Визуальное отображение совпадения паролей
+                if password or password_confirm:
+                    if len(password) < 6:
+                        st.markdown("<span style='color: orange; font-size: 0.85rem;'>⚠️ Пароль должен быть не менее 6 символов</span>", unsafe_allow_html=True)
+                    elif password == password_confirm:
+                        st.markdown("<span style='color: green; font-size: 0.85rem;'>✅ Пароли совпадают</span>", unsafe_allow_html=True)
+                    else:
+                        st.markdown("<span style='color: red; font-size: 0.85rem;'>❌ Пароли не совпадают</span>", unsafe_allow_html=True)
+                
+                st.html("<br>")
+                submit = st.button(t("auth_signup_btn"), use_container_width=True, type="primary")
+                
+                if submit:
+                    if not email or len(password) < 6:
+                        st.error(t("auth_signup_err"))
+                    elif password != password_confirm:
+                        st.error("Пароли не совпадают. Пожалуйста, проверьте правильность ввода.")
+                    else:
+                        with st.spinner(t("auth_creating")):
+                            res = sign_up(email, password)
+                            if res['success']:
+                                if st.session_state.get('authenticated'):
+                                    st.success(t("auth_signup_success"))
+                                    st.session_state.current_page = 'generator'
+                                    st.query_params.clear()
+                                    st.rerun()
                                 else:
-                                    st.error(res['error'])
+                                    st.info("Регистрация успешна! Для входа требуется подтверждение email (ссылка отправлена на почту).")
+                                    # Очистка полей
+                                    st.session_state.reg_email = ""
+                                    st.session_state.reg_pass = ""
+                                    st.session_state.reg_pass_conf = ""
+                            else:
+                                st.error(res['error'])
 
 def render_footer():
     # Получаем текущий язык для передачи в ссылки документов
