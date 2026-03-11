@@ -2031,7 +2031,7 @@ div[data-testid="InputInstructions"] {
                 # автоматически распознал форму регистрации и предложил генерацию надежного пароля.
                 with st.form("signup_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="username")
-                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
+                    password = st.text_input(t("auth_pass_signup"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
                     password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
                     
                     # Истинная realtime проверка с помощью JS client-side (без задержек на запросы к серверу).
@@ -2044,23 +2044,41 @@ div[data-testid="InputInstructions"] {
                         const t_mismatch = '{t("auth_pass_mismatch")}';
                         
                         function init() {{
-                            const passInputs = doc.querySelectorAll('input[type="password"]');
+                            const tabs = doc.querySelectorAll('[data-testid="stTab"]');
+                            const signupTab = tabs.length >= 2 ? tabs[1] : doc;
+                            
+                            const passInputs = signupTab.querySelectorAll('input[type="password"]');
                             if (passInputs.length < 2) return; 
                             
-                            // Мы берем последние два пароля, так как форма регистрации идет после формы входа
-                            const pass1 = passInputs[passInputs.length - 2];
-                            const pass2 = passInputs[passInputs.length - 1];
+                            const pass1 = passInputs[0];
+                            const pass2 = passInputs[1];
                             const msg = document.getElementById('pass-match-msg');
                             
-                            // Форсируем параметры для Chrome Password Manager (он ищет атрибут name="new-password")
-                            if(!pass1.name) pass1.setAttribute('name', 'new-password');
-                            if(!pass2.name) pass2.setAttribute('name', 'new-password-confirm');
+                            // 1. Форсируем параметры для Chrome Password Manager (он ищет атрибут name="new-password")
+                            pass1.setAttribute('name', 'new-password');
+                            pass1.setAttribute('autocomplete', 'new-password');
+                            pass2.setAttribute('name', 'new-password-confirm');
+                            pass2.setAttribute('autocomplete', 'new-password');
                             
-                            // Найдем соответствующий email
-                            const emailInputs = doc.querySelectorAll('input[type="text"][autocomplete="username"]');
-                            if(emailInputs.length > 0) {{
-                                const emailInput = emailInputs[emailInputs.length - 1];
-                                if(!emailInput.name) emailInput.setAttribute('name', 'username');
+                            // 2. Найдем соответствующий email в этом табе
+                            const emailInput = signupTab.querySelector('input[key*="reg_email"]') || signupTab.querySelector('input[type="text"]');
+                            if(emailInput) {{
+                                emailInput.setAttribute('name', 'username');
+                                emailInput.setAttribute('autocomplete', 'username');
+                            }}
+                            
+                            // 3. КРИТИЧЕСКИЙ МОМЕНТ: Оборачиваем в реальный тег <form>, так как st.form от Streamlit — это просто div.
+                            // Chrome почти никогда не предлагает "Generate Password" вне тега <form>.
+                            const stForm = signupTab.querySelector('[data-testid="stForm"]');
+                            if (stForm && stForm.tagName !== 'FORM' && !stForm.querySelector('form')) {{
+                                const realForm = doc.createElement('form');
+                                realForm.setAttribute('action', 'javascript:void(0);');
+                                realForm.setAttribute('autocomplete', 'on');
+                                realForm.style.display = 'contents'; // Сохраняем верстку
+                                while (stForm.firstChild) {{
+                                    realForm.appendChild(stForm.firstChild);
+                                }}
+                                stForm.appendChild(realForm);
                             }}
                             
                             function update() {{
