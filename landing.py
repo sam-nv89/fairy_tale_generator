@@ -2022,46 +2022,85 @@ a.oauth-btn:hover {
                 </a>
                 <div class="auth-divider"><span>{t("auth_or_email")}</span></div>
                 """, unsafe_allow_html=True)
-                # Используем обычный контейнер вместо формы, чтобы интерфейс реагировал на ввод
-                # и показывал статус совпадения паролей до нажатия кнопки
-                email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="email")
-                password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
-                password_confirm = st.text_input("Повторите пароль", type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
+                import streamlit.components.v1 as components
                 
-                # Визуальное отображение совпадения паролей
-                if password or password_confirm:
-                    if len(password) < 6:
-                        st.markdown("<span style='color: orange; font-size: 0.85rem;'>⚠️ Пароль должен быть не менее 6 символов</span>", unsafe_allow_html=True)
-                    elif password == password_confirm:
-                        st.markdown("<span style='color: green; font-size: 0.85rem;'>✅ Пароли совпадают</span>", unsafe_allow_html=True)
-                    else:
-                        st.markdown("<span style='color: red; font-size: 0.85rem;'>❌ Пароли не совпадают</span>", unsafe_allow_html=True)
-                
-                st.html("<br>")
-                submit = st.button(t("auth_signup_btn"), use_container_width=True, type="primary")
-                
-                if submit:
-                    if not email or len(password) < 6:
-                        st.error(t("auth_signup_err"))
-                    elif password != password_confirm:
-                        st.error("Пароли не совпадают. Пожалуйста, проверьте правильность ввода.")
-                    else:
-                        with st.spinner(t("auth_creating")):
-                            res = sign_up(email, password)
-                            if res['success']:
-                                if st.session_state.get('authenticated'):
-                                    st.success(t("auth_signup_success"))
-                                    st.session_state.current_page = 'generator'
-                                    st.query_params.clear()
-                                    st.rerun()
+                # Используем st.form — это критически важно для Chrome, чтобы он 
+                # автоматически распознал форму регистрации и предложил генерацию надежного пароля.
+                with st.form("signup_form", clear_on_submit=True):
+                    email = st.text_input("Email", placeholder="user@example.com", key="reg_email", autocomplete="email")
+                    password = st.text_input(t("auth_pass_placeholder"), type="password", placeholder=t("auth_pass_len"), key="reg_pass", autocomplete="new-password")
+                    password_confirm = st.text_input(t("auth_pass_confirm"), type="password", placeholder=t("auth_pass_len"), key="reg_pass_conf", autocomplete="new-password")
+                    
+                    # Истинная realtime проверка с помощью JS client-side (без задержек на запросы к серверу).
+                    js_code = f"""
+                    <div id="pass-match-msg" style="font-family: sans-serif; transition: all 0.2s; margin-top: -10px;"></div>
+                    <script>
+                        const doc = window.parent.document;
+                        const t_short = '{t("auth_pass_too_short")}';
+                        const t_match = '{t("auth_pass_match")}';
+                        const t_mismatch = '{t("auth_pass_mismatch")}';
+                        
+                        function init() {{
+                            const passInputs = doc.querySelectorAll('input[type="password"]');
+                            if (passInputs.length < 2) return; 
+                            
+                            // Мы берем последние два пароля, так как форма регистрации идет после формы входа
+                            const pass1 = passInputs[passInputs.length - 2];
+                            const pass2 = passInputs[passInputs.length - 1];
+                            const msg = document.getElementById('pass-match-msg');
+                            
+                            function update() {{
+                                const v1 = pass1.value;
+                                const v2 = pass2.value;
+                                if (!v1 && !v2) {{
+                                    msg.innerHTML = '';
+                                }} else if (v1.length < 6) {{
+                                    msg.innerHTML = '<span style="color: #ffb74d; font-size: 0.85rem;">⚠️ ' + t_short + '</span>';
+                                }} else if (v1 === v2) {{
+                                    msg.innerHTML = '<span style="color: #66bb6a; font-size: 0.85rem;">✅ ' + t_match + '</span>';
+                                }} else {{
+                                    msg.innerHTML = '<span style="color: #ef5350; font-size: 0.85rem;">❌ ' + t_mismatch + '</span>';
+                                }}
+                            }}
+                            
+                            if (!pass1.hasAttribute('data-hooked')) {{
+                                pass1.addEventListener('input', update);
+                                pass2.addEventListener('input', update);
+                                pass1.setAttribute('data-hooked', 'true');
+                            }}
+                            update();
+                        }}
+                        
+                        const interval = setInterval(() => {{
+                            if (doc.querySelectorAll('input[type="password"]').length >= 2) {{
+                                clearInterval(interval);
+                                init();
+                            }}
+                        }}, 200);
+                    </script>
+                    """
+                    components.html(js_code, height=35)
+                    
+                    submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
+                    
+                    if submit:
+                        if not email or len(password) < 6:
+                            st.error(t("auth_signup_err"))
+                        elif password != password_confirm:
+                            st.error(t("auth_pass_mismatch_err"))
+                        else:
+                            with st.spinner(t("auth_creating")):
+                                res = sign_up(email, password)
+                                if res['success']:
+                                    if st.session_state.get('authenticated'):
+                                        st.success(t("auth_signup_success"))
+                                        st.session_state.current_page = 'generator'
+                                        st.query_params.clear()
+                                        st.rerun()
+                                    else:
+                                        st.info("Регистрация успешна! Для входа требуется подтверждение email (ссылка отправлена на почту).")
                                 else:
-                                    st.info("Регистрация успешна! Для входа требуется подтверждение email (ссылка отправлена на почту).")
-                                    # Очистка полей
-                                    st.session_state.reg_email = ""
-                                    st.session_state.reg_pass = ""
-                                    st.session_state.reg_pass_conf = ""
-                            else:
-                                st.error(res['error'])
+                                    st.error(res['error'])
 
 def render_footer():
     # Получаем текущий язык для передачи в ссылки документов
