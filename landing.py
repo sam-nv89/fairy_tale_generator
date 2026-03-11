@@ -15,7 +15,7 @@ Glassmorphism и плавных анимаций.
 import streamlit as st
 import base64
 from pathlib import Path
-from auth import sign_up, sign_in, init_auth_state, is_authenticated
+from auth import sign_up, sign_in, init_auth_state, is_authenticated, get_auth_diagnostics
 from config import SUPPORTED_LANGUAGES
 from i18n import get_genre_list
 
@@ -1954,7 +1954,27 @@ a.oauth-btn:hover {
             import auth
             google_res = auth.sign_in_with_google()
             google_url = google_res.get("url", "#") if google_res.get("success") else "#"
-            
+
+            # --- Диагностика (только при ?debug_auth=1 в URL) ---
+            if not google_res.get("success") and st.query_params.get("debug_auth") == "1":
+                diag = get_auth_diagnostics()
+                with st.expander("🔧 Диагностика авторизации (debug_auth=1)", expanded=True):
+                    st.markdown(f"""
+| Проверка | Результат |
+|----------|-----------|
+| Библиотека supabase | {'✅' if diag.get('supabase_available') else '❌ НЕ УСТАНОВЛЕНА'} |
+| Версия supabase | `{diag.get('supabase_version', '?')}` |
+| Версия gotrue | `{diag.get('gotrue_version', '?')}` |
+| SUPABASE_URL в secrets | {'✅' if diag.get('secrets_url') else '❌ ОТСУТСТВУЕТ'} |
+| SUPABASE_KEY в secrets | {'✅' if diag.get('secrets_key') else '❌ ОТСУТСТВУЕТ'} |
+| URL preview | `{diag.get('url_preview', 'N/A')}` |
+| Ошибка чтения secrets | `{diag.get('secrets_error') or 'нет'}` |
+| Директория сессий | `{diag.get('storage_dir', '?')}` |
+| Запись на диск | {'✅' if diag.get('disk_writable') else f'❌ {diag.get("disk_error", "")}'} |
+| Supabase client создан | {'✅' if diag.get('client_created') else f'❌ {diag.get("client_error", "")}'} |
+                    """)
+            # --- Конец диагностики ---
+
             with tab1:
                 # CRITICAL: use st.markdown instead of st.html!
                 # st.html() creates a sandboxed iframe that blocks ALL link navigation.

@@ -92,15 +92,45 @@ def get_client_id() -> str:
 # ============================================================================
 #  ISOLATED DISK STORAGE
 # ============================================================================
-_STORAGE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.auth_sessions')
+def _get_storage_dir() -> str:
+    """Возвращает директорию для хранения сессий.
+
+    В Streamlit Cloud директория рядом с __file__ может быть read-only.
+    Используем /tmp как universally writable fallback.
+    """
+    # Приоритет 1: рядом с auth.py (локальная разработка)
+    local_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.auth_sessions')
+    try:
+        os.makedirs(local_dir, exist_ok=True)
+        # Проверяем реальную возможность записи
+        test = os.path.join(local_dir, '.write_test')
+        with open(test, 'w') as f:
+            f.write('1')
+        os.remove(test)
+        return local_dir
+    except (OSError, PermissionError):
+        pass
+
+    # Приоритет 2: /tmp (всегда доступен в Linux/Cloud среде)
+    tmp_dir = os.path.join('/tmp', '.auth_sessions')
+    try:
+        os.makedirs(tmp_dir, exist_ok=True)
+        logger.info(f"[Auth] Используется /tmp для хранения сессий: {tmp_dir}")
+        return tmp_dir
+    except Exception as e:
+        logger.error(f"[Auth] Не удалось создать директорию сессий даже в /tmp: {e}")
+        return local_dir  # вернём как есть, ошибки будут обработаны ниже
+
+_STORAGE_DIR = _get_storage_dir()
 
 class IsolatedDiskStorage(SyncSupportedStorage):
     """Изолированное хранилище состояния для каждого пользователя.
     Решает проблему Race Condition в многопользовательской среде.
+    Устойчив к ошибкам записи (read-only FS в Streamlit Cloud).
     """
     def __init__(self, client_id: str):
         self.client_id = client_id
-        os.makedirs(_STORAGE_DIR, exist_ok=True)
+        # _STORAGE_DIR уже создан и проверен в _get_storage_dir()
         self.file_path = os.path.join(_STORAGE_DIR, f'session_{self.client_id}.json')
 
     def _load(self) -> dict:
@@ -157,31 +187,72 @@ def get_site_url() -> str:
         return "http://localhost:8501"
 
 def _get_credentials() -> tuple[str, str] | None:
-    url = st.secrets.get("SUPABASE_URL")
-    key = st.secrets.get("SUPABASE_KEY")
+    """Безопасно читает учётные данные Supabase из st.secrets.
+
+    Защищает от:
+    - StreamlitSecretNotFoundError (нет secrets.toml и нет secrets в облаке)
+    - FileNotFoundError (нет файла)
+    - KeyError (ключ есть, но пустой)
+    """
+    try:
+        url = st.secrets.get("SUPABASE_URL")
+        key = st.secrets.get("SUPABASE_KEY")
+    except FileNotFoundError:
+        logger.warning(
+            "[Auth] secrets.toml не найден. "
+            "Для Streamlit Cloud добавьте SUPABASE_URL и SUPABASE_KEY "
+            "в Settings → Secrets."
+        )
+        return None
+    except Exception as e:
+        logger.error(f"[Auth] Ошибка чтения st.secrets: {type(e).__name__}: {e}")
+        return None
+
     if not url or not key:
+        logger.warning(
+            "[Auth] SUPABASE_URL или SUPABASE_KEY отсутствуют в secrets. "
+            "Авторизация недоступна."
+        )
         return None
     return url, key
 
 def get_supabase_client() -> "Client | None":
-    """Создаёт клиент Supabase с PKCE flow и изолированным хранилищем."""
+    """Создаёт клиент Supabase с PKCE flow и изолированным хранилищем.
+
+    Безопасен для вызова до начала рендеринга страницы: get_client_id()
+    вызывается с защитой от ошибок components.html().
+    """
     if not _SUPABASE_AVAILABLE:
+        logger.warning("[Auth] Библиотека supabase не установлена.")
         return None
 
     creds = _get_credentials()
     if not creds:
+        # Причина уже залогирована внутри _get_credentials()
         return None
 
     try:
         url, key = creds
-        client_id = get_client_id()
+
+        # Безопасно получаем client_id — get_client_id() пытается вызвать
+        # components.html() что может упасть до рендеринга в облаке.
+        # Используем простой UUID fallback если что-то идёт не так.
+        try:
+            client_id = get_client_id()
+        except Exception as e:
+            logger.warning(f"[Auth] get_client_id() упал ({type(e).__name__}), использую UUID.")
+            client_id = st.session_state.get('client_id') or uuid.uuid4().hex
+            st.session_state['client_id'] = client_id
+
         options = ClientOptions(
             flow_type='pkce',
             storage=IsolatedDiskStorage(client_id)
         )
-        return create_client(url, key, options=options)
+        client = create_client(url, key, options=options)
+        logger.debug(f"[Auth] Supabase клиент создан для client_id={client_id}, storage_dir={_STORAGE_DIR}")
+        return client
     except Exception as e:
-        logger.error(f"Ошибка создания Supabase клиента: {e}")
+        logger.error(f"[Auth] Ошибка создания Supabase клиента: {type(e).__name__}: {e}")
         return None
 
 
@@ -437,3 +508,79 @@ def delete_current_account() -> dict:
     except Exception as e:
         logger.error(f"[Auth] ❌ Ошибка удаления аккаунта: {e}")
         return {'success': False, 'error': str(e)}
+
+
+# ============================================================================
+#  DIAGNOSTICS (для диагностики в Streamlit Cloud UI)
+# ============================================================================
+def get_auth_diagnostics() -> dict:
+    """Собирает диагностику для отображения в UI при проблемах с авторизацией.
+
+    Возвращает словарь с результатами каждой проверки — для отображения
+    администратором или разработчиком через ?debug_auth=1 в URL.
+    """
+    results: dict = {}
+
+    # 1. Доступность библиотеки supabase
+    results['supabase_available'] = _SUPABASE_AVAILABLE
+
+    # 2. Чтение secrets
+    try:
+        url = st.secrets.get("SUPABASE_URL")
+        key = st.secrets.get("SUPABASE_KEY")
+        results['secrets_url'] = bool(url)
+        results['secrets_key'] = bool(key)
+        results['url_preview'] = (url[:30] + '...') if url else None
+        results['secrets_error'] = None
+    except FileNotFoundError:
+        results['secrets_url'] = False
+        results['secrets_key'] = False
+        results['url_preview'] = None
+        results['secrets_error'] = 'FileNotFoundError: secrets.toml не найден'
+    except Exception as e:
+        results['secrets_url'] = False
+        results['secrets_key'] = False
+        results['url_preview'] = None
+        results['secrets_error'] = f'{type(e).__name__}: {e}'
+
+    # 3. Запись на диск
+    results['storage_dir'] = _STORAGE_DIR
+    try:
+        test_path = os.path.join(_STORAGE_DIR, '.diag_test')
+        with open(test_path, 'w') as f:
+            f.write('ok')
+        os.remove(test_path)
+        results['disk_writable'] = True
+        results['disk_error'] = None
+    except Exception as e:
+        results['disk_writable'] = False
+        results['disk_error'] = f'{type(e).__name__}: {e}'
+
+    # 4. Создание клиента
+    if _SUPABASE_AVAILABLE and results.get('secrets_url') and results.get('secrets_key'):
+        try:
+            client = get_supabase_client()
+            results['client_created'] = client is not None
+            results['client_error'] = None
+        except Exception as e:
+            results['client_created'] = False
+            results['client_error'] = f'{type(e).__name__}: {e}'
+    else:
+        results['client_created'] = False
+        results['client_error'] = 'Предварительные проверки не пройдены'
+
+    # 5. Версии пакетов
+    try:
+        import supabase as _sb
+        results['supabase_version'] = getattr(_sb, '__version__', 'unknown')
+    except Exception:
+        results['supabase_version'] = 'error'
+
+    try:
+        import gotrue as _gt
+        results['gotrue_version'] = getattr(_gt, '__version__', 'unknown')
+    except Exception:
+        results['gotrue_version'] = 'not installed'
+
+    return results
+
