@@ -63,8 +63,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 1.5. Локализация (i18n) и Маршрутизация ---
+# --- 1.5. Инициализация State и Auth (Критично для рефреша страницы) ---
 import auth
+auth.init_auth_state()
+# СИНХРОНИЗАЦИЯ: Восстанавливаем сессию сразу, чтобы routing внизу видел 'user'.
+# Это предотвращает редирект на лендинг при обновлении страниц (F5).
+auth.is_authenticated()
 auth.handle_oauth_callback()  # PKCE: обрабатывает ?code= от Google OAuth
 
 # Проверка параметров URL (?lang=en&page=privacy)
@@ -106,7 +110,8 @@ if qp_page and qp_page in ['landing', 'generator', 'privacy', 'terms']:
         needs_rerun = True
 
 if 'current_page' not in st.session_state:
-    if auth.is_authenticated():
+    # Сессия уже синхронизирована выше через auth.is_authenticated()
+    if st.session_state.get('authenticated'):
         st.session_state.current_page = 'generator'
     else:
         st.session_state.current_page = 'landing'
@@ -139,25 +144,13 @@ st.components.v1.html(get_dropdown_fix_js(), height=0)
 
 # Logging уже сконфигурирован в начале файла (см. импорты).
 
-# Диагностический блок для захвата "призрачных" ошибок
-try:
-    # Импорт модулей
-    from auth import init_auth_state, is_authenticated, sign_out, get_current_user, _SUPABASE_AVAILABLE
-    import storage # Локальная библиотека сказок
-    
-    # Инициализация состояния авторизации
-    init_auth_state()
-except Exception as diagnostic_error:
-    import traceback
-    error_details = traceback.format_exc()
-    logger.error(f"🔴 CRITICAL INITIALIZATION ERROR: {error_details}")
-    st.error(f"Ошибка инициализации: {diagnostic_error}")
-    st.stop()
+# Импорт и инициализация storage
+import storage
 
 # (Debug code removed)
 
 # Предупреждение если Supabase недоступен (только в логах, не на экране)
-if not _SUPABASE_AVAILABLE:
+if not auth._SUPABASE_AVAILABLE:
     logger.warning("Supabase library is not installed or incompatible. Auth features are disabled.")
     # Не показываем st.warning на экране, чтобы не засорять UI
 
@@ -733,7 +726,7 @@ elif st.session_state.current_page == 'landing':
 with st.sidebar:
     
     # Компактная кнопка профиля (только если авторизован)
-    if is_authenticated():
+    if auth.is_authenticated():
         profile_labels = {'ru': '👤 Профиль', 'en': '👤 Profile', 'es': '👤 Perfil', 'fr': '👤 Profil', 'pt': '👤 Perfil', 'zh-CN': '👤 资料', 'hi': '👤 प्रोफ़ाइल', 'de': '👤 Profil'}
         profile_label = profile_labels.get(user_lang, '👤 Profile')
         # Ghost-style tertiary — лаконично, без визуального шума
@@ -744,7 +737,7 @@ with st.sidebar:
         st.markdown("<hr style='border: none; border-top: 1px solid rgba(130,130,150,0.18); margin: 0.1rem 0 0.8rem 0;'>", unsafe_allow_html=True)
 
     # Заголовок настроек теперь ПОД ссылками
-    margin_top = "0rem" if is_authenticated() else "-2rem"
+    margin_top = "0rem" if auth.is_authenticated() else "-2rem"
     st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
 
     # 0. Переключатель языка
@@ -915,7 +908,7 @@ with st.sidebar:
     st.divider()
 
     # Кнопка выхода — в самом низу панели, ненавязчиво
-    if is_authenticated():
+    if auth.is_authenticated():
         logout_txt = t('logout_btn', user_lang)
         logout_label = logout_txt if "🚪" in logout_txt else f"🚪 {logout_txt}"
         st.markdown("""
@@ -933,7 +926,7 @@ with st.sidebar:
             </style>
         """, unsafe_allow_html=True)
         if st.button(logout_label, key="nav_logout", use_container_width=True, type="secondary"):
-            sign_out()
+            auth.sign_out()
             st.session_state.current_page = 'landing'
             st.rerun()
         st.markdown("<div style='margin-top: 0.3rem;'></div>", unsafe_allow_html=True)
@@ -1008,7 +1001,7 @@ else:
 with st.form("story_form"):
     # Селектор ребенка для авторизованных пользователей
     selected_child_id = None
-    if is_authenticated():
+    if auth.is_authenticated():
         child_profiles = storage.get_child_profiles()
         if child_profiles:
             # Маппинг имен для селектора
