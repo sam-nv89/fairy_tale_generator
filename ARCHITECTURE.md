@@ -19,15 +19,15 @@
 fairy_tale_generator/
 ├── app.py                # Точка входа: роутинг, генератор, сайдбар, плеер
 ├── landing.py            # Лендинг 3.0 (glassmorphism, scroll-анимации, auth)
-├── profile_page.py       # Личный кабинет (профиль, история, удаление аккаунта)
+├── profile_page.py       # Личный кабинет (профиль, история, профили детей, удаление аккаунта)
 ├── auth.py               # Авторизация (Supabase, PKCE Flow, session persistence)
 ├── config.py             # Централизованные константы: языки, голоса, модели
 ├── export.py             # Мультиформатный экспорт (TXT, PDF, EPUB, FB2, MP3)
-├── i18n.py               # Переводы интерфейса генератора (8 языков)
+├── i18n.py               # Переводы интерфейса генератора (8 языков + профили детей)
 ├── landing_i18n.py       # Переводы лендинга (8 языков)
 ├── legal.py              # Страницы Privacy Policy и Terms of Service
 ├── legal_i18n.py         # Переводы юридических документов (8 языков)
-├── storage.py            # Хранилище историй (гибрид: Supabase DB + Local JSON)
+├── storage.py            # Хранилище (Supabase DB + Local JSON), CRUD для историй и профилей детей
 ├── styles.py             # Глобальные CSS-стили (dark/light темы)
 ├── utils.py              # Утилиты: валюта, язык, форматирование цен
 ├── requirements.txt      # Зависимости Python
@@ -98,8 +98,9 @@ sequenceDiagram
         User->>App: Кнопка «Профиль»
         App->>Profile: render_profile_page()
         Profile->>Supabase: SELECT profiles WHERE id=user.id
-        Supabase-->>Profile: email, plan, created_at
-        Profile-->>User: Данные профиля + Danger Zone
+        Profile->>Storage: get_child_profiles()
+        Storage->>Supabase: SELECT children WHERE user_id=user.id
+        Profile-->>User: Данные профиля + Профили детей + Danger Zone
     end
 ```
 
@@ -127,6 +128,7 @@ sequenceDiagram
 - Получает данные из `auth.users` и `public.profiles` через Supabase.
 - Отображает: email, дату регистрации (с количеством дней), тарифный план, дату последнего входа.
 - **Danger Zone**: Удаление аккаунта с подтверждением словом на языке пользователя (УДАЛИТЬ / DELETE / ELIMINAR / SUPPRIMER / LÖSCHEN / EXCLUIR / 删除 / हटाएं).
+- **Профили детей**: Управление списком детей (CRUD), данные которых используются для автозаполнения формы генерации.
 - **Локализация**: Полный словарь `L` на 8 языков (ru/en/es/fr/de/pt/zh-CN/hi) для всех строк.
 
 ### 4. `auth.py` (Авторизация и Безопасность)
@@ -151,9 +153,9 @@ CSS-стили для интерфейса генератора (~1660 стро�
 
 ### 7. `storage.py` (Уровень данных)
 Гибридное хранилище (Dual Mode):
-- **Авторизованные**: Supabase PostgreSQL (таблица `stories`).
+- **Авторизованные**: Supabase PostgreSQL (таблицы `stories` и `children`).
 - **Гости**: Локальный `stories.json` (UUID, дата, title, body).
-- CRUD: `save_story()`, `load_stories()`, `delete_story()`.
+- CRUD: `save_story()`, `load_stories()`, `delete_story()`, `get_child_profiles()`, `save_child_profile()`.
 
 ### 8. `export.py` (Мультиформатный Экспорт)
 - **TXT** — простой текст UTF-8

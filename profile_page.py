@@ -1,6 +1,7 @@
 import streamlit as st
 import auth
 from i18n import t
+import storage
 
 
 def render_profile_page():
@@ -208,6 +209,62 @@ def render_profile_page():
         last_sign_in = profile_data.get('last_sign_in_at', '')
         if last_sign_in:
             st.markdown(f"**🔑 {loc('last_login')}:** {str(last_sign_in)[:10]}")
+
+    st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
+                unsafe_allow_html=True)
+
+    # --- СЕКЦИЯ: ПРОФИЛИ ДЕТЕЙ ---
+    st.markdown(f"### {t('children_title', user_lang)}")
+    
+    # Загружаем профили
+    child_profiles = storage.get_child_profiles()
+    
+    if not child_profiles:
+        st.info(t('child_profiles_empty', user_lang))
+    else:
+        for child in child_profiles:
+            with st.container(border=True):
+                c_col1, c_col2, c_col3 = st.columns([3, 2, 1])
+                with c_col1:
+                    st.markdown(f"**👦 {child.get('name')}**")
+                    if child.get('hobbies'):
+                        st.caption(f"🎨 {child.get('hobbies')}")
+                with c_col2:
+                    st.markdown(f"🎂 {child.get('age')}")
+                with c_col3:
+                    # Кнопка удаления
+                    if st.button("🗑️", key=f"del_child_{child.get('id')}", help=t('delete_help', user_lang)):
+                        if storage.delete_child_profile(child.get('id')):
+                            st.toast(f"✅ {child.get('name')} удален")
+                            st.rerun()
+
+    # Форма добавления/редактирования ребенка
+    with st.expander(t('add_child_btn', user_lang)):
+        with st.form("add_child_form", clear_on_submit=True):
+            new_name = st.text_input(t('child_name', user_lang))
+            # Используем тот же селектор возрастов, что и в основном приложении
+            from i18n import get_age_ranges
+            age_ranges = get_age_ranges(user_lang)
+            new_age = st.select_slider(t('child_age', user_lang), options=list(age_ranges.keys()), value=list(age_ranges.keys())[2])
+            new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder="Любит космос, динозавров...")
+            
+            submit_child = st.form_submit_button(t('save_child_btn', user_lang), type="primary")
+            
+            if submit_child:
+                if not new_name.strip():
+                    st.error(t('name_warning', user_lang))
+                else:
+                    new_profile = {
+                        "name": new_name.strip(),
+                        "age": new_age,
+                        "hobbies": new_hobbies.strip()
+                    }
+                    res = storage.save_child_profile(new_profile)
+                    if res.get('success'):
+                        st.toast(f"✅ {new_name} сохранен!")
+                        st.rerun()
+                    else:
+                        st.error(f"Error: {res.get('error')}")
 
     st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
                 unsafe_allow_html=True)

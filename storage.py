@@ -63,6 +63,7 @@ def save_story(story: Dict) -> None:
                 record = {
                     "id": story_id,
                     "user_id": user.id,
+                    "child_id": story.get("child_id"),
                     "title": story.get("title", ""),
                     "content": story.get("body", ""),
                     "language": story.get("language", "ru")
@@ -129,6 +130,62 @@ def delete_story(story_id: str) -> None:
         except OSError as e:
             logger.error(f"Ошибка удаления из {STORIES_FILE}: {e}")
             st.error(f"Ошибка удаления: {e}")
+
+
+def get_child_profiles() -> List[Dict]:
+    """Загружает список профилей детей пользователя из Supabase."""
+    if not auth.is_authenticated():
+        return []
+        
+    client = auth.get_supabase_client()
+    user = auth.get_current_user()
+    if client and user:
+        try:
+            response = client.table("children").select("*").eq("user_id", user.id).order("created_at").execute()
+            return response.data
+        except Exception as e:
+            logger.error(f"Ошибка загрузки профилей детей: {e}")
+            return []
+    return []
+
+def save_child_profile(profile: Dict) -> Dict:
+    """Сохраняет или обновляет профиль ребенка в Supabase."""
+    if not auth.is_authenticated():
+        return {"success": False, "error": "Not authenticated"}
+        
+    client = auth.get_supabase_client()
+    user = auth.get_current_user()
+    if client and user:
+        try:
+            profile_to_save = profile.copy()
+            profile_to_save["user_id"] = user.id
+            
+            # Если ID не передан, Supabase сгенерирует его сама (uuid)
+            response = client.table("children").upsert(profile_to_save).execute()
+            if response.data:
+                logger.info(f"Профиль ребенка успешно сохранен: {profile_to_save.get('name')}")
+                return {"success": True, "data": response.data[0]}
+        except Exception as e:
+            logger.error(f"Ошибка сохранения профиля ребенка: {e}")
+            return {"success": False, "error": str(e)}
+    return {"success": False, "error": "Supabase client not available"}
+
+def delete_child_profile(child_id: str) -> bool:
+    """Удаляет профиль ребенка по ID."""
+    if not auth.is_authenticated():
+        return False
+        
+    client = auth.get_supabase_client()
+    user = auth.get_current_user()
+    if client and user:
+        try:
+            client.table("children").delete().eq("id", child_id).eq("user_id", user.id).execute()
+            logger.info(f"Профиль ребенка {child_id} удален")
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка удаления профиля ребенка: {e}")
+            return False
+    return False
 
 def get_story(story_id: str) -> Optional[Dict]:
     """Возвращает сказку по ID."""

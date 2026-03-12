@@ -101,7 +101,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "8-12 лет": "8-12 лет",
             "13-17 лет": "13-17 лет",
             "18+": "18+"
-        }
+        },
+        
+        # Профили детей
+        'children_title': "👶 Профили детей",
+        'add_child_btn': "➕ Добавить ребенка",
+        'edit_child_btn': "✏️ Изменить",
+        'save_child_btn': "💾 Сохранить",
+        'child_name': "Имя",
+        'child_age': "Возраст",
+        'child_hobbies': "Интересы / Хобби",
+        'child_delete_confirm': "Удалить профиль ребенка? Сказки останутся, но профиль исчезнет.",
+        'child_profiles_empty': "У вас пока нет сохраненных профилей детей. Добавьте первый!",
+        'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
+        'child_id_label': "Выберите ребенка"
     },
     
     'en': {
@@ -198,7 +211,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "8-12 years": "8-12 years",
             "13-17 years": "13-17 years",
             "18+": "18+"
-        }
+        },
+        
+        # Child Profiles
+        'children_title': "👶 Child Profiles",
+        'add_child_btn': "➕ Add Child",
+        'edit_child_btn': "✏️ Edit",
+        'save_child_btn': "💾 Save",
+        'child_name': "Name",
+        'child_age': "Age",
+        'child_hobbies': "Interests / Hobbies",
+        'child_delete_confirm': "Delete child profile? Stories will remain, but the profile will be gone.",
+        'child_profiles_empty': "No child profiles saved yet. Add the first one!",
+        'child_limit_reached': "Profile limit reached for your plan.",
+        'child_id_label': "Select a child"
     },
     
     # === ESPAÑOL (Spanish) - ~500 million speakers ===
@@ -392,7 +418,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "8-12 ans": "8-12 ans",
             "13-17 ans": "13-17 ans",
             "18+": "18+"
-        }
+        },
+        
+        # Profils d'enfants
+        'children_title': "👶 Profils d'Enfants",
+        'add_child_btn': "➕ Ajouter un enfant",
+        'edit_child_btn': "✏️ Modifier",
+        'save_child_btn': "💾 Enregistrer",
+        'child_name': "Nom",
+        'child_age': "Âge",
+        'child_hobbies': "Intérêts / Loisirs",
+        'child_delete_confirm': "Supprimer le profil de l'enfant ? Les histoires resteront, mais le profil disparaîtra.",
+        'child_profiles_empty': "Aucun profil d'enfant enregistré. Ajoutez le premier !",
+        'child_limit_reached': "Limite de profils atteinte pour votre plan.",
+        'child_id_label': "Sélectionnez un enfant"
     },
     
     # === PORTUGUÊS (Portuguese) - ~260 million speakers ===
@@ -586,7 +625,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "8-12岁": "8-12岁",
             "13-17岁": "13-17岁",
             "18+": "18+"
-        }
+        },
+        
+        # 儿童资料
+        'children_title': "👶 儿童资料",
+        'add_child_btn': "➕ 添加孩子",
+        'edit_child_btn': "✏️ 编辑",
+        'save_child_btn': "💾 保存",
+        'child_name': "名字",
+        'child_age': "年龄",
+        'child_hobbies': "兴趣 / 爱好",
+        'child_delete_confirm': "删除孩子资料？故事将保留，但资料将消失。",
+        'child_profiles_empty': "还没有保存过孩子资料。添加第一个吧！",
+        'child_limit_reached': "您的套餐已达到资料限制。",
+        'child_id_label': "选择一个孩子"
     },
     
     # === HINDI (hi) - ~600 million speakers ===
@@ -683,7 +735,20 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "8-12 साल": "8-12 साल",
             "13-17 साल": "13-17 साल",
             "18+": "18+"
-        }
+        },
+        
+        # बच्चों के प्रोफाइल
+        'children_title': "👶 बच्चों के प्रोफाइल",
+        'add_child_btn': "➕ बच्चा जोड़ें",
+        'edit_child_btn': "✏️ एडिट",
+        'save_child_btn': "💾 सेव",
+        'child_name': "नाम",
+        'child_age': "उम्र",
+        'child_hobbies': "रुचियां / शौक",
+        'child_delete_confirm': "बच्चे का प्रोफाइल हटाएं? कहानियाँ बनी रहेंगी, लेकिन प्रोफाइल हट जाएगा।",
+        'child_profiles_empty': "अभी तक कोई बच्चे का प्रोफाइल सेव नहीं किया गया है। पहला जोड़ें!",
+        'child_limit_reached': "आपकी योजना के लिए प्रोफाइल सीमा समाप्त हो गई है।",
+        'child_id_label': "एक बच्चा चुनें"
     },
     
     # === GERMAN (de) - ~130 million speakers ===
@@ -775,13 +840,26 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Age ranges
         'age_ranges': {
             "0-12 Monate": "0-12 Monate",
-            "1-3 Jahre": "1-3 Jahre",
+        "1-3 Jahre": "1-3 Jahre",
             "4-7 Jahre": "4-7 Jahre",
             "8-12 Jahre": "8-12 Jahre",
             "13-17 Jahre": "13-17 Jahre",
             "18+": "18+"
-        }
-    }
+        },
+        
+        # Kinderprofile
+        'children_title': "👶 Kinderprofile",
+        'add_child_btn': "➕ Kind hinzufügen",
+        'edit_child_btn': "✏️ Bearbeiten",
+        'save_child_btn': "💾 Speichern",
+        'child_name': "Name",
+        'child_age': "Alter",
+        'child_hobbies': "Interessen / Hobbies",
+        'child_delete_confirm': "Kindprofil löschen? Die Geschichten bleiben erhalten, aber das Profil wird gelöscht.",
+        'child_profiles_empty': "Noch keine Kinderprofile gespeichert. Füge das erste hinzu!",
+        'child_limit_reached': "Profilbegrenzung für deinen Plan erreicht.",
+        'child_id_label': "Wähle ein Kind"
+    },
 }
 
 

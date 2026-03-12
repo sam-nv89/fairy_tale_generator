@@ -1006,12 +1006,44 @@ else:
 
 # Основная форма
 with st.form("story_form"):
+    # Селектор ребенка для авторизованных пользователей
+    selected_child_id = None
+    if is_authenticated():
+        child_profiles = storage.get_child_profiles()
+        if child_profiles:
+            # Маппинг имен для селектора
+            child_names = {c['id']: c['name'] for c in child_profiles}
+            # Добавляем опцию "Другой ребенок / Ручной ввод"
+            child_options = [None] + list(child_names.keys())
+            
+            def format_child(cid):
+                if cid is None: return "--- " + t('child_id_label', user_lang) + " ---"
+                return f"👶 {child_names[cid]}"
+            
+            selected_child_id = st.selectbox(
+                t('child_id_label', user_lang),
+                options=child_options,
+                format_func=format_child,
+                key="child_selector"
+            )
+            
+            # Если ребенок выбран, подтягиваем его данные
+            if selected_child_id:
+                sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
+                # Важно: мы не можем менять значения text_input напрямую через параметры value, 
+                # если они зависят от состояния другого виджета ВНУТРИ формы без rerun.
+                # Но мы можем использовать их как значения по умолчанию.
+    
     # Верхний ряд: Имя, Пол, Возраст
     # Используем соотношение: [2, 1, 3] для Имени, Пола, Возраста
     c1, c2, c3 = st.columns([2, 1, 3])
     
     with c1:
-        name = st.text_input(t('name_label', user_lang), placeholder=t('name_placeholder', user_lang))
+        default_name = ""
+        if selected_child_id:
+            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
+            default_name = sel_child.get('name', '')
+        name = st.text_input(t('name_label', user_lang), value=default_name, placeholder=t('name_placeholder', user_lang))
     
     with c2:
         gender = st.selectbox(
@@ -1022,13 +1054,22 @@ with st.form("story_form"):
         )
 
     with c3:
-        # Вариант 3: Горизонтальные кнопки (Pills) с диапазонами
+        # Вариант 3: Горизонтальные кнопки (Pills) with ranges
         age_ranges = get_age_ranges(user_lang)
+        
+        # Определяем дефолтный индекс для возраста
+        default_age_idx = 2 # 4-7 лет
+        if selected_child_id:
+            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
+            c_age = sel_child.get('age')
+            if c_age in age_ranges:
+                default_age_idx = list(age_ranges.keys()).index(c_age)
+
         age_selection = st.radio(
             t('age_label', user_lang),
             options=list(age_ranges.keys()),
             horizontal=True,
-            index=2, # Default: 4-7 лет
+            index=default_age_idx,
             key="age_radio",
             label_visibility="visible"
         )
@@ -1054,8 +1095,13 @@ with st.form("story_form"):
         genre = st.selectbox(t('genre_label', user_lang), options=genre_options, index=default_genre_index)
 
     with col_hobbies:
+        default_hobbies = ""
+        if selected_child_id:
+            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
+            default_hobbies = sel_child.get('hobbies', '')
         hobbies = st.text_input(
             t('hobbies_label', user_lang), 
+            value=default_hobbies,
             placeholder=t('hobbies_placeholder', user_lang),
             help=t('hobbies_help', user_lang)
         )
@@ -1215,7 +1261,8 @@ if submit_btn:
                 'title': title,
                 'body': story_body,
                 'audio': None,
-                'language': user_lang
+                'language': user_lang,
+                'child_id': selected_child_id # Привязываем к ребенку
             }
             # Сбрасываем кэш экспорта — новая сказка требует новых файлов
             for fmt_key in EXPORT_FORMATS:
