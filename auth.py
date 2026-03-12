@@ -295,11 +295,15 @@ def sign_in_with_google() -> dict:
             "provider": "google",
             "options": {
                 "redirect_to": redirect_with_cid
-                # НЕ переопределяем query_params['state'] — это сломает PKCE!
             }
         })
-        logger.info(f"[Google OAuth] URL подготовлен, client_id={client_id}")
-        return {'success': True, 'url': res.url}
+        auth_url = getattr(res, 'url', None)
+        logger.info(f"[Google OAuth] Sign-In initiated. ClientID: {client_id}, URL: {auth_url}")
+        
+        if not auth_url:
+            return {'success': False, 'url': None, 'error': 'Не удалось получить URL авторизации от Supabase'}
+            
+        return {'success': True, 'url': auth_url}
     except Exception as e:
         logger.error(f"[Google OAuth] Ошибка: {type(e).__name__}: {e}")
         return {'success': False, 'url': None, 'error': str(e)}

@@ -1,6 +1,6 @@
 # 🧚 Генератор Аудио-Сказок
 
-![Version](https://img.shields.io/badge/version-v3.6-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
+![Version](https://img.shields.io/badge/version-v3.8-blue) ![Status](https://img.shields.io/badge/status-Active%20Development-orange) ![Python](https://img.shields.io/badge/python-3.10+-yellow) ![Languages](https://img.shields.io/badge/languages-8-green)
 
 Умный веб-сервис для родителей: генерирует персонализированные сказки с помощью ИИ и озвучивает нейронными голосами. Поддерживает 8 языков с охватом ~3.5 млрд носителей.
 
