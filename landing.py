@@ -1748,7 +1748,6 @@ def render_pricing():
 """ + f"""
 <div class="pricing-section-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
 <h2 class="section-title" id="pricing-section">{t("pricing_subtitle")}</h2>
-<p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("pricing_subdesc")}</p>
 
 <!-- PURE CSS Billing toggle: Monthly / Yearly -->
 <input type="checkbox" id="billing-checkbox" />
