@@ -14,10 +14,21 @@ Glassmorphism и плавных анимаций.
 
 import streamlit as st
 import base64
+import json
+import random
+import urllib.request
+import math
+import streamlit.components.v1 as components
 from pathlib import Path
 from auth import sign_up, sign_in, init_auth_state, is_authenticated, get_auth_diagnostics
 from config import SUPPORTED_LANGUAGES
 from i18n import get_genre_list
+from landing_i18n import LANDING_TRANSLATIONS
+
+def t(key):
+    """Функция локализации для лендинга."""
+    user_lang = st.session_state.get('user_lang', 'ru')
+    return LANDING_TRANSLATIONS.get(key, {}).get(user_lang, LANDING_TRANSLATIONS.get(key, {}).get('ru', key))
 
 def inject_landing_styles():
     """Инъекция глобальных стилей для лендинга (Glassmorphism, Анимации, Типографика)."""
@@ -66,8 +77,8 @@ section[data-testid="stSidebar"] {
     to { opacity: 1; transform: translateY(0); }
 }
 @keyframes floatSoft {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-6px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
 }
 @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.1); }
@@ -80,6 +91,57 @@ section[data-testid="stSidebar"] {
 @keyframes countUp {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatSway {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(15px, -15px) rotate(5deg); }
+    66% { transform: translate(-10px, 10px) rotate(-5deg); }
+}
+@keyframes floatIcon1 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33% { transform: translate(10px, -10px) rotate(4deg); }
+    66% { transform: translate(-8px, 12px) rotate(-3deg); }
+}
+@keyframes floatIcon2 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-12px, -10px) rotate(-5deg); }
+    75% { transform: translate(12px, 10px) rotate(5deg); }
+}
+@keyframes floatIcon3 {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(15px, 15px) rotate(10deg); }
+}
+
+/* Глобальные украшения */
+.page-decorations {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.page-decorations .float-icon {
+    position: absolute;
+    font-size: var(--size, 2rem);
+    opacity: var(--opa, 0.08);
+    animation: var(--anim, floatSway) var(--dur, 10s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    filter: blur(0.4px);
+    user-select: none;
+    transition: opacity 0.5s ease;
+}
+.page-decorations .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--dur, 4s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+.page-decorations .star.soft {
+    background: rgba(196, 181, 253, 0.4);
 }
 
 /* Утилиты */
@@ -1174,12 +1236,44 @@ def render_navbar():
 </script>
 """, height=0, scrolling=False)
 
+
+def get_decorations_html(num_stars=15, icons=None, seed=None):
+    """Генерирует HTML-блок с мерцающими звездами и плавающими иконками."""
+    if seed:
+        random.seed(seed)
+    
+    parts = ['<div class="page-decorations">']
+    
+    # Звезды
+    for _ in range(num_stars):
+        top = random.randint(2, 95)
+        left = random.randint(2, 95)
+        dur = random.uniform(2.5, 6.0)
+        delay = random.uniform(0, 4.0)
+        soft = "soft" if random.random() > 0.5 else ""
+        parts.append(f'<span class="star {soft}" style="top:{top}%;left:{left}%;--dur:{dur}s;--delay:{delay}s;"></span>')
+    
+    # Иконки
+    if icons:
+        for icon in icons:
+            top = random.randint(5, 90)
+            left = random.randint(3, 93)
+            size = random.uniform(1.2, 2.5)
+            opa = random.uniform(0.05, 0.12)
+            dur = random.uniform(6.0, 12.0)
+            delay = random.uniform(0, 5.0)
+            anim = random.choice(["floatIcon1", "floatIcon2", "floatIcon3", "floatSway"])
+            parts.append(f'<span class="float-icon" style="top:{top}%;left:{left}%;--size:{size}rem;--opa:{opa};--anim:{anim};--dur:{dur}s;--delay:{delay}s;">{icon}</span>')
+            
+    parts.append('</div>')
+    return "".join(parts)
+
 def render_hero():
     # Строим тот же отсортированный список историй, что и в render_scripts(),
     # чтобы вставить заголовки и badges прямо в HTML — без ожидания JS.
     _lang_names = {
         "de": "Deutsch", "en": "English", "es": "Español", "fr": "Français",
-        "pt": "Português", "ru": "Русский", "hi": "हिन्दी", "zh-CN": "中文"
+        "pt": "Português", "ru": "Русский", "hi": "हिнной", "zh-CN": "中文"
     }
     _stories = [
         {"lang": "de", "badge": "DE", "title": "Märchenauszug"},
@@ -1193,53 +1287,16 @@ def render_hero():
     ]
     _stories.sort(key=lambda x: _lang_names.get(x["lang"], ""))
 
+    # Набор иконок для Hero (самый насыщенный)
+    hero_icons = ["🧚", "🐉", "🏰", "🌙", "✨", "📖", "🦊", "🐻", "☀️", "☁️", "🦋", "🐰", "👑", "🪄", "🏹", "🛡️", "📜"]
+
     st.html(f"""
 <div class="landing-wrapper">
 <div class="hero-section">
 <div class="hero-bg-blob1"></div>
 <div class="hero-bg-blob2"></div>
 
-<!-- Floating emoji icons -->
-<div class="hero-floats">
-<span class="float-icon" style="top:10%;left:6%;--size:2.2rem;--opa:0.10;--anim:floatIcon1;--dur:7s;--delay:0s;">🧚</span>
-<span class="float-icon" style="top:20%;right:8%;--size:2.5rem;--opa:0.08;--anim:floatIcon2;--dur:8s;--delay:1s;">🐉</span>
-<span class="float-icon" style="top:55%;left:4%;--size:1.8rem;--opa:0.09;--anim:floatIcon3;--dur:9s;--delay:2s;">🏰</span>
-<span class="float-icon" style="top:15%;right:15%;--size:1.6rem;--opa:0.12;--anim:floatIcon1;--dur:6s;--delay:0.5s;">🌙</span>
-<span class="float-icon" style="top:65%;right:6%;--size:2rem;--opa:0.10;--anim:floatIcon2;--dur:7.5s;--delay:1.5s;">📖</span>
-<span class="float-icon" style="top:40%;left:10%;--size:1.5rem;--opa:0.07;--anim:floatIcon3;--dur:10s;--delay:3s;">✨</span>
-<span class="float-icon" style="top:30%;right:4%;--size:1.7rem;--opa:0.09;--anim:floatIcon1;--dur:8.5s;--delay:0.8s;">🦊</span>
-<span class="float-icon" style="top:75%;left:12%;--size:1.9rem;--opa:0.08;--anim:floatIcon2;--dur:7s;--delay:2.5s;">🐻</span>
-<span class="float-icon" style="top:5%;left:40%;--size:1.6rem;--opa:0.10;--anim:floatIcon3;--dur:9.5s;--delay:1.3s;">☀️</span>
-<span class="float-icon" style="top:45%;right:3%;--size:2rem;--opa:0.07;--anim:floatIcon1;--dur:11s;--delay:3.5s;">☁️</span>
-<span class="float-icon" style="top:70%;right:15%;--size:1.5rem;--opa:0.09;--anim:floatIcon2;--dur:6.5s;--delay:0.3s;">🦋</span>
-<span class="float-icon" style="top:80%;left:30%;--size:1.4rem;--opa:0.08;--anim:floatIcon3;--dur:8s;--delay:1.8s;">🐰</span>
-<span class="float-icon" style="top:50%;left:25%;--size:1.3rem;--opa:0.06;--anim:floatIcon1;--dur:10s;--delay:4s;">👑</span>
-<span class="float-icon" style="top:35%;left:85%;--size:1.6rem;--opa:0.08;--anim:floatIcon2;--dur:7.5s;--delay:2.2s;">🪄</span>
-</div>
-
-<!-- Animated twinkling stars -->
-<div class="hero-stars">
-<span class="star" style="top:8%;left:12%;--dur:3.2s;--delay:0s;"></span>
-<span class="star soft" style="top:15%;left:75%;--dur:4.8s;--delay:1.2s;"></span>
-<span class="star" style="top:22%;left:45%;--dur:5.5s;--delay:0.5s;"></span>
-<span class="star soft" style="top:5%;left:88%;--dur:3.8s;--delay:2.1s;"></span>
-<span class="star" style="top:35%;left:20%;--dur:4.2s;--delay:1.8s;"></span>
-<span class="star soft" style="top:12%;left:55%;--dur:6.0s;--delay:0.3s;"></span>
-<span class="star" style="top:42%;left:82%;--dur:3.5s;--delay:2.5s;"></span>
-<span class="star soft" style="top:28%;left:35%;--dur:5.2s;--delay:1.0s;"></span>
-<span class="star" style="top:18%;left:92%;--dur:4.0s;--delay:0.8s;"></span>
-<span class="star soft" style="top:48%;left:60%;--dur:5.8s;--delay:1.5s;"></span>
-<span class="star" style="top:55%;left:8%;--dur:3.6s;--delay:2.0s;"></span>
-<span class="star soft" style="top:38%;left:50%;--dur:4.5s;--delay:0.7s;"></span>
-<span class="star" style="top:65%;left:70%;--dur:5.0s;--delay:1.3s;"></span>
-<span class="star soft" style="top:10%;left:30%;--dur:4.3s;--delay:2.8s;"></span>
-<span class="star" style="top:52%;left:15%;--dur:3.9s;--delay:0.2s;"></span>
-<span class="star soft" style="top:72%;left:40%;--dur:6.2s;--delay:1.7s;"></span>
-<span class="star" style="top:60%;left:90%;--dur:3.3s;--delay:2.3s;"></span>
-<span class="star soft" style="top:25%;left:5%;--dur:5.5s;--delay:0.9s;"></span>
-<span class="star" style="top:45%;left:68%;--dur:4.7s;--delay:1.1s;"></span>
-<span class="star soft" style="top:78%;left:25%;--dur:5.1s;--delay:2.6s;"></span>
-</div>
+{get_decorations_html(num_stars=30, icons=hero_icons, seed=42)}
 
 <h1 class="hero-title">
 {t('hero_title')}
@@ -1275,8 +1332,10 @@ def render_stats():
     num_languages = len(SUPPORTED_LANGUAGES)
     num_genres = len(get_genre_list('ru'))
     
+    stats_icons = ["🌲", "🍄", "🌻", "🦌", "🐿️", "🐦", "🌈", "🍃", "🦉"]
     st.html(f"""
-<div class="landing-wrapper reveal">
+<div class="landing-wrapper reveal" style="position: relative;">
+{get_decorations_html(num_stars=12, icons=stats_icons, seed=101)}
 <div class="stats-bar">
 <div class="stat-item">
     <div class="stat-number text-gradient"><span class="count-up" data-target="10000" data-suffix="+" data-separator="|">0</span></div>
@@ -1300,8 +1359,10 @@ def render_stats():
 
 def render_features():
     """Секция возможностей — Feature Showcase."""
+    feat_icons = ["✨", "🪄", "🌟", "📜", "🛡️", "🏹", "🦄", "🪞", "🗝️"]
     st.html(f"""
-<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem; position: relative;">
+{get_decorations_html(num_stars=20, icons=feat_icons, seed=102)}
 <h2 class="section-title" id="features-section">{t("feat_title")}</h2>
 </div>
 """)
@@ -1363,8 +1424,10 @@ def render_features():
 """)
 
 def render_how_it_works():
+    hiw_icons = ["🧙‍♂️", "🧪", "🧿", "🕯️", "🧚‍♀️", "🧞‍♂️", "🐲", "🏰", "🎋"]
     st.html(f"""
-<div class="landing-wrapper reveal" style="padding: 3rem 2rem 1rem;">
+<div class="landing-wrapper reveal" style="padding: 3rem 2rem 1rem; position: relative;">
+{get_decorations_html(num_stars=18, icons=hiw_icons, seed=103)}
 <h2 class="section-title" id="how-it-works-section">{t("hiw_title")}</h2>
 </div>
 """)
@@ -1400,8 +1463,10 @@ def render_how_it_works():
 
 def render_examples():
     """Секция с примерами — Before → After."""
+    ex_icons = ["🎨", "🎭", "✍️", "📖", "🎞️", "📽️", "🌈", "🌸", "🦋"]
     st.html(f"""
-<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem; position: relative;">
+{get_decorations_html(num_stars=15, icons=ex_icons, seed=104)}
 <h2 class="section-title">{t("examples_title")}</h2>
 <p style="text-align: center; color: #94a3b8; max-width: 550px; margin: -1.5rem auto 2.5rem; font-size: 0.95rem; line-height: 1.6;">{t("examples_sub")}</p>
 </div>
@@ -1471,8 +1536,10 @@ def render_examples():
 
 def render_testimonials():
     """Секция отзывов — Карусель с авто-ротацией."""
+    testi_icons = ["🎉", "💖", "🧸", "🎈", "🍭", "🦜", "🐘", "🐢", "🐳"]
     st.html(f"""
-<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem;">
+<div class="landing-wrapper reveal" style="padding: 4rem 2rem 1rem; position: relative;">
+{get_decorations_html(num_stars=22, icons=testi_icons, seed=105)}
 <h2 class="section-title">{t("testi_title")}</h2>
 
 <div class="carousel-wrapper" id="testimonial-carousel">
@@ -1547,9 +1614,7 @@ def render_testimonials():
 </div>
 """)
 
-import urllib.request
-import json
-import math
+
 
 @st.cache_data(ttl=3600*12)
 def get_exchange_rates():
@@ -1604,6 +1669,7 @@ def render_pricing():
     fam_yr = format_price(949, currency)   # Было 649₽. Скидка ~21% при годовом плане сохранена.
 
 
+    price_icons = ["💎", "👑", "🦄", "🏰", "🎋", "🐚", "💰", "🎟️", "🎁"]
     st.html("""
 <style>
 /* ── Billing Toggle (Pure CSS no-JS) ── */
@@ -1613,6 +1679,7 @@ def render_pricing():
 .pricing-section-wrapper {
     display: block;
     width: 100%;
+    position: relative;
 }
 .billing-toggle-wrap {
     display: flex;
@@ -1747,6 +1814,7 @@ def render_pricing():
 </style>
 """ + f"""
 <div class="pricing-section-wrapper reveal" style="padding: 4rem 2rem 1.5rem;">
+{get_decorations_html(num_stars=25, icons=price_icons, seed=106)}
 <h2 class="section-title" id="pricing-section">{t("pricing_subtitle")}</h2>
 
 <!-- PURE CSS Billing toggle: Monthly / Yearly -->
@@ -1856,8 +1924,10 @@ def render_pricing():
 """)
 
 def render_auth():
+    auth_icons = ["🔒", "✨", "🔑", "🧚", "🌟", "🚪", "🛸", "🚀", "🪐"]
     st.html(f"""
-<div id="auth-section" class="landing-wrapper" style="padding: 4rem 2rem 1.5rem; text-align: center;">
+<div id="auth-section" class="landing-wrapper reveal" style="padding: 4rem 2rem 1.5rem; text-align: center; position: relative;">
+{get_decorations_html(num_stars=20, icons=auth_icons, seed=108)}
 <h2 class="section-title">{t("auth_login_title")}</h2>
 <p style="color: #94a3b8; max-width: 500px; margin: -1rem auto 2rem; font-size: 0.95rem; line-height: 1.6;">{t("auth_login_sub")}</p>
 </div>
@@ -2103,7 +2173,8 @@ def render_footer():
     # Получаем текущий язык для передачи в ссылки документов
     user_lang = st.session_state.get('user_lang', 'ru')
     st.html(f"""
-<div class="landing-wrapper">
+<div class="landing-wrapper" style="position: relative;">
+{get_decorations_html(num_stars=12, seed=109)}
 <div class="footer">
 <div style="font-family: 'Comfortaa', cursive; font-size: 1.6rem; font-weight: 700; margin-bottom: 1rem;">
 {t('app_name')}
@@ -2122,8 +2193,10 @@ def render_footer():
 
 def render_faq():
     """Секция FAQ — Часто задаваемые вопросы."""
+    faq_icons = ["❓", "💡", "🧠", "🦉", "👓", "🔎", "🌙", "☁️", "🔭"]
     st.html(f"""
-<div class="faq-container reveal" style="padding: 4rem 2rem 2rem;">
+<div class="faq-container reveal" style="padding: 4rem 2rem 2rem; position: relative;">
+{get_decorations_html(num_stars=15, icons=faq_icons, seed=107)}
 <h2 class="section-title" id="faq-section">{t("faq_title")}</h2>
 
 <div style="max-width: 700px; margin: 0 auto;">
@@ -2175,13 +2248,7 @@ def render_full_landing_page():
     render_footer()
     render_scripts()
 
-import json
-from landing_i18n import LANDING_TRANSLATIONS
 
-def t(key):
-    # Safe check if st.session_state is initialized and has user_lang
-    user_lang = st.session_state.get('user_lang', 'ru')
-    return LANDING_TRANSLATIONS.get(key, {}).get(user_lang, LANDING_TRANSLATIONS.get(key, {}).get('ru', key))
 
 def render_scripts():
     user_lang = st.session_state.get('user_lang', 'ru')
@@ -2208,7 +2275,6 @@ def render_scripts():
     stories_json = json.dumps(all_stories)
     
     # Scroll-triggered reveal animations + card height equalizer
-    import streamlit.components.v1 as components
     
     js_code = r"""
 <script>
