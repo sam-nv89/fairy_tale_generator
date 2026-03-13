@@ -288,11 +288,27 @@ def render_profile_page():
             padding: 0 !important;
         }
 
+        /* ИСПРАВЛЕНИЕ: Премиальный стиль для формы (Glassmorphism Card) */
+        .premium-card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            padding: 2rem !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+            width: 100% !important;
+            margin-top: 1rem !important;
+            margin-bottom: 2rem !important;
+        }
+
         /* Центрирование контента в экспандере */
         div[data-testid="stExpanderDetails"] {
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: transparent !important;
+            padding: 0.5rem !important;
         }
         
         div[data-testid="stExpanderDetails"] > div {
@@ -434,10 +450,12 @@ def render_profile_page():
 
     # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):
-        # Используем колонки с большими боковыми полями для жесткого заужения центра (33.3% ширины)
-        f_col_l, f_col_m, f_col_r = st.columns([1, 1, 1])
+        # Слегка расширяем центральную колонку для лучшего баланса [0.7, 1.2, 0.7]
+        f_col_l, f_col_m, f_col_r = st.columns([0.7, 1.2, 0.7])
         
         with f_col_m:
+            # Оборачиваем форму в премиальную карточку
+            st.markdown("<div class='premium-card'>", unsafe_allow_html=True)
             with st.form("add_child_form", clear_on_submit=True):
                 new_name = st.text_input(t('child_name', user_lang), placeholder=t('name_placeholder', user_lang))
                 
@@ -495,6 +513,7 @@ def render_profile_page():
                             st.rerun()
                         else:
                             st.error(f"Error: {res.get('error')}")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
                 unsafe_allow_html=True)
