@@ -126,7 +126,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Ребенок (прочее)
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
         'child_id_label': "Выберите ребенка",
-        'reg_days': "({0} дн.)"
+        'reg_days': "({0} дн.)",
+        'no_future_dates': "Не может быть в будущем"
     },
     
     'en': {
@@ -255,6 +256,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "18+": "18+"
         },
         'reg_days': "({0} days)",
+        'no_future_dates': "Cannot be in the future",
 
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
@@ -361,6 +363,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             "18+": "18+"
         },
         'reg_days': "({0} días)",
+        'no_future_dates': "No puede ser en el futuro",
 
         # Perfiles de niños
         'children_title': "👶 Perfiles de niños",

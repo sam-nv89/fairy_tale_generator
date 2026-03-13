@@ -443,9 +443,22 @@ def render_profile_page():
                         input.addEventListener('input', (e) => {
                             let val = e.target.value.replace(/\\D/g, ''); // Удаляем всё кроме цифр
                             let masked = '';
-                            if (val.length > 0) masked += val.substring(0, 2);
-                            if (val.length > 2) masked += '-' + val.substring(2, 4);
-                            if (val.length > 4) masked += '-' + val.substring(4, 8);
+                            
+                            if (val.length > 0) {
+                                let day = val.substring(0, 2);
+                                if (day.length === 2 && parseInt(day) > 31) day = '31';
+                                if (day.length === 2 && parseInt(day) === 0) day = '01';
+                                masked += day;
+                            }
+                            if (val.length > 2) {
+                                let month = val.substring(2, 4);
+                                if (month.length === 2 && parseInt(month) > 12) month = '12';
+                                if (month.length === 2 && parseInt(month) === 0) month = '01';
+                                masked += '-' + month;
+                            }
+                            if (val.length > 4) {
+                                masked += '-' + val.substring(4, 8);
+                            }
                             e.target.value = masked;
                             
                             // Важно: уведомляем React об изменениях
@@ -478,7 +491,7 @@ def render_profile_page():
                         new_birthday = datetime.strptime(birthday_str, "%d-%m-%Y").date()
                         # ОГРАНИЧЕНИЕ: Не позже сегодня
                         if new_birthday > date.today():
-                            st.error(f"❌ {t('child_birthday_label', user_lang)}: {loc('no_future_dates', 'Не может быть в будущем')}")
+                            st.error(f"❌ {t('child_birthday_label', user_lang)}: {t('no_future_dates', user_lang)}")
                             st.stop()
                         if new_birthday < date(1900, 1, 1):
                             st.error(f"❌ {t('child_birthday_label', user_lang)}: 1900 - {date.today().year}")
