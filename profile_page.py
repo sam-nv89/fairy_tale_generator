@@ -159,7 +159,8 @@ def render_profile_page():
             font-size: 2rem;
             font-weight: 700;
             color: #ffffff;
-            margin-top: -3rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
         
         /* КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ ЧИТАЕМОСТИ ПОЛЕЙ (ЦВЕТ: БЕЛЫЙ) */
@@ -178,6 +179,7 @@ def render_profile_page():
             background-color: #ffffff !important;
             color: #000000 !important;
             border: 1px solid #cccccc !important;
+            height: 42px !important;
         }
 
         /* Фокус на полях */
@@ -186,15 +188,19 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        button[key="save_nick_prof_page"], .save-nick-container button {
-            background-color: transparent !important;
+        /* Кнопка дискеты в контейнере */
+        .save-nick-container button {
+            background-color: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255,255,255,0.2) !important;
             color: #a8edea !important;
             border-radius: 8px !important;
             width: 100% !important;
             height: 42px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
-        button[key="save_nick_prof_page"]:hover, .save-nick-container button:hover {
+        .save-nick-container button:hover {
             background-color: rgba(255,255,255,0.1) !important;
             border-color: #a8edea !important;
             color: #ffffff !important;
