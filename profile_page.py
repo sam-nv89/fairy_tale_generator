@@ -304,17 +304,7 @@ def render_profile_page():
                 from datetime import datetime
                 created_dt = datetime.strptime(str(created_at)[:10], "%Y-%m-%d")
                 days = max(0, (datetime.now() - created_dt).days)
-
-                if user_lang == 'ru':
-                    if days % 10 == 1 and days % 100 != 11:
-                        word = "день"
-                    elif 2 <= days % 10 <= 4 and not (12 <= days % 100 <= 14):
-                        word = "дня"
-                    else:
-                        word = "дней"
-                    days_str = f" ({days} {word})"
-                else:
-                    days_str = f" ({days} days)"
+                days_str = " " + t('reg_days', user_lang).format(days)
             except Exception:
                 pass
             st.markdown(f"**📅 {loc('registered')}:** {str(created_at)[:10]}{days_str}")
@@ -355,7 +345,9 @@ def render_profile_page():
                             <div class='child-name'>👦 {child.get('name')}</div>
                             <div style='color: rgba(255,255,255,0.4);'>{child.get('birthday') or ''}</div>
                         </div>
-                        <div style='color: rgba(255,255,255,0.8);'>🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or child.get('age', '?'))}</div>
+                        <div style='color: rgba(255,255,255,0.8);'>
+                            🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
+                        </div>
                         <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
                     </div>
                 """, unsafe_allow_html=True)

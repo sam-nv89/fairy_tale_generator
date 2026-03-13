@@ -244,6 +244,17 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "You have no saved child profiles yet. Add the first one!",
         'child_delete_confirm': "Delete child profile? Stories will remain, but the profile will disappear.",
 
+        # Age ranges (Keys must match DB values)
+        'age_ranges': {
+            "0-12 мес": "0-12 months",
+            "1-3 года": "1-3 years",
+            "4-7 лет": "4-7 years",
+            "8-12 лет": "8-12 years",
+            "13-17 лет": "13-17 years",
+            "18+": "18+"
+        },
+        'reg_days': "({0} days)",
+
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
         'child_id_label': "Select a child"
@@ -301,6 +312,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'submit_btn': "✨ Crear un Cuento",
         
         # Messages
+        'app_welcome': "¡Bienvenido, {0}!",
         'api_key_warning': "⚠️ No se encontró la clave API de Google en secrets.toml",
         'api_key_input': "🔑 Introduce tu clave API de Google",
         'api_key_error': "🔑 Por favor, introduce una clave API en el menú izquierdo para que la magia funcione.",
@@ -313,6 +325,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'audio_ready': "¡Audio listo! 🎧",
         'download_txt': "📄 Descargar Texto",
         'logout_btn': "🚪 Salir",
+        'profile_nickname': "Tu apodo",
+        'profile_save_btn': "Guardar nombre",
+        'profile_updated': "¡Apodo actualizado!",
         'translate_prompt': "🌍 El idioma de este cuento difiere del idioma de la aplicación. ¿Deseas traducirlo?",
         'translate_btn': "🔄 Traducir cuento",
         'translating': "🔄 Traduciendo cuento",
@@ -337,13 +352,31 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         
         # Age ranges
         'age_ranges': {
-            "0-12 meses": "0-12 meses",
-            "1-3 anos": "1-3 anos",
-            "4-7 anos": "4-7 anos",
-            "8-12 anos": "8-12 anos",
-            "13-17 anos": "13-17 anos",
+            "0-12 мес": "0-12 meses",
+            "1-3 года": "1-3 años",
+            "4-7 лет": "4-7 años",
+            "8-12 лет": "8-12 años",
+            "13-17 лет": "13-17 años",
             "18+": "18+"
-        }
+        },
+        'reg_days': "({0} días)",
+
+        # Perfiles de niños
+        'children_title': "👶 Perfiles de niños",
+        'add_child_btn': "➕ Añadir niño",
+        'edit_child_btn': "✏️ Editar",
+        'save_child_btn': "💾 Guardar",
+        'child_name': "Nombre",
+        'child_age': "Edad",
+        'child_birthday_label': "Fecha de nacimiento",
+        'child_age_years': "{0} años",
+        'child_save_success': "✅ ¡Perfil guardado!",
+        'child_del_success': "✅ Perfil eliminado",
+        'child_hobbies': "Intereses / Pasatiempos",
+        'child_profiles_empty': "Aún no tienes perfiles de niños guardados. ¡Añade el primero!",
+        'child_delete_confirm': "¿Eliminar el perfil del niño? Los cuentos permanecerán, pero el perfil desaparecerá.",
+        'child_limit_reached': "Se ha alcanzado el límite de perfiles para tu plan.",
+        'child_id_label': "Selecciona un niño"
     },
     
     # === FRANÇAIS (French) - ~300 million speakers ===
@@ -432,23 +465,32 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'poem': "Poème"
         },
         
-        # Age ranges
+        # Age ranges (Keys must match DB values)
         'age_ranges': {
-            "0-12 mois": "0-12 mois",
-            "1-3 ans": "1-3 ans",
-            "4-7 ans": "4-7 ans",
-            "8-12 ans": "8-12 ans",
-            "13-17 ans": "13-17 ans",
+            "0-12 мес": "0-12 mois",
+            "1-3 года": "1-3 ans",
+            "4-7 лет": "4-7 ans",
+            "8-12 лет": "8-12 ans",
+            "13-17 лет": "13-17 ans",
             "18+": "18+"
         },
+        'reg_days': "({0} jours)",
         
         # Profils d'enfants
+        'app_welcome': "Bienvenue, {0} !",
+        'profile_nickname': "Votre pseudo",
+        'profile_save_btn': "Enregistrer le nom",
+        'profile_updated': "✅ Pseudo mis à jour !",
         'children_title': "👶 Profils d'Enfants",
         'add_child_btn': "➕ Ajouter un enfant",
         'edit_child_btn': "✏️ Modifier",
         'save_child_btn': "💾 Enregistrer",
         'child_name': "Nom",
         'child_age': "Âge",
+        'child_birthday_label': "Date de naissance",
+        'child_age_years': "{0} ans",
+        'child_save_success': "✅ Profil enregistré !",
+        'child_del_success': "✅ Profil supprimé",
         'child_hobbies': "Intérêts / Loisirs",
         'child_delete_confirm': "Supprimer le profil de l'enfant ? Les histoires resteront, mais le profil disparaîtra.",
         'child_profiles_empty': "Aucun profil d'enfant enregistré. Ajoutez le premier !",
@@ -544,13 +586,35 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         
         # Age ranges
         'age_ranges': {
-            "0-12 meses": "0-12 meses",
-            "1-3 anos": "1-3 anos",
-            "4-7 anos": "4-7 anos",
-            "8-12 anos": "8-12 anos",
-            "13-17 anos": "13-17 anos",
+            "0-12 мес": "0-12 meses",
+            "1-3 года": "1-3 anos",
+            "4-7 лет": "4-7 anos",
+            "8-12 лет": "8-12 anos",
+            "13-17 лет": "13-17 anos",
             "18+": "18+"
-        }
+        },
+        'reg_days': "({0} dias)",
+
+        # Perfis de crianças
+        'app_welcome': "Bem-vindo, {0}!",
+        'profile_nickname': "Seu apelido",
+        'profile_save_btn': "Salvar nome",
+        'profile_updated': "✅ Apelido atualizado!",
+        'children_title': "👶 Perfis de crianças",
+        'add_child_btn': "➕ Adicionar criança",
+        'edit_child_btn': "✏️ Editar",
+        'save_child_btn': "💾 Salvar",
+        'child_name': "Nome",
+        'child_age': "Idade",
+        'child_birthday_label': "Data de nascimento",
+        'child_age_years': "{0} anos",
+        'child_save_success': "✅ Perfil salvo!",
+        'child_del_success': "✅ Perfil excluído",
+        'child_hobbies': "Interesses / Passatempos",
+        'child_profiles_empty': "Você ainda não tem perfis de crianças salvos. Adicione o primeiro!",
+        'child_delete_confirm': "Excluir o perfil da criança? As histórias permanecerão, mas o perfil desaparecerá.",
+        'child_limit_reached': "Limite de perfis atingido para o seu plano.",
+        'child_id_label': "Selecione uma criança"
     },
     
     # === SIMPLIFIED CHINESE (zh-CN) - ~1.3 billion speakers ===
@@ -639,23 +703,32 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'poem': "诗歌"
         },
         
-        # Age ranges
+        # Age ranges (Keys must match DB values)
         'age_ranges': {
-            "0-12个月": "0-12个月",
-            "1-3岁": "1-3岁",
-            "4-7岁": "4-7岁",
-            "8-12岁": "8-12岁",
-            "13-17岁": "13-17岁",
+            "0-12 мес": "0-12 个月",
+            "1-3 года": "1-3 岁",
+            "4-7 лет": "4-7 岁",
+            "8-12 лет": "8-12 岁",
+            "13-17 лет": "13-17 岁",
             "18+": "18+"
         },
+        'reg_days': "({0} 天)",
         
         # 儿童资料
+        'app_welcome': "欢迎, {0}!",
+        'profile_nickname': "您的昵称",
+        'profile_save_btn': "保存名称",
+        'profile_updated': "✅ 昵称已更新！",
         'children_title': "👶 儿童资料",
         'add_child_btn': "➕ 添加孩子",
         'edit_child_btn': "✏️ 编辑",
         'save_child_btn': "💾 保存",
         'child_name': "名字",
         'child_age': "年龄",
+        'child_birthday_label': "出生日期",
+        'child_age_years': "{0} 岁",
+        'child_save_success': "✅ 资料已保存！",
+        'child_del_success': "✅ 资料已删除",
         'child_hobbies': "兴趣 / 爱好",
         'child_delete_confirm': "删除孩子资料？故事将保留，但资料将消失。",
         'child_profiles_empty': "还没有保存过孩子资料。添加第一个吧！",
@@ -749,23 +822,32 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'poem': "कविता"
         },
         
-        # Age ranges
+        # Age ranges (Keys must match DB values)
         'age_ranges': {
-            "0-12 महीना": "0-12 महीना",
-            "1-3 साल": "1-3 साल",
-            "4-7 साल": "4-7 साल",
-            "8-12 साल": "8-12 साल",
-            "13-17 साल": "13-17 साल",
+            "0-12 мес": "0-12 महीना",
+            "1-3 года": "1-3 साल",
+            "4-7 лет": "4-7 साल",
+            "8-12 лет": "8-12 साल",
+            "13-17 лет": "13-17 साल",
             "18+": "18+"
         },
+        'reg_days': "({0} दिन)",
         
         # बच्चों के प्रोफाइल
+        'app_welcome': "स्वागत है, {0}!",
+        'profile_nickname': "आपका निकनेम",
+        'profile_save_btn': "नाम सेव करें",
+        'profile_updated': "✅ निकनेम अपडेट हो गया!",
         'children_title': "👶 बच्चों के प्रोफाइल",
         'add_child_btn': "➕ बच्चा जोड़ें",
         'edit_child_btn': "✏️ एडिट",
         'save_child_btn': "💾 सेव",
         'child_name': "नाम",
         'child_age': "उम्र",
+        'child_birthday_label': "जन्म तिथि",
+        'child_age_years': "{0} साल",
+        'child_save_success': "✅ प्रोफाइल सेव हो गया!",
+        'child_del_success': "✅ प्रोफाइल हटा दिया गया",
         'child_hobbies': "रुचियां / शौक",
         'child_delete_confirm': "बच्चे का प्रोफाइल हटाएं? कहानियाँ बनी रहेंगी, लेकिन प्रोफाइल हट जाएगा।",
         'child_profiles_empty': "अभी तक कोई बच्चे का प्रोफाइल सेव नहीं किया गया है। पहला जोड़ें!",
@@ -859,23 +941,32 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
             'poem': "Gedicht"
         },
         
-        # Age ranges
+        # Age ranges (Keys must match DB values)
         'age_ranges': {
-            "0-12 Monate": "0-12 Monate",
-        "1-3 Jahre": "1-3 Jahre",
-            "4-7 Jahre": "4-7 Jahre",
-            "8-12 Jahre": "8-12 Jahre",
-            "13-17 Jahre": "13-17 Jahre",
+            "0-12 мес": "0-12 Monate",
+            "1-3 года": "1-3 Jahre",
+            "4-7 лет": "4-7 Jahre",
+            "8-12 лет": "8-12 Jahre",
+            "13-17 лет": "13-17 Jahre",
             "18+": "18+"
         },
+        'reg_days': "({0} Tage)",
         
         # Kinderprofile
+        'app_welcome': "Willkommen, {0}!",
+        'profile_nickname': "Dein Spitzname",
+        'profile_save_btn': "Name speichern",
+        'profile_updated': "✅ Spitzname aktualisiert!",
         'children_title': "👶 Kinderprofile",
         'add_child_btn': "➕ Kind hinzufügen",
         'edit_child_btn': "✏️ Bearbeiten",
         'save_child_btn': "💾 Speichern",
         'child_name': "Name",
         'child_age': "Alter",
+        'child_birthday_label': "Geburtsdatum",
+        'child_age_years': "{0} Jahre alt",
+        'child_save_success': "✅ Profil gespeichert!",
+        'child_del_success': "✅ Profil gelöscht",
         'child_hobbies': "Interessen / Hobbies",
         'child_delete_confirm': "Kindprofil löschen? Die Geschichten bleiben erhalten, aber das Profil wird gelöscht.",
         'child_profiles_empty': "Noch keine Kinderprofile gespeichert. Füge das erste hinzu!",
