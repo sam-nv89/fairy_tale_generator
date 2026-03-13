@@ -119,6 +119,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_age_years': "{0} лет/года",
         'child_save_success': "✅ Профиль сохранен!",
         'child_del_success': "✅ Профиль удален",
+        'child_hobbies': "Интересы / Хобби",
+        'child_profiles_empty': "У вас пока нет сохраненных профилей детей. Добавьте первый!",
+        'child_delete_confirm': "Удалить профиль ребенка? Сказки останутся, но профиль исчезнет.",
         
         # Ребенок (прочее)
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
@@ -237,6 +240,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_age_years': "{0} years old",
         'child_save_success': "✅ Profile saved!",
         'child_del_success': "✅ Profile deleted",
+        'child_hobbies': "Interests / Hobbies",
+        'child_profiles_empty': "You have no saved child profiles yet. Add the first one!",
+        'child_delete_confirm': "Delete child profile? Stories will remain, but the profile will disappear.",
 
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",

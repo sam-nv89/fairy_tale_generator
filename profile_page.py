@@ -242,6 +242,12 @@ def render_profile_page():
             padding: 1.5rem;
             margin-bottom: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .child-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(168, 237, 234, 0.3);
+            transform: translateY(-2px);
         }
         .child-name {
             font-size: 1.4rem;
@@ -249,16 +255,47 @@ def render_profile_page():
             color: #a8edea;
             margin-bottom: 0.5rem;
         }
-        .child-hobbies {
+        .child-hobbies-text {
             font-style: italic;
             color: #fed6e3;
             margin-top: 0.5rem;
         }
-        /* Исправление читаемости текстовых полей */
-        .stTextArea textarea {
-            background-color: #1e1e1e !important;
-            color: #ffffff !important;
+        
+        /* КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ ЧИТАЕМОСТИ ПОЛЕЙ */
+        /* Нацеливаемся на все типы инпутов */
+        input, select, textarea {
+            background-color: #262730 !important; /* Стандартный темный фон Streamlit, но принудительный */
+            color: white !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* Текстовая область (хобби) - делаем её светлее и четче */
+        div[data-testid="stTextArea"] textarea {
+            background-color: #31333f !important;
+            color: #ffffff !important;
+            border: 1px solid #4a4d5e !important;
+            font-size: 1rem !important;
+        }
+
+        /* Инпуты (Имя, Дата) */
+        div[data-testid="stTextInput"] input, 
+        div[data-testid="stDateInput"] input {
+            background-color: #31333f !important;
+            color: #ffffff !important;
+            border: 1px solid #4a4d5e !important;
+        }
+
+        /* Фокус на полях */
+        textarea:focus, input:focus {
+            border-color: #a8edea !important;
+            box-shadow: 0 0 5px rgba(168, 237, 234, 0.3) !important;
+            background-color: #3b3e4d !important;
+        }
+        
+        /* Стилизация плейсхолдеров */
+        ::placeholder {
+            color: rgba(255, 255, 255, 0.5) !important;
+            opacity: 1;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -287,7 +324,7 @@ def render_profile_page():
                             <div style='color: rgba(255,255,255,0.4);'>{child.get('birthday') or ''}</div>
                         </div>
                         <div style='color: rgba(255,255,255,0.8);'>🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or child.get('age', '?'))}</div>
-                        <div class='child-hobbies'>🎨 {child.get('hobbies') or '...'}</div>
+                        <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
                     </div>
                 """, unsafe_allow_html=True)
                 
