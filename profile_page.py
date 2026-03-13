@@ -430,11 +430,41 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
+            # JS-инъекция для маски ввода ДД-ММ-ГГГГ
+            import streamlit.components.v1 as components
+            components.html("""
+                <script>
+                const maskDate = () => {
+                    const inputs = window.parent.document.querySelectorAll('input[placeholder*="ДД-ММ-ГГГГ"], input[placeholder*="DD-MM-YYYY"], input[placeholder*="JJ-MM-AAAA"]');
+                    inputs.forEach(input => {
+                        if (input.dataset.masked) return;
+                        input.dataset.masked = "true";
+                        input.maxLength = 10;
+                        input.addEventListener('input', (e) => {
+                            let val = e.target.value.replace(/\\D/g, ''); // Удаляем всё кроме цифр
+                            let masked = '';
+                            if (val.length > 0) masked += val.substring(0, 2);
+                            if (val.length > 2) masked += '-' + val.substring(2, 4);
+                            if (val.length > 4) masked += '-' + val.substring(4, 8);
+                            e.target.value = masked;
+                            
+                            // Важно: уведомляем React об изменениях
+                            const event = new Event('input', { bubbles: true });
+                            e.target.dispatchEvent(event);
+                        });
+                    });
+                };
+                // Повторяем поиск, так как Streamlit перерисовывает DOM
+                setInterval(maskDate, 500);
+                </script>
+            """, height=0)
+
             birthday_str = st.text_input(
                 t('child_birthday_label', user_lang),
                 value="",
                 placeholder=date_placeholder,
-                help=f"{t('child_birthday_label', user_lang)} ({date_placeholder})"
+                help=f"{t('child_birthday_label', user_lang)} ({date_placeholder})",
+                key="child_bday_masked"
             )
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
@@ -446,7 +476,11 @@ def render_profile_page():
                 if birthday_str:
                     try:
                         new_birthday = datetime.strptime(birthday_str, "%d-%m-%Y").date()
-                        if new_birthday > date.today() or new_birthday < date(1900, 1, 1):
+                        # ОГРАНИЧЕНИЕ: Не позже сегодня
+                        if new_birthday > date.today():
+                            st.error(f"❌ {t('child_birthday_label', user_lang)}: {loc('no_future_dates', 'Не может быть в будущем')}")
+                            st.stop()
+                        if new_birthday < date(1900, 1, 1):
                             st.error(f"❌ {t('child_birthday_label', user_lang)}: 1900 - {date.today().year}")
                             st.stop()
                     except:
