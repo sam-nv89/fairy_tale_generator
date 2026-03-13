@@ -430,51 +430,103 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # JS-инъекция для маски ввода ДД-ММ-ГГГГ
+            # JS-инъекция для ЖЕСТКОЙ маски и всплывающих подсказок
             import streamlit.components.v1 as components
-            components.html("""
+            
+            # Подготовка текстов для JS
+            js_tips = {
+                'ru': {'day': 'День: 01-31', 'month': 'Месяц: 01-12'},
+                'en': {'day': 'Day: 01-31', 'month': 'Month: 01-12'},
+                'es': {'day': 'Día: 01-31', 'month': 'Mes: 01-12'}
+            }.get(user_lang, {'day': 'Day: 01-31', 'month': 'Month: 01-12'})
+
+            components.html(f"""
+                <style>
+                    .date-tip {{
+                        position: absolute;
+                        background: #ff4b4b;
+                        color: white;
+                        padding: 5px 10px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        z-index: 10000;
+                        pointer-events: none;
+                        opacity: 0;
+                        transition: opacity 0.3s, transform 0.3s;
+                        transform: translateY(10px);
+                        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
+                        font-family: sans-serif;
+                    }}
+                    .date-tip.show {{
+                        opacity: 1;
+                        transform: translateY(-5px);
+                    }}
+                    .date-tip::after {{
+                        content: '';
+                        position: absolute;
+                        top: 100%; left: 50%;
+                        margin-left: -5px;
+                        border-width: 5px;
+                        border-style: solid;
+                        border-color: #ff4b4b transparent transparent transparent;
+                    }}
+                </style>
+                <div id="tip" class="date-tip"></div>
                 <script>
-                const maskDate = () => {
+                const tip = document.getElementById('tip');
+                const showTip = (el, text) => {{
+                    const rect = el.getBoundingClientRect();
+                    tip.innerText = text;
+                    tip.style.left = (rect.left + (rect.width/2) - (tip.offsetWidth/2)) + 'px';
+                    tip.style.top = (rect.top - 35) + 'px';
+                    tip.classList.add('show');
+                    setTimeout(() => tip.classList.remove('show'), 2000);
+                }};
+
+                const applyMask = () => {{
                     const inputs = window.parent.document.querySelectorAll('input[placeholder*="ДД-ММ-ГГГГ"], input[placeholder*="DD-MM-YYYY"], input[placeholder*="JJ-MM-AAAA"]');
-                    inputs.forEach(input => {
+                    inputs.forEach(input => {{
                         if (input.dataset.masked) return;
                         input.dataset.masked = "true";
                         input.maxLength = 10;
-                        input.addEventListener('input', (e) => {
-                            let val = e.target.value.replace(/\\D/g, ''); // Только цифры
+                        
+                        input.addEventListener('keydown', (e) => {{
+                            if (e.key.length === 1 && /\\D/.test(e.key)) e.preventDefault();
+                        }});
+
+                        input.addEventListener('input', (e) => {{
+                            let cursor = e.target.selectionStart;
+                            let val = e.target.value.replace(/\\D/g, '');
                             let masked = '';
-                            let isInvalid = false;
                             
-                            if (val.length > 0) {
-                                let d = val.substring(0, 2);
-                                if (d.length === 2 && (parseInt(d) > 31 || parseInt(d) === 0)) isInvalid = true;
-                                masked += d;
-                            }
-                            if (val.length > 2) {
-                                let m = val.substring(2, 4);
-                                if (m.length === 2 && (parseInt(m) > 12 || parseInt(m) === 0)) isInvalid = true;
-                                masked += '-' + m;
-                            }
-                            if (val.length > 4) {
-                                masked += '-' + val.substring(4, 8);
-                            }
+                            // ЛОГИКА БЛОКИРОВКИ
+                            if (val.length >= 2) {{
+                                let d = parseInt(val.substring(0, 2));
+                                if (d > 31 || d === 0) {{
+                                    val = val.substring(0, 1);
+                                    showTip(e.target, "{js_tips['day']}");
+                                }}
+                            }}
+                            if (val.length >= 4) {{
+                                let m = parseInt(val.substring(2, 4));
+                                if (m > 12 || m === 0) {{
+                                    val = val.substring(0, 3);
+                                    showTip(e.target, "{js_tips['month']}");
+                                }}
+                            }}
+
+                            if (val.length > 0) masked += val.substring(0, 2);
+                            if (val.length > 2) masked += '-' + val.substring(2, 4);
+                            if (val.length > 4) masked += '-' + val.substring(4, 8);
+                            
                             e.target.value = masked;
                             
-                            // Информируем пользователя цветом
-                            if (isInvalid) {
-                                e.target.style.borderColor = "#ff4b4b";
-                                e.target.style.boxShadow = "0 0 0 0.2rem rgba(255, 75, 75, 0.25)";
-                            } else {
-                                e.target.style.borderColor = "";
-                                e.target.style.boxShadow = "";
-                            }
-                            
-                            const event = new Event('input', { bubbles: true });
+                            const event = new Event('input', {{ bubbles: true }});
                             e.target.dispatchEvent(event);
-                        });
-                    });
-                };
-                setInterval(maskDate, 500);
+                        }});
+                    }});
+                }};
+                setInterval(applyMask, 500);
                 </script>
             """, height=0)
 
