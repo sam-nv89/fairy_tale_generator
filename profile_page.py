@@ -430,20 +430,27 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # Скрываем мигающий курсор и технические разделители в выпадающих списках
+            # Глобальное скрытие курсора и всех лишних палочек/разделителей в выпадающих списках
             st.markdown("""
                 <style>
-                /* Скрываем курсор */
-                [data-testid="stSelectbox"] input {
+                /* 1. Прячем мигающий текстовый курсор во всем компоненте выбора */
+                [data-testid="stSelectbox"] input, 
+                div[data-baseweb="select"] input {
                     caret-color: transparent !important;
+                    cursor: pointer !important;
                 }
-                /* Скрываем вертикальную палочку-разделитель перед стрелочкой */
-                [data-testid="stSelectbox"] div[role="button"] + div {
+                
+                /* 2. Удаляем вертикальный разделитель (ту самую "лишнюю палочку") */
+                div[data-baseweb="select"] [class*="StyledSeparator"],
+                [data-testid="stSelectbox"] div[role="button"] + div,
+                div[data-baseweb="select"] > div > div:nth-child(2) {
                     display: none !important;
+                    width: 0 !important;
                 }
-                /* Убираем дополнительные линии в новых версиях Streamlit (BaseWeb) */
-                div[data-baseweb="select"] > div:nth-child(2) {
-                    display: none !important;
+                
+                /* 3. Убираем синюю обводку или лишние тени при фокусе, если нужно */
+                div[data-baseweb="select"] > div {
+                    border-right: none !important;
                 }
                 </style>
             """, unsafe_allow_html=True)
