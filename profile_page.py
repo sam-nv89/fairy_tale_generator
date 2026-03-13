@@ -195,29 +195,27 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        /* Кнопка дискеты в контейнере (Выравнивание и цвет) */
-        .save-nick-container {
+        /* Фикс для кнопки сохранения никнейма */
+        button[key="save_nick_prof_page"] {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #cccccc !important;
+            height: 42px !important;
+            min-height: 42px !important;
+            margin-top: 0 !important;
+            padding: 0 10px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            height: 42px !important; /* Фиксированная высота как у инпута */
         }
-        .save-nick-container button {
-            background-color: #ffffff !important;
-            color: #262730 !important;
-            border: 1px solid #cccccc !important;
+        button[key="save_nick_prof_page"]:hover {
+            border-color: #6a11cb !important;
+            background-color: #f8f9fa !important;
+        }
+        
+        /* Исправление для всех кнопок в Streamlit, чтобы не было черных рамок */
+        .stButton > button {
             border-radius: 8px !important;
-            width: 100% !important;
-            height: 42px !important;
-            font-size: 1.2rem !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            transition: all 0.2s ease;
-        }
-        .save-nick-container button:hover {
-            background-color: #f0f0f0 !important;
-            border-color: #a8edea !important;
-            transform: scale(1.02);
         }
 
         /* Исправление фона раскрывающегося списка и формы */
@@ -271,17 +269,20 @@ def render_profile_page():
         # Редактирование никнейма
         st.markdown(f"**👤 {t('profile_nickname', user_lang)}**")
         current_name = auth.get_user_display_name()
-        c_name_col, c_btn_col = st.columns([3, 1])
+        # Попытка выравнивания через vertical_alignment (доступно в новых версиях Streamlit)
+        try:
+            c_name_col, c_btn_col = st.columns([4, 1], vertical_alignment="center")
+        except:
+            c_name_col, c_btn_col = st.columns([4, 1])
+
         with c_name_col:
             new_nick = st.text_input("nickname_input", value=current_name, label_visibility="collapsed", key="prof_page_nick")
         with c_btn_col:
-            st.markdown('<div class="save-nick-container">', unsafe_allow_html=True)
-            if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang)):
+            if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang), use_container_width=True):
                 res = auth.update_user_profile(new_nick)
                 if res.get("success"):
                     st.session_state.profile_success = t('profile_updated', user_lang)
                     st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown(f"**✉️ Email:** {user.email}")
         created_at = profile_data.get('created_at', user.created_at)
