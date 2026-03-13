@@ -444,6 +444,11 @@ def render_profile_page():
                         if storage.delete_child_profile(child.get('id')):
                             st.session_state.profile_success = t('child_del_success', user_lang)
                             st.rerun()
+                with c_del_col1:
+                    if st.button(t('child_gen_btn', user_lang), key=f"gen_child_{child.get('id')}", type="primary", use_container_width=False):
+                        st.session_state.child_selector = child.get('id')
+                        st.session_state.current_page = 'generator'
+                        st.rerun()
 
     # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):

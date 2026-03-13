@@ -134,7 +134,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'day_label': "День",
         'month_label': "Месяц",
         'year_label': "Год",
-        'months': ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"]
+        'months': ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+        'child_gen_btn': "✨ Сказка"
     },
     
     'en': {
@@ -274,7 +275,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'day_label': "Day",
         'month_label': "Month",
         'year_label': "Year",
-        'months': ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        'months': ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+        'child_gen_btn': "✨ Story"
     },
     
     # === ESPAÑOL (Spanish) - ~500 million speakers ===
@@ -401,7 +403,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'day_label': "Día",
         'month_label': "Mes",
         'year_label': "Año",
-        'months': ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+        'months': ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+        'child_gen_btn': "✨ Cuento"
     },
     
     # === FRANÇAIS (French) - ~300 million speakers ===
@@ -520,7 +523,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "Supprimer le profil de l'enfant ? Les histoires resteront, mais le profil disparaîtra.",
         'child_profiles_empty': "Aucun profil d'enfant enregistré. Ajoutez le premier !",
         'child_limit_reached': "Limite de profils atteinte pour votre plan.",
-        'child_id_label': "Sélectionnez un enfant"
+        'child_id_label': "Sélectionnez un enfant",
+        'child_gen_btn': "✨ Histoire"
     },
     
     # === PORTUGUÊS (Portuguese) - ~260 million speakers ===
@@ -639,7 +643,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Você ainda não tem perfis de crianças salvos. Adicione o primeiro!",
         'child_delete_confirm': "Excluir o perfil da criança? As histórias permanecerão, mas o perfil desaparecerá.",
         'child_limit_reached': "Limite de perfis atingido para o seu plano.",
-        'child_id_label': "Selecione uma criança"
+        'child_id_label': "Selecione uma criança",
+        'child_gen_btn': "✨ História"
     },
     
     # === SIMPLIFIED CHINESE (zh-CN) - ~1.3 billion speakers ===
@@ -758,7 +763,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "删除孩子资料？故事将保留，但资料将消失。",
         'child_profiles_empty': "还没有保存过孩子资料。添加第一个吧！",
         'child_limit_reached': "您的套餐已达到资料限制。",
-        'child_id_label': "选择一个孩子"
+        'child_id_label': "选择一个孩子",
+        'child_gen_btn': "✨ 故事"
     },
     
     # === HINDI (hi) - ~600 million speakers ===
@@ -877,7 +883,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "बच्चे का प्रोफाइल हटाएं? कहानियाँ बनी रहेंगी, लेकिन प्रोफाइल हट जाएगा।",
         'child_profiles_empty': "अभी तक कोई बच्चे का प्रोफाइल सेव नहीं किया गया है। पहला जोड़ें!",
         'child_limit_reached': "आपकी योजना के लिए प्रोफाइल सीमा समाप्त हो गई है।",
-        'child_id_label': "एक बच्चा चुनें"
+        'child_id_label': "एक बच्चा चुनें",
+        'child_gen_btn': "✨ कहानी"
     },
     
     # === GERMAN (de) - ~130 million speakers ===
@@ -996,7 +1003,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "Kindprofil löschen? Die Geschichten bleiben erhalten, aber das Profil wird gelöscht.",
         'child_profiles_empty': "Noch keine Kinderprofile gespeichert. Füge das erste hinzu!",
         'child_limit_reached': "Profilbegrenzung für deinen Plan erreicht.",
-        'child_id_label': "Wähle ein Kind"
+        'child_id_label': "Wähle ein Kind",
+        'child_gen_btn': "✨ Geschichte"
     },
 }
 
