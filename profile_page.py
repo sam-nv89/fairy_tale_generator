@@ -430,49 +430,40 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # Глобальное скрытие курсора и всех лишних палочек/разделителей в выпадающих списках
+            # Глобальное скрытие курсора и лишних линий
             st.markdown("""
                 <style>
-                /* 1. Прячем мигающий текстовый курсор во всем компоненте выбора */
-                [data-testid="stSelectbox"] input, 
-                div[data-baseweb="select"] input {
+                /* Скрываем курсор в месяцах и делаем поле ввода некликабельным (только выбор) */
+                [data-testid="stSelectbox"] input {
                     caret-color: transparent !important;
-                    cursor: pointer !important;
+                    pointer-events: none !important;
                 }
-                
-                /* 2. Удаляем вертикальный разделитель (ту самую "лишнюю палочку") */
-                div[data-baseweb="select"] [class*="StyledSeparator"],
-                [data-testid="stSelectbox"] div[role="button"] + div,
-                div[data-baseweb="select"] > div > div:nth-child(2) {
+                /* Убираем разделитель перед стрелочкой */
+                div[data-baseweb="select"] [class*="StyledSeparator"] {
                     display: none !important;
-                    width: 0 !important;
                 }
-                
-                /* 3. Убираем синюю обводку или лишние тени при фокусе, если нужно */
-                div[data-baseweb="select"] > div {
-                    border-right: none !important;
+                /* Стили для чисел, чтобы они выглядели аккуратно */
+                [data-testid="stNumberInput"] input {
+                    text-align: center;
                 }
                 </style>
             """, unsafe_allow_html=True)
 
-            # Стандартный и надежный выбор даты через Selectbox-ы
+            # Гибридный и премиальный ввод даты (Вариант 2)
             st.write(f"**{t('child_birthday_label', user_lang)}**")
-            col_d, col_m, col_y = st.columns([1, 2, 1])
+            col_d, col_m, col_y = st.columns([1, 1.5, 1.2])
             
             with col_d:
-                day = st.selectbox(t('day_label', user_lang), options=list(range(1, 32)), index=0)
+                day = st.number_input(t('day_label', user_lang), min_value=1, max_value=31, value=1, step=1, format="%d")
             with col_m:
-                # Получаем список месяцев из i18n
                 months_list = t('months', user_lang)
-                if not isinstance(months_list, list): # Fallback если перевод потерялся
+                if not isinstance(months_list, list):
                     months_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                
                 month_name = st.selectbox(t('month_label', user_lang), options=months_list, index=0)
                 month = months_list.index(month_name) + 1
             with col_y:
                 current_year = datetime.now().year
-                years = list(range(current_year, 1899, -1))
-                year = st.selectbox(t('year_label', user_lang), options=years, index=5) # По умолчанию ~5 лет назад
+                year = st.number_input(t('year_label', user_lang), min_value=1900, max_value=current_year, value=current_year-5, step=1, format="%d")
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
