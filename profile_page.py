@@ -430,146 +430,20 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # JS-инъекция для АГРЕССИВНОЙ маски и видимых подсказок
-            import streamlit.components.v1 as components
+            # Стандартный и надежный выбор даты через Selectbox-ы
+            st.write(f"**{t('child_birthday_label', user_lang)}**")
+            col_d, col_m, col_y = st.columns([1, 2, 1])
             
-            js_tips = {
-                'ru': {'day': 'День: 01-31', 'month': 'Месяц: 01-12'},
-                'en': {'day': 'Day: 01-31', 'month': 'Month: 01-12'},
-                'es': {'day': 'Día: 01-31', 'month': 'Mes: 01-12'}
-            }.get(user_lang, {'day': 'Day: 01-31', 'month': 'Month: 01-12'})
-
-            components.html(f"""
-                <script>
-                const doc = window.parent.document;
-                
-                // Внедряем стили
-                if (!doc.getElementById('date-tip-styles')) {{
-                    const style = doc.createElement('style');
-                    style.id = 'date-tip-styles';
-                    style.innerHTML = `
-                        .date-tip {{
-                            position: fixed;
-                            background: #ff4b4b;
-                            color: white;
-                            padding: 8px 14px;
-                            border-radius: 10px;
-                            font-size: 14px;
-                            font-weight: bold;
-                            z-index: 2000000;
-                            pointer-events: none;
-                            opacity: 0;
-                            transition: opacity 0.2s, transform 0.2s;
-                            transform: translateY(10px);
-                            box-shadow: 0 5px 20px rgba(255, 75, 75, 0.5);
-                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        }}
-                        .date-tip.show {{ opacity: 1; transform: translateY(-5px); }}
-                        .date-tip::after {{
-                            content: '';
-                            position: absolute;
-                            top: 100%; left: 50%;
-                            margin-left: -6px;
-                            border-width: 6px;
-                            border-style: solid;
-                            border-color: #ff4b4b transparent transparent transparent;
-                        }}
-                    `;
-                    doc.head.appendChild(style);
-                }}
-
-                let tip = doc.getElementById('date-input-tip');
-                if (!tip) {{
-                    tip = doc.createElement('div');
-                    tip.id = 'date-input-tip';
-                    tip.className = 'date-tip';
-                    doc.body.appendChild(tip);
-                }}
-
-                const showTip = (el, text) => {{
-                    const rect = el.getBoundingClientRect();
-                    tip.innerText = text;
-                    tip.style.display = 'block';
-                    const tipWidth = tip.offsetWidth;
-                    tip.style.left = (rect.left + (rect.width/2) - (tipWidth/2)) + 'px';
-                    tip.style.top = (rect.top - 48) + 'px';
-                    tip.classList.add('show');
-                    setTimeout(() => tip.classList.remove('show'), 2500);
-                }};
-
-                const applyMask = () => {{
-                    const inputs = doc.querySelectorAll('input[placeholder*="ДД-ММ-ГГГГ"], input[placeholder*="DD-MM-YYYY"], input[placeholder*="JJ-MM-AAAA"]');
-                    inputs.forEach(input => {{
-                        if (input.dataset.masked) return;
-                        input.dataset.masked = "true";
-                        
-                        input.addEventListener('keydown', (e) => {{
-                            if (['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'].includes(e.key)) return;
-                            
-                            // Обработка ручного разделителя
-                            if (['.', '/', '-'].includes(e.key)) {{
-                                e.preventDefault();
-                                let val = e.target.value.replace(/\\D/g, '');
-                                if (val.length === 1) {{
-                                    e.target.value = '0' + val + '-';
-                                }} else if (val.length === 2) {{
-                                    e.target.value = val + '-';
-                                }} else if (val.length === 3) {{
-                                    let d = val.substring(0,2);
-                                    let m = val.substring(2,3);
-                                    e.target.value = d + '-0' + m + '-';
-                                }}
-                                const event = new Event('input', {{ bubbles: true }});
-                                e.target.dispatchEvent(event);
-                                return;
-                            }}
-                            if (/\\D/.test(e.key)) e.preventDefault();
-                        }});
-
-                        input.addEventListener('input', (e) => {{
-                            let val = e.target.value.replace(/\\D/g, '');
-                            
-                            // АГРЕССИВНЫЙ АВТО-НОЛЬ
-                            // Для дня (первая цифра 4-9 или вторая делает > 31)
-                            if (val.length === 1 && parseInt(val) > 3) {{
-                                val = '0' + val;
-                                showTip(e.target, "{js_tips['day']}");
-                            }} else if (val.length === 2 && parseInt(val) > 31) {{
-                                val = '0' + val[0] + val[1];
-                                showTip(e.target, "{js_tips['day']}");
-                            }}
-                            
-                            // Для месяца (первая цифра месяца 2-9 или вторая делает > 12)
-                            if (val.length === 3 && parseInt(val.substring(2,3)) > 1) {{
-                                val = val.substring(0,2) + '0' + val.substring(2,3);
-                                showTip(e.target, "{js_tips['month']}");
-                            }} else if (val.length === 4 && parseInt(val.substring(2,4)) > 12) {{
-                                val = val.substring(0,2) + '0' + val.substring(2,3) + val.substring(3,4);
-                                showTip(e.target, "{js_tips['month']}");
-                            }}
-
-                            let masked = '';
-                            if (val.length > 0) masked += val.substring(0, 2);
-                            if (val.length > 2) masked += '-' + val.substring(2, 4);
-                            if (val.length > 4) masked += '-' + val.substring(4, 8);
-                            
-                            e.target.value = masked;
-                            const event = new Event('input', {{ bubbles: true }});
-                            e.target.dispatchEvent(event);
-                        }});
-                    }});
-                }};
-                setInterval(applyMask, 500);
-                </script>
-            """, height=0)
-
-            birthday_str = st.text_input(
-                t('child_birthday_label', user_lang),
-                value="",
-                placeholder=date_placeholder,
-                help=f"{t('child_birthday_label', user_lang)} ({date_placeholder})",
-                key="child_bday_masked"
-            )
+            with col_d:
+                day = st.selectbox(t('day_label', user_lang), options=list(range(1, 32)), index=0)
+            with col_m:
+                months_list = t('months', user_lang)
+                month_name = st.selectbox(t('month_label', user_lang), options=months_list, index=0)
+                month = months_list.index(month_name) + 1
+            with col_y:
+                current_year = datetime.now().year
+                years = list(range(current_year, 1899, -1))
+                year = st.selectbox(t('year_label', user_lang), options=years, index=5) # По умолчанию ~5 лет назад
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
@@ -577,33 +451,17 @@ def render_profile_page():
                 # Глубокая валидация даты при сохранении
                 new_birthday = None
                 from datetime import date
-                if birthday_str:
-                    try:
-                        parts = birthday_str.split('-')
-                        if len(parts) != 3: raise ValueError
-                        
-                        d_str, m_str, y_str = parts
-                        d, m, y = int(d_str), int(m_str), int(y_str)
-                        
-                        # Проверка диапазонов
-                        if d < 1 or d > 31:
-                            st.error(f"❌ {t('error_day', user_lang)}")
-                            st.stop()
-                        if m < 1 or m > 12:
-                            st.error(f"❌ {t('error_month', user_lang)}")
-                            st.stop()
-                        if y < 1900 or y > date.today().year:
-                            st.error(f"❌ {t('error_year', user_lang).format(date.today().year)}")
-                            st.stop()
-
-                        new_birthday = date(y, m, d)
-                        # ОГРАНИЧЕНИЕ: Не позже сегодня
-                        if new_birthday > date.today():
-                            st.error(f"❌ {t('no_future_dates', user_lang)}")
-                            st.stop()
-                    except ValueError:
-                        st.error(f"❌ {t('child_birthday_label', user_lang)}: {date_placeholder}")
+                try:
+                    # Проверка на существование даты (например, 31 февраля)
+                    new_birthday = date(year, month, day)
+                    
+                    # ОГРАНИЧЕНИЕ: Не позже сегодня
+                    if new_birthday > date.today():
+                        st.error(f"❌ {t('no_future_dates', user_lang)}")
                         st.stop()
+                except ValueError:
+                    st.error(f"❌ {t('error_day', user_lang)} ({month_name})")
+                    st.stop()
 
                 if not new_name.strip():
                     st.error(t('name_warning', user_lang))
