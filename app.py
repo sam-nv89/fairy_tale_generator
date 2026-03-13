@@ -755,19 +755,9 @@ with st.sidebar:
 
     # TITLE
     margin_top = "0rem" if auth.is_authenticated() else "-2rem"
-    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
-
-    # 1. PROFILE SECTION (NICKNAME)
+    title_text = auth.get_user_display_name() if auth.is_authenticated() else t('settings_title', user_lang)
+    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{title_text}</h1>", unsafe_allow_html=True)
     if auth.is_authenticated():
-        with st.expander(f"👤 {auth.get_user_display_name()}", expanded=False):
-            new_name = st.text_input(t('profile_nickname', user_lang), value=auth.get_user_display_name(), key="profile_name_input_sid")
-            if st.button(t('profile_save_btn', user_lang), key="save_profile_name_sid", type="primary", use_container_width=True):
-                res = auth.update_user_profile(new_name)
-                if res.get("success"):
-                    st.success(t('profile_updated', user_lang))
-                    st.rerun()
-                else:
-                    st.error(res.get("error", "Error"))
         st.divider()
 
     # 2. Переключатель языка
