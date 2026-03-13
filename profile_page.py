@@ -431,6 +431,7 @@ def render_profile_page():
             }.get(user_lang, 'DD-MM-YYYY')
             
             # По умолчанию ставим дату 5 лет назад в нужном формате
+            from datetime import date
             default_bday = (date.today().replace(year=date.today().year - 5)).strftime("%d-%m-%Y")
             
             birthday_str = st.text_input(
