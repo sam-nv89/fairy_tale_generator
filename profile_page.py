@@ -430,10 +430,9 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # JS-инъекция для ЖЕСТКОЙ маски и всплывающих подсказок
+            # JS-инъекция для ЖЕСТКОЙ маски, авто-нолей и видимых подсказок
             import streamlit.components.v1 as components
             
-            # Подготовка текстов для JS
             js_tips = {
                 'ru': {'day': 'День: 01-31', 'month': 'Месяц: 01-12'},
                 'en': {'day': 'Day: 01-31', 'month': 'Month: 01-12'},
@@ -441,65 +440,100 @@ def render_profile_page():
             }.get(user_lang, {'day': 'Day: 01-31', 'month': 'Month: 01-12'})
 
             components.html(f"""
-                <style>
-                    .date-tip {{
-                        position: absolute;
-                        background: #ff4b4b;
-                        color: white;
-                        padding: 5px 10px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        z-index: 10000;
-                        pointer-events: none;
-                        opacity: 0;
-                        transition: opacity 0.3s, transform 0.3s;
-                        transform: translateY(10px);
-                        box-shadow: 0 4px 15px rgba(255, 75, 75, 0.3);
-                        font-family: sans-serif;
-                    }}
-                    .date-tip.show {{
-                        opacity: 1;
-                        transform: translateY(-5px);
-                    }}
-                    .date-tip::after {{
-                        content: '';
-                        position: absolute;
-                        top: 100%; left: 50%;
-                        margin-left: -5px;
-                        border-width: 5px;
-                        border-style: solid;
-                        border-color: #ff4b4b transparent transparent transparent;
-                    }}
-                </style>
-                <div id="tip" class="date-tip"></div>
                 <script>
-                const tip = document.getElementById('tip');
+                const doc = window.parent.document;
+                
+                // Внедряем стили в главный документ
+                if (!doc.getElementById('date-tip-styles')) {{
+                    const style = doc.createElement('style');
+                    style.id = 'date-tip-styles';
+                    style.innerHTML = `
+                        .date-tip {{
+                            position: fixed;
+                            background: #ff4b4b;
+                            color: white;
+                            padding: 6px 12px;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            font-weight: bold;
+                            z-index: 999999;
+                            pointer-events: none;
+                            opacity: 0;
+                            transition: opacity 0.3s, transform 0.3s;
+                            transform: translateY(10px);
+                            box-shadow: 0 4px 15px rgba(255, 75, 75, 0.4);
+                            font-family: sans-serif;
+                        }}
+                        .date-tip.show {{ opacity: 1; transform: translateY(-5px); }}
+                        .date-tip::after {{
+                            content: '';
+                            position: absolute;
+                            top: 100%; left: 50%;
+                            margin-left: -5px;
+                            border-width: 5px;
+                            border-style: solid;
+                            border-color: #ff4b4b transparent transparent transparent;
+                        }}
+                    `;
+                    doc.head.appendChild(style);
+                }}
+
+                // Внедряем сам элемент подсказки
+                let tip = doc.getElementById('date-input-tip');
+                if (!tip) {{
+                    tip = doc.createElement('div');
+                    tip.id = 'date-input-tip';
+                    tip.className = 'date-tip';
+                    doc.body.appendChild(tip);
+                }}
+
                 const showTip = (el, text) => {{
                     const rect = el.getBoundingClientRect();
                     tip.innerText = text;
                     tip.style.left = (rect.left + (rect.width/2) - (tip.offsetWidth/2)) + 'px';
-                    tip.style.top = (rect.top - 35) + 'px';
+                    tip.style.top = (rect.top - 40) + 'px';
                     tip.classList.add('show');
                     setTimeout(() => tip.classList.remove('show'), 2000);
                 }};
 
                 const applyMask = () => {{
-                    const inputs = window.parent.document.querySelectorAll('input[placeholder*="ДД-ММ-ГГГГ"], input[placeholder*="DD-MM-YYYY"], input[placeholder*="JJ-MM-AAAA"]');
+                    const inputs = doc.querySelectorAll('input[placeholder*="ДД-ММ-ГГГГ"], input[placeholder*="DD-MM-YYYY"], input[placeholder*="JJ-MM-AAAA"]');
                     inputs.forEach(input => {{
                         if (input.dataset.masked) return;
                         input.dataset.masked = "true";
-                        input.maxLength = 10;
                         
                         input.addEventListener('keydown', (e) => {{
-                            if (e.key.length === 1 && /\\D/.test(e.key)) e.preventDefault();
+                            // Разрешаем служебные клавиши
+                            if (['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'].includes(e.key)) return;
+                            
+                            // Обработка разделителей (., / и -)
+                            if (['.', '/', '-'].includes(e.key)) {{
+                                e.preventDefault();
+                                let parts = e.target.value.split('-');
+                                let current = parts[parts.length - 1];
+                                
+                                if (current.length === 1) {{
+                                    // Подставляем ноль: 6 -> 06
+                                    parts[parts.length - 1] = '0' + current;
+                                    e.target.value = parts.join('-');
+                                    if (parts.length < 3) e.target.value += '-';
+                                }} else if (current.length === 2 && parts.length < 3) {{
+                                    e.target.value += '-';
+                                }}
+                                const event = new Event('input', {{ bubbles: true }});
+                                e.target.dispatchEvent(event);
+                                return;
+                            }}
+
+                            // Блокируем всё кроме цифр
+                            if (/\\D/.test(e.key)) e.preventDefault();
                         }});
 
                         input.addEventListener('input', (e) => {{
-                            let cursor = e.target.selectionStart;
                             let val = e.target.value.replace(/\\D/g, '');
                             let masked = '';
                             
-                            // ЛОГИКА БЛОКИРОВКИ
+                            // Проверка Дней
                             if (val.length >= 2) {{
                                 let d = parseInt(val.substring(0, 2));
                                 if (d > 31 || d === 0) {{
@@ -507,6 +541,7 @@ def render_profile_page():
                                     showTip(e.target, "{js_tips['day']}");
                                 }}
                             }}
+                            // Проверка Месяцев
                             if (val.length >= 4) {{
                                 let m = parseInt(val.substring(2, 4));
                                 if (m > 12 || m === 0) {{
@@ -520,7 +555,6 @@ def render_profile_page():
                             if (val.length > 4) masked += '-' + val.substring(4, 8);
                             
                             e.target.value = masked;
-                            
                             const event = new Event('input', {{ bubbles: true }});
                             e.target.dispatchEvent(event);
                         }});
