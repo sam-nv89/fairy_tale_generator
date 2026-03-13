@@ -1,6 +1,6 @@
 """
 Модуль авторизации для интеграции с Supabase Auth.
-v4.2 — Финальная стабилизация PKCE и логов.
+v4.3 — Поиск причины сбоя PKCE и усиление хранилища.
 """
 
 import streamlit as st
@@ -21,9 +21,7 @@ try:
     from supabase.lib.client_options import ClientOptions
     _SUPABASE_AVAILABLE = True
 except Exception:
-    create_client = None
-    Client = None
-    ClientOptions = None
+    create_client = Client = ClientOptions = None
     _SUPABASE_AVAILABLE = False
 
 try:
@@ -41,15 +39,19 @@ except ImportError:
 #  STORAGE (Cloud-safe)
 # ============================================================================
 def _get_storage_dir() -> str:
-    # 1. /tmp - самый надежный вариант для Cloud (Docker/K8s/Streamlit Cloud)
-    for path in ['/tmp/.auth_sessions', os.path.join(os.path.dirname(__file__), '.auth_sessions')]:
-        try:
-            os.makedirs(path, exist_ok=True)
-            test_path = os.path.join(path, '.write_test')
-            with open(test_path, 'w') as f: f.write('1')
-            os.remove(test_path)
-            return path
-        except: continue
+    # 1. /tmp - самый надежный вариант для Cloud
+    tmp_path = '/tmp/.auth_sessions'
+    try:
+        os.makedirs(tmp_path, exist_ok=True)
+        return tmp_path
+    except: pass
+    
+    # 2. Локальная папка
+    local_path = os.path.join(os.path.dirname(__file__), '.auth_sessions')
+    try:
+        os.makedirs(local_path, exist_ok=True)
+        return local_path
+    except: pass
     return "."
 
 _STORAGE_DIR = _get_storage_dir()
@@ -64,22 +66,28 @@ class IsolatedDiskStorage(SyncSupportedStorage):
             if os.path.exists(self.file_path):
                 with open(self.file_path, 'r', encoding='utf-8') as f:
                     c = f.read().strip()
-                    return json.loads(c) if c else {}
-        except: pass
+                    if c: return json.loads(c)
+        except Exception as e:
+            logger.debug(f"Load error: {e}")
         return {}
 
     def _save(self, data: dict):
         try:
+            # Атомарная запись (насколько возможно)
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f)
         except Exception as e:
-            logger.error(f"Save error: {e}")
+            logger.error(f"Save error for {self.client_id}: {e}")
 
-    def get_item(self, key: str) -> str | None: return self._load().get(key)
+    def get_item(self, key: str) -> str | None: 
+        val = self._load().get(key)
+        return val
+        
     def set_item(self, key: str, value: str):
         d = self._load()
         d[key] = value
         self._save(d)
+        
     def remove_item(self, key: str):
         d = self._load()
         if key in d:
@@ -87,29 +95,39 @@ class IsolatedDiskStorage(SyncSupportedStorage):
             self._save(d)
 
 # ============================================================================
-#  UTILITIES
+#  UTILITIES & URLS
 # ============================================================================
 def get_client_id() -> str:
+    """Получает стабильный ID клиента."""
     if "client_id" in st.session_state:
         return st.session_state["client_id"]
+    
     cid = None
     try:
-        if hasattr(st, "context") and hasattr(st.context, "cookies"):
+        # Пытаемся взять из URL (если это callback)
+        qp = st.query_params
+        cid = qp.get('auth_cid')
+        if isinstance(cid, list): cid = cid[0] if cid else None
+        
+        # Если нет в URL - пробуем Cookies
+        if not cid and hasattr(st, "context") and hasattr(st.context, "cookies"):
             cid = st.context.cookies.get("client_id")
     except: pass
+    
     if not cid:
         cid = uuid.uuid4().hex
+        
     st.session_state["client_id"] = cid
     return cid
 
 def get_site_url() -> str:
-    # 1. Manual override
+    # 1. Manual check
     try:
         url = st.secrets.get("SITE_URL")
         if url: return url.rstrip('/')
     except: pass
     
-    # 2. Dynamic (Streamlit Context)
+    # 2. Dynamic (Streamlit 1.45+)
     try:
         if hasattr(st, "context") and hasattr(st.context, "headers"):
             h = st.context.headers
@@ -130,7 +148,7 @@ def render_auth_scripts():
     except: pass
 
 # ============================================================================
-#  SUPABASE LOGIC
+#  SUPABASE ACTIONS
 # ============================================================================
 def get_supabase_client():
     if not _SUPABASE_AVAILABLE or not create_client: return None
@@ -138,52 +156,52 @@ def get_supabase_client():
         url = st.secrets.get("SUPABASE_URL")
         key = st.secrets.get("SUPABASE_KEY")
         if not url or not key: return None
+        
         cid = get_client_id()
-        # ВАЖНО: Storage должен быть инициализирован ПЕРЕД созданием клиента
-        storage = IsolatedDiskStorage(cid)
-        options = ClientOptions(flow_type='pkce', storage=storage)
+        options = ClientOptions(flow_type='pkce', storage=IsolatedDiskStorage(cid))
         return create_client(url, key, options=options)
-    except Exception as e:
-        logger.error(f"Supabase client error: {e}")
-        return None
+    except: return None
 
 def sign_in_with_google(force_refresh: bool = False) -> dict:
-    # Используем кэширование, чтобы verifier не менялся при каждом чихе
+    """Инициация входа."""
+    # Всегда создаем новый URL, если не в кэше, но кэшируем для стабильности PKCE
     if not force_refresh and st.session_state.get('google_auth_url'):
         return {'success': True, 'url': st.session_state['google_auth_url']}
 
     client = get_supabase_client()
-    if not client: return {'success': False, 'error': 'Auth service unavailable'}
+    if not client: return {'success': False, 'error': 'Сервис авторизации недоступен'}
 
     try:
         cid = get_client_id()
         base = get_site_url()
+        # Добавляем ?auth_cid во избежание потери client_id при возврате
         redirect = f"{base}/?auth_cid={cid}"
         
         res = client.auth.sign_in_with_oauth({
             "provider": "google",
-            "options": {"redirect_to": redirect}
+            "options": {
+                "redirect_to": redirect,
+                "skip_browser_redirect": True
+            }
         })
         url = getattr(res, 'url', None)
-        if not url: return {'success': False, 'error': 'No URL returned from Supabase'}
+        if not url: return {'success': False, 'error': 'Не удалось получить ссылку от Supabase'}
         
         st.session_state['google_auth_url'] = url
         return {'success': True, 'url': url}
     except Exception as e:
-        logger.error(f"Google sign-in init fail: {e}")
+        logger.error(f"Google sign-in fail: {e}")
         return {'success': False, 'error': str(e)}
 
 def handle_oauth_callback():
+    """Обработчик возврата."""
     qp = st.query_params
-    auth_cid = qp.get('auth_cid')
-    if isinstance(auth_cid, list): auth_cid = auth_cid[0]
-    if auth_cid: st.session_state['client_id'] = auth_cid
-
     code = qp.get('code')
     if isinstance(code, list): code = code[0]
     if not code: return
 
-    if st.session_state.get('last_processed_code') == code:
+    # Защита от двойной обработки
+    if st.session_state.get('processed_code') == code:
         st.query_params.clear()
         return
 
@@ -191,9 +209,12 @@ def handle_oauth_callback():
     if not client: return
 
     try:
+        # Обмен кода на полноценную сессию
         res = client.auth.exchange_code_for_session({"auth_code": code})
-        st.session_state['last_processed_code'] = code
+        st.session_state['processed_code'] = code
+        
         if res and res.user:
+            logger.info(f"Login success: {res.user.email}")
             st.session_state.user = res.user
             st.session_state.user_email = res.user.email
             st.session_state.authenticated = True
@@ -202,11 +223,14 @@ def handle_oauth_callback():
             st.query_params.clear()
             st.rerun()
     except Exception as e:
-        logger.error(f"OAuth callback exchange fail: {e}")
+        logger.error(f"Callback error: {e}")
         st.query_params.clear()
         st.session_state.pop('google_auth_url', None)
-        st.session_state['auth_error'] = f"Ошибка входа: {str(e)[:100]}"
+        st.session_state['auth_error'] = f"Ошибка авторизации (PKCE): {str(e)[:100]}"
 
+# ============================================================================
+#  STATE & AUTH
+# ============================================================================
 def is_authenticated() -> bool:
     client = get_supabase_client()
     if not client: return False
@@ -225,8 +249,11 @@ def sign_out():
     if client:
         try: client.auth.sign_out()
         except: pass
-    for k in ['user', 'user_email', 'authenticated', 'last_processed_code', 'google_auth_url']:
-        st.session_state.pop(k, None)
+    
+    # Полная очистка
+    keys = ['user', 'user_email', 'authenticated', 'processed_code', 'google_auth_url', 'client_id']
+    for k in keys: st.session_state.pop(k, None)
+    
     try:
         cid = get_client_id()
         p = os.path.join(_STORAGE_DIR, f'session_{cid}.json')
@@ -247,7 +274,7 @@ def _garbage_collect_old_sessions():
             if now - os.path.getmtime(path) > 7*86400: os.remove(path)
     except: pass
 
-# Email/Pass
+# Email Auth Stubs
 def sign_in(email, password):
     client = get_supabase_client()
     if not client: return {'success': False, 'error': 'Service unavailable'}
@@ -272,13 +299,22 @@ def sign_up(email, password):
                 st.session_state.user_email = res.user.email
                 st.session_state.authenticated = True
             return {'success': True, 'user': res.user}
-        return {'success': False, 'error': 'Signup failed'}
+        return {'success': False, 'error': 'Registration failed'}
+    except Exception as e: return {'success': False, 'error': str(e)}
+
+def delete_current_account() -> dict:
+    client = get_supabase_client()
+    if not client: return {'success': False, 'error': 'Service unavailable'}
+    try:
+        client.rpc("delete_user").execute()
+        sign_out(); return {'success': True}
     except Exception as e: return {'success': False, 'error': str(e)}
 
 def get_auth_diagnostics():
     return {
-        "supabase_ok": _SUPABASE_AVAILABLE,
+        "supabase": _SUPABASE_AVAILABLE,
         "site_url": get_site_url(),
         "storage": _STORAGE_DIR,
-        "client_id": st.session_state.get('client_id')
+        "client_id": st.session_state.get('client_id'),
+        "has_secrets": "SUPABASE_URL" in st.secrets
     }

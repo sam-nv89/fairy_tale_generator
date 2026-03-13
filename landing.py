@@ -2008,10 +2008,15 @@ def render_auth():
             # --- ХАК ДЛЯ КЛИКАБЕЛЬНОСТИ (Chrome/Mobile) ---
             # Streamlit иногда блокирует переходы по ссылкам внутри markdown в определенных контейнерах.
             # Мы добавим явный лог для отладки.
+            # --- DEBUG INFO ---
             if st.query_params.get("debug_auth") == "1":
-                st.info(f"🔍 DEBUG Google URL: {google_url[:50]}...")
-                if not google_res.get("success"):
-                    st.error(f"❌ Error Detail: {google_res.get('error')}")
+                with st.expander("🛠️ Auth Debug Panel", expanded=True):
+                    st.write(f"**Site URL:** `{auth.get_site_url()}`")
+                    st.write(f"**Client ID:** `{st.session_state.get('client_id')}`")
+                    st.write(f"**Google OAuth URL:** [Click here if button fails]({google_url})")
+                    if st.button("Clear Auth Cache"):
+                        st.session_state.pop('google_auth_url', None)
+                        st.rerun()
 
             auth_error = st.session_state.pop('auth_error', None)
             if auth_error: st.error(f"⚠️ {auth_error}")
