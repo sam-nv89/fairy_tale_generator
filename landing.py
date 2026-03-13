@@ -2002,7 +2002,7 @@ def render_auth():
 """, unsafe_allow_html=True)
             tab1, tab2 = st.tabs([f"🔒 {t('auth_login_tab')}", f"✨ {t('auth_signup_tab')}"])
 
-            google_res = sign_in_with_google()
+            google_res = sign_in_with_google(force_refresh=st.query_params.get("force_auth_refresh") == "1")
             google_url = google_res.get("url", "#") if google_res.get("success") else "#"
             
             # --- ХАК ДЛЯ КЛИКАБЕЛЬНОСТИ (Chrome/Mobile) ---

@@ -89,11 +89,12 @@ def get_client_id() -> str:
     # Кэшируем на время сессии
     st.session_state["client_id"] = client_id
     
-    # 4. Пробрасываем JS-инъекцию для сохранения куки (для новых или обновившихся юзеров)
+    # 4. Пробрасываем JS-инъекцию для сохранения куки
     try:
+        # Пытаемся внедрить куку через JS только если ее еще нет в контексте
         import streamlit.components.v1 as components
         components.html(
-            f"<script>document.cookie = 'client_id={client_id}; path=/; max-age=31536000';</script>",
+            f"<script>document.cookie = 'client_id={client_id}; path=/; max-age=31536000; SameSite=Lax';</script>",
             height=0
         )
     except Exception:
@@ -271,7 +272,7 @@ def get_supabase_client() -> "Client | None":
 # ============================================================================
 #  GOOGLE OAUTH (PKCE Flow)
 # ============================================================================
-def sign_in_with_google() -> dict:
+def sign_in_with_google(force_refresh: bool = False) -> dict:
     """Инициирует Google OAuth PKCE flow.
 
     client_id встраивается в redirect_to URL как ?auth_cid=<id>.
@@ -281,6 +282,9 @@ def sign_in_with_google() -> dict:
     ВАЖНО: нельзя использовать query_params['state'] — PKCE использует
     его внутренне, перезапись ломает exchange_code_for_session.
     """
+    if not force_refresh and st.session_state.get('google_auth_url'):
+        return {'success': True, 'url': st.session_state['google_auth_url']}
+
     client = get_supabase_client()
     if not client:
         return {'success': False, 'url': None, 'error': 'Сервис авторизации недоступен'}
@@ -303,6 +307,7 @@ def sign_in_with_google() -> dict:
         if not auth_url:
             return {'success': False, 'url': None, 'error': 'Не удалось получить URL авторизации от Supabase'}
             
+        st.session_state['google_auth_url'] = auth_url
         return {'success': True, 'url': auth_url}
     except Exception as e:
         logger.error(f"[Google OAuth] Ошибка: {type(e).__name__}: {e}")
@@ -316,20 +321,21 @@ def handle_oauth_callback():
     в правильном месте UI (не под навбаром).
     """
     qp = st.query_params
-    code = qp.get('code')
-
-    if not code:
-        return
-
-    # Восстанавливаем client_id из ?auth_cid= (мы встроили в redirect_to URL)
-    # Supabase сохраняет все исходные параметры и передаёт их обратно
+    # Восстанавливаем client_id из ?auth_cid=
     auth_cid = qp.get('auth_cid')
+    if isinstance(auth_cid, list): auth_cid = auth_cid[0] if auth_cid else None
+    
     if auth_cid:
         st.session_state['client_id'] = auth_cid
         logger.info(f"[OAuth Callback] client_id восстановлен из auth_cid: {auth_cid}")
     else:
         fallback_id = get_client_id()
         logger.warning(f"[OAuth Callback] auth_cid не получен, fallback client_id: {fallback_id}")
+
+    # Нормализация кода
+    code = qp.get('code')
+    if isinstance(code, list): code = code[0] if code else None
+    if not code: return
 
     # Защита от F5 / случайных релоадов
     last_code = st.session_state.get('last_processed_auth_code')

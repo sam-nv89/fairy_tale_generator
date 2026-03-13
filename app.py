@@ -68,8 +68,8 @@ import auth
 auth.init_auth_state()
 # СИНХРОНИЗАЦИЯ: Восстанавливаем сессию сразу, чтобы routing внизу видел 'user'.
 # Это предотвращает редирект на лендинг при обновлении страниц (F5).
-auth.is_authenticated()
 auth.handle_oauth_callback()  # PKCE: обрабатывает ?code= от Google OAuth
+auth.is_authenticated()       # Восстанавливаем сессию после возможного callback
 
 # Проверка параметров URL (?lang=en&page=privacy)
 if "page" in st.query_params:
