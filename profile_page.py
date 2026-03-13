@@ -454,6 +454,7 @@ def render_profile_page():
             st.write(f"**{t('child_birthday_label', user_lang)}**")
             col_d, col_m, col_y = st.columns([1, 2, 1])
             
+            from datetime import date
             with col_d:
                 day = st.selectbox(t('day_label', user_lang), options=list(range(1, 32)), index=0)
             with col_m:
