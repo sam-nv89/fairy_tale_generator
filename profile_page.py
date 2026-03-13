@@ -430,13 +430,9 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # По умолчанию ставим дату 5 лет назад в нужном формате
-            from datetime import date
-            default_bday = (date.today().replace(year=date.today().year - 5)).strftime("%d-%m-%Y")
-            
             birthday_str = st.text_input(
                 t('child_birthday_label', user_lang),
-                value=default_bday,
+                value="",
                 placeholder=date_placeholder,
                 help=f"{t('child_birthday_label', user_lang)} ({date_placeholder})"
             )
@@ -446,6 +442,7 @@ def render_profile_page():
             if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
                 # Валидация даты при сохранении
                 new_birthday = None
+                from datetime import date
                 if birthday_str:
                     try:
                         new_birthday = datetime.strptime(birthday_str, "%d-%m-%Y").date()
