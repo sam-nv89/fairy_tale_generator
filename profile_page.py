@@ -288,19 +288,6 @@ def render_profile_page():
             padding: 0 !important;
         }
 
-        /* ИСПРАВЛЕНИЕ: Ограничение ширины для полей ввода и форм в профиле */
-        .narrow-form-container div[data-testid="stForm"] {
-            max-width: 480px !important;
-            margin: 0 auto !important;
-        }
-
-        /* Делаем текстовые поля и области ввода более компактными */
-        .narrow-form-container .stTextInput, 
-        .narrow-form-container .stTextArea,
-        .narrow-form-container .stDateInput {
-            max-width: 100% !important;
-        }
-
         /* Центрирование контента в экспандере */
         div[data-testid="stExpanderDetails"] {
             display: flex;
@@ -447,65 +434,67 @@ def render_profile_page():
 
     # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):
-        st.markdown("<div class='narrow-form-container'>", unsafe_allow_html=True)
-        with st.form("add_child_form", clear_on_submit=True):
-            new_name = st.text_input(t('child_name', user_lang), placeholder=t('name_placeholder', user_lang))
-            
-            # Настройка диапазона дат родительской валидацией
-            from datetime import date
-            min_date = date(1900, 1, 1)
-            max_date = date.today()
-            default_date = date(max_date.year - 5, 1, 1)
+        # Используем колонки с большими боковыми полями для жесткого заужения центра (33.3% ширины)
+        f_col_l, f_col_m, f_col_r = st.columns([1, 1, 1])
+        
+        with f_col_m:
+            with st.form("add_child_form", clear_on_submit=True):
+                new_name = st.text_input(t('child_name', user_lang), placeholder=t('name_placeholder', user_lang))
+                
+                # Настройка диапазона дат родительской валидацией
+                from datetime import date
+                min_date = date(1900, 1, 1)
+                max_date = date.today()
+                default_date = date(max_date.year - 5, 1, 1)
 
-            new_birthday = st.date_input(
-                t('child_birthday_label', user_lang),
-                value=default_date,
-                min_value=min_date,
-                max_value=max_date,
-                format="DD-MM-YYYY",
-                help=f"{t('child_birthday_label', user_lang)} (DD-MM-YYYY)"
-            )
-            
-            new_hobbies = st.text_area(
-                t('child_hobbies', user_lang), 
-                placeholder=t('hobbies_placeholder', user_lang),
-                height=100
-            )
-            
-            save_btn = st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True)
-            
-            if save_btn:
-                # Валидация
-                if not new_birthday:
-                    st.error(t('child_birthday_label', user_lang))
-                    st.stop()
+                new_birthday = st.date_input(
+                    t('child_birthday_label', user_lang),
+                    value=default_date,
+                    min_value=min_date,
+                    max_value=max_date,
+                    format="DD-MM-YYYY",
+                    help=f"{t('child_birthday_label', user_lang)} (DD-MM-YYYY)"
+                )
+                
+                new_hobbies = st.text_area(
+                    t('child_hobbies', user_lang), 
+                    placeholder=t('hobbies_placeholder', user_lang),
+                    height=100
+                )
+                
+                save_btn = st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True)
+                
+                if save_btn:
+                    # Валидация
+                    if not new_birthday:
+                        st.error(t('child_birthday_label', user_lang))
+                        st.stop()
 
-                if not new_name.strip():
-                    st.error(t('name_warning', user_lang))
-                else:
-                    # Группа возраста для совместимости
-                    calc_age = calculate_age(new_birthday.isoformat())
-                    age_group = "4-7 лет"
-                    if calc_age is not None:
-                        if calc_age < 1: age_group = "0-12 мес"
-                        elif calc_age < 4: age_group = "1-3 года"
-                        elif calc_age < 8: age_group = "4-7 лет"
-                        elif calc_age < 13: age_group = "8-12 лет"
-                        elif calc_age < 18: age_group = "13-17 лет"
-                        else: age_group = "18+"
-
-                    res = storage.save_child_profile({
-                        "name": new_name.strip(),
-                        "age": age_group,
-                        "birthday": new_birthday.isoformat(),
-                        "hobbies": new_hobbies.strip()
-                    })
-                    if res.get('success'):
-                        st.session_state.profile_success = t('child_save_success', user_lang)
-                        st.rerun()
+                    if not new_name.strip():
+                        st.error(t('name_warning', user_lang))
                     else:
-                        st.error(f"Error: {res.get('error')}")
-        st.markdown("</div>", unsafe_allow_html=True)
+                        # Группа возраста для совместимости
+                        calc_age = calculate_age(new_birthday.isoformat())
+                        age_group = "4-7 лет"
+                        if calc_age is not None:
+                            if calc_age < 1: age_group = "0-12 мес"
+                            elif calc_age < 4: age_group = "1-3 года"
+                            elif calc_age < 8: age_group = "4-7 лет"
+                            elif calc_age < 13: age_group = "8-12 лет"
+                            elif calc_age < 18: age_group = "13-17 лет"
+                            else: age_group = "18+"
+
+                        res = storage.save_child_profile({
+                            "name": new_name.strip(),
+                            "age": age_group,
+                            "birthday": new_birthday.isoformat(),
+                            "hobbies": new_hobbies.strip()
+                        })
+                        if res.get('success'):
+                            st.session_state.profile_success = t('child_save_success', user_lang)
+                            st.rerun()
+                        else:
+                            st.error(f"Error: {res.get('error')}")
 
     st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
                 unsafe_allow_html=True)
