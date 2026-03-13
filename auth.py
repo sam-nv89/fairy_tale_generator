@@ -88,19 +88,22 @@ def get_client_id() -> str:
         
     # Кэшируем на время сессии
     st.session_state["client_id"] = client_id
-    
-    # 4. Пробрасываем JS-инъекцию для сохранения куки
+    return client_id
+
+def render_auth_scripts():
+    """Рендерит необходимые JS-скрипты для работы авторизации (куки).
+    Должна вызываться в основном UI потоке app.py.
+    """
+    client_id = get_client_id()
     try:
-        # Пытаемся внедрить куку через JS только если ее еще нет в контексте
         import streamlit.components.v1 as components
-        components.html(
-            f"<script>document.cookie = 'client_id={client_id}; path=/; max-age=31536000; SameSite=Lax';</script>",
-            height=0
+        js_cookie = (
+            f"<script>document.cookie = 'client_id={client_id}; "
+            f"path=/; max-age=31536000; SameSite=Lax';</script>"
         )
+        components.html(js_cookie, height=0)
     except Exception:
         pass
-        
-    return client_id
 
 # ============================================================================
 #  ISOLATED DISK STORAGE

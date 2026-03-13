@@ -128,6 +128,9 @@ user_lang = st.session_state.user_lang
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
 from styles import get_app_styles, get_dropdown_fix_js, get_rtl_styles
 
+# Рендерим скрипты авторизации (установка куки client_id)
+auth.render_auth_scripts()
+
 # Инициализация темы из session_state или по умолчанию
 if 'dark_mode' not in st.session_state:
     st.session_state.dark_mode = True
