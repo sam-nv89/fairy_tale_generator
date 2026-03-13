@@ -288,6 +288,32 @@ def render_profile_page():
             padding: 0 !important;
         }
 
+        /* ИСПРАВЛЕНИЕ: Ограничение ширины для полей ввода и форм в профиле */
+        .narrow-form-container div[data-testid="stForm"] {
+            max-width: 480px !important;
+            margin: 0 auto !important;
+        }
+
+        /* Делаем текстовые поля и области ввода более компактными */
+        .narrow-form-container .stTextInput, 
+        .narrow-form-container .stTextArea,
+        .narrow-form-container .stDateInput {
+            max-width: 100% !important;
+        }
+
+        /* Центрирование контента в экспандере */
+        div[data-testid="stExpanderDetails"] {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        div[data-testid="stExpanderDetails"] > div {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
         /* Кастомизация карточек детей */
         .child-card {
             background: rgba(255, 255, 255, 0.05);
@@ -421,22 +447,14 @@ def render_profile_page():
 
     # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):
+        st.markdown("<div class='narrow-form-container'>", unsafe_allow_html=True)
         with st.form("add_child_form", clear_on_submit=True):
-            new_name = st.text_input(t('child_name', user_lang))
+            new_name = st.text_input(t('child_name', user_lang), placeholder=t('name_placeholder', user_lang))
             
-            # Умное поле ввода даты вместо проблемного календаря
-            date_placeholder = {
-                'ru': 'ДД-ММ-ГГГГ', 'en': 'DD-MM-YYYY', 'es': 'DD-MM-AAAA',
-                'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
-            }.get(user_lang, 'DD-MM-YYYY')
-            
-            # Нативный и надежный календарь Streamlit
+            # Настройка диапазона дат родительской валидацией
             from datetime import date
-            
-            # Настройка диапазона дат
             min_date = date(1900, 1, 1)
             max_date = date.today()
-            # Предлагаем по умолчанию дату 5 лет назад для удобства
             default_date = date(max_date.year - 5, 1, 1)
 
             new_birthday = st.date_input(
@@ -448,18 +466,22 @@ def render_profile_page():
                 help=f"{t('child_birthday_label', user_lang)} (DD-MM-YYYY)"
             )
             
-            new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
+            new_hobbies = st.text_area(
+                t('child_hobbies', user_lang), 
+                placeholder=t('hobbies_placeholder', user_lang),
+                height=100
+            )
             
-            if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
-                # Валидация уже встроена в date_input (min/max), но проверим на всякий случай
+            save_btn = st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True)
+            
+            if save_btn:
+                # Валидация
                 if not new_birthday:
                     st.error(t('child_birthday_label', user_lang))
                     st.stop()
 
                 if not new_name.strip():
                     st.error(t('name_warning', user_lang))
-                elif not new_birthday:
-                    st.error(f"❌ {t('child_birthday_label', user_lang)}")
                 else:
                     # Группа возраста для совместимости
                     calc_age = calculate_age(new_birthday.isoformat())
@@ -483,6 +505,7 @@ def render_profile_page():
                         st.rerun()
                     else:
                         st.error(f"Error: {res.get('error')}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
                 unsafe_allow_html=True)
