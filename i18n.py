@@ -156,6 +156,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'donate_btn': "☕ Support the Project",
         'language_label': "Language",
         'version_label': "Version",
+        'profile_nickname': "Your Nickname",
+        'profile_save_btn': "Save Name",
+        'profile_updated': "Nickname updated!",
         
         # Form
         'name_label': "Child's Name",

@@ -180,6 +180,19 @@ def render_profile_page():
     # Информация о пользователе
     col1, col2 = st.columns(2)
     with col1:
+        # Редактирование никнейма
+        st.markdown(f"**👤 {t('profile_nickname', user_lang)}**")
+        current_name = auth.get_user_display_name()
+        c_name_col, c_btn_col = st.columns([3, 1])
+        with c_name_col:
+            new_nick = st.text_input("nickname_input", value=current_name, label_visibility="collapsed", key="prof_page_nick")
+        with c_btn_col:
+            if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang)):
+                res = auth.update_user_profile(new_nick)
+                if res.get("success"):
+                    st.toast(t('profile_updated', user_lang))
+                    st.rerun()
+        
         st.markdown(f"**✉️ Email:** {user.email}")
         created_at = profile_data.get('created_at', user.created_at)
         if created_at:
