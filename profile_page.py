@@ -195,8 +195,12 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        /* Фикс для кнопки сохранения никнейма - Полная идентичность с кнопкой профиля ребенка */
-        div[data-testid="stColumn"] button[key="save_nick_prof_page"] {
+        /* КНОПКИ: Глобальный премиальный стиль для всех Primary кнопок */
+        /* Это сделает кнопку никнейма и кнопку сохранения ребенка ИДЕНТИЧНЫМИ */
+        div[data-testid="stButton"] button[kind="primary"],
+        div[data-testid="stFormSubmitButton"] button[kind="primary"],
+        button[data-testid="stBaseButton-primary"],
+        button[kind="primary"] {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
             background-size: 200% 200% !important;
             color: white !important;
@@ -206,22 +210,36 @@ def render_profile_page():
             border-radius: 12px !important;
             font-weight: 700 !important;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
-            margin-top: 0 !important;
+            transition: all 0.3s ease !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            transition: all 0.3s ease !important;
+            width: 100% !important;
+            margin: 0 !important;
         }
         
-        div[data-testid="stColumn"] button[key="save_nick_prof_page"]:hover {
-            transform: translateY(-2px) scale(1.02) !important;
+        button[kind="primary"]:hover {
+            transform: translateY(-2px) scale(1.01) !important;
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+            background-position: right center !important;
         }
 
-        /* Убираем любые черные обертки */
+        /* Особое правило для зоны удаления (Danger Zone) - возвращаем красный */
+        .danger-zone button[kind="primary"] {
+            background: #ff4b4b !important;
+            box-shadow: 0 4px 12px rgba(255, 75, 75, 0.2) !important;
+        }
+
+        /* Убираем любые черные обертки и фиксим центровку */
         div[data-testid="stColumn"] {
             display: flex;
-            align-items: center;
+            align-items: center !important; /* Центрируем кнопку относительно инпута */
+            justify-content: center;
+        }
+        
+        /* Убираем лишние отступы у виджетов в колонках */
+        div[data-testid="stColumn"] div[data-testid="stVerticalBlock"] > div {
+            margin-top: 0 !important;
         }
         
         /* Исправление для всех кнопок в Streamlit, чтобы не было черных рамок */
@@ -399,6 +417,7 @@ def render_profile_page():
     st.markdown("""<hr style='border: 1px solid rgba(255,255,255,0.1); margin-top: 2rem;'>""",
                 unsafe_allow_html=True)
 
+    st.markdown("<div class='danger-zone'>", unsafe_allow_html=True)
     st.markdown(f"<div class='danger-header'>⚠️ {loc('danger')}</div>", unsafe_allow_html=True)
     st.markdown(loc('warning'))
 
@@ -421,3 +440,4 @@ def render_profile_page():
                         st.error(f"{loc('error_prefix')}: {res.get('error')}")
             else:
                 st.error(loc('wrong_word', confirm_word))
+    st.markdown("</div>", unsafe_allow_html=True)
