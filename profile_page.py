@@ -430,57 +430,47 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # Глобальное скрытие курсора и всех лишних разделителей в выпадающих списках
+            # Адаптивный и чистый выбор даты через Selectbox-ы (без курсоров и палочек)
+            st.write(f"**{t('child_birthday_label', user_lang)}**")
+            
+            # CSS для ПОЛНОГО удаления курсора и возможности печатать (только выбор)
             st.markdown("""
                 <style>
-                [data-testid="stSelectbox"] input, 
-                div[data-baseweb="select"] input {
+                /* Отключаем возможность ввода текста, чтобы не было курсора и палочек */
+                [data-testid="stSelectbox"] input {
                     caret-color: transparent !important;
-                    cursor: pointer !important;
+                    pointer-events: none !important;
                 }
-                div[data-baseweb="select"] [class*="StyledSeparator"],
-                [data-testid="stSelectbox"] div[role="button"] + div,
-                div[data-baseweb="select"] > div > div:nth-child(2) {
+                /* Скрываем технический разделитель перед стрелочкой */
+                div[data-baseweb="select"] [class*="StyledSeparator"] {
                     display: none !important;
-                    width: 0 !important;
-                }
-                div[data-baseweb="select"] > div {
-                    border-right: none !important;
                 }
                 </style>
             """, unsafe_allow_html=True)
-
-            # Стандартный и надежный выбор даты через Selectbox-ы
-            st.write(f"**{t('child_birthday_label', user_lang)}**")
+            
             col_d, col_m, col_y = st.columns([1, 2, 1])
             
-            from datetime import date
             with col_d:
                 day = st.selectbox(t('day_label', user_lang), options=list(range(1, 32)), index=0)
             with col_m:
                 months_list = t('months', user_lang)
                 if not isinstance(months_list, list):
                     months_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                
                 month_name = st.selectbox(t('month_label', user_lang), options=months_list, index=0)
                 month = months_list.index(month_name) + 1
             with col_y:
-                current_year = date.today().year
-                # СПИСОК ГОДОВ ПО УБЫВАНИЮ
-                years = list(range(current_year, 1899, -1))
-                year = st.selectbox(t('year_label', user_lang), options=years, index=5)
+                # ГОДА ПО УБЫВАНИЮ: от текущего к прошлому
+                current_year = datetime.now().year
+                years_desc = list(range(current_year, 1899, -1))
+                year = st.selectbox(t('year_label', user_lang), options=years_desc, index=5)
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
             if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
-                # Глубокая валидация даты при сохранении
-                new_birthday = None
                 from datetime import date
                 try:
-                    # Проверка на существование даты (например, 31 февраля)
+                    # Валидация корректности даты (например, 31 апреля)
                     new_birthday = date(year, month, day)
-                    
-                    # ОГРАНИЧЕНИЕ: Не позже сегодня
                     if new_birthday > date.today():
                         st.error(f"❌ {t('no_future_dates', user_lang)}")
                         st.stop()
