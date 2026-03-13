@@ -334,9 +334,10 @@ def render_profile_page():
         current_name = auth.get_user_display_name()
         # Попытка выравнивания через vertical_alignment (доступно в новых версиях Streamlit)
         try:
-            c_name_col, c_btn_col = st.columns([4, 1], vertical_alignment="center")
+            # Уменьшаем ширину: 2 части под ввод, 0.5 под кнопку, 2.5 пустых (чтобы не было на всю ширину)
+            c_name_col, c_btn_col, c_empty = st.columns([2, 0.5, 2.5], vertical_alignment="center")
         except:
-            c_name_col, c_btn_col = st.columns([4, 1])
+            c_name_col, c_btn_col, c_empty = st.columns([2, 0.5, 2.5])
 
         with c_name_col:
             new_nick = st.text_input("nickname_input", value=current_name, label_visibility="collapsed", key="prof_page_nick")
@@ -348,18 +349,23 @@ def render_profile_page():
                     st.session_state.profile_success = t('profile_updated', user_lang)
                     st.rerun()
         
-        st.markdown(f"**✉️ Email:** {user.email}")
         created_at = profile_data.get('created_at', user.created_at)
         if created_at:
-            days_str = ""
             try:
                 from datetime import datetime
+                # Приводим дату к формату ДД-ММ-ГГГГ для отображения
+                formatted_date = created_at
+                if created_at:
+                    dt_obj = datetime.strptime(str(created_at)[:10], "%Y-%m-%d")
+                    formatted_date = dt_obj.strftime("%d-%m-%Y")
+                
                 created_dt = datetime.strptime(str(created_at)[:10], "%Y-%m-%d")
                 days = max(0, (datetime.now() - created_dt).days)
                 days_str = " " + t('reg_days', user_lang).format(days)
             except Exception:
+                formatted_date = str(created_at)[:10]
                 pass
-            st.markdown(f"**📅 {loc('registered')}:** {str(created_at)[:10]}{days_str}")
+            st.markdown(f"**📅 {loc('registered')}:** {formatted_date}{days_str}")
 
     with col2:
         plan = profile_data.get('plan', 'free').upper()
@@ -395,7 +401,9 @@ def render_profile_page():
                     <div class='child-card'>
                         <div style='display: flex; justify-content: space-between;'>
                             <div class='child-name'>👦 {child.get('name')}</div>
-                            <div style='color: rgba(255,255,255,0.4);'>{child.get('birthday') or ''}</div>
+                            <div style='color: rgba(255,255,255,0.4);'>
+                                {datetime.fromisoformat(str(child.get('birthday'))).strftime('%d-%m-%Y') if child.get('birthday') else ''}
+                            </div>
                         </div>
                         <div style='color: rgba(255,255,255,0.8);'>
                             🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
@@ -417,7 +425,12 @@ def render_profile_page():
             new_name = st.text_input(t('child_name', user_lang))
             
             from datetime import date
-            new_birthday = st.date_input(t('child_birthday_label', user_lang), value=date(date.today().year - 5, 1, 1))
+            new_birthday = st.date_input(
+                t('child_birthday_label', user_lang), 
+                value=date(date.today().year - 5, 1, 1),
+                format="DD-MM-YYYY",
+                help="ДД-ММ-ГГГГ"
+            )
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
