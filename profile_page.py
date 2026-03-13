@@ -430,6 +430,15 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
+            # Скрываем мигающий курсор в выпадающих списках, чтобы они выглядели чище
+            st.markdown("""
+                <style>
+                [data-testid="stSelectbox"] input {
+                    caret-color: transparent !important;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
             # Стандартный и надежный выбор даты через Selectbox-ы
             st.write(f"**{t('child_birthday_label', user_lang)}**")
             col_d, col_m, col_y = st.columns([1, 2, 1])
