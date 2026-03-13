@@ -127,7 +127,10 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
         'child_id_label': "Выберите ребенка",
         'reg_days': "({0} дн.)",
-        'no_future_dates': "Не может быть в будущем"
+        'no_future_dates': "Не может быть в будущем",
+        'error_day': "День должен быть 01-31",
+        'error_month': "Месяц должен быть 01-12",
+        'error_year': "Год должен быть 1900-{0}"
     },
     
     'en': {
@@ -257,6 +260,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         },
         'reg_days': "({0} days)",
         'no_future_dates': "Cannot be in the future",
+        'error_day': "Day must be 01-31",
+        'error_month': "Month must be 01-12",
+        'error_year': "Year must be 1900-{0}",
 
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
@@ -364,6 +370,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         },
         'reg_days': "({0} días)",
         'no_future_dates': "No puede ser en el futuro",
+        'error_day': "El día debe ser 01-31",
+        'error_month': "El mes debe ser 01-12",
+        'error_year': "El año debe ser 1900-{0}",
 
         # Perfiles de niños
         'children_title': "👶 Perfiles de niños",

@@ -441,33 +441,39 @@ def render_profile_page():
                         input.dataset.masked = "true";
                         input.maxLength = 10;
                         input.addEventListener('input', (e) => {
-                            let val = e.target.value.replace(/\\D/g, ''); // Удаляем всё кроме цифр
+                            let val = e.target.value.replace(/\\D/g, ''); // Только цифры
                             let masked = '';
+                            let isInvalid = false;
                             
                             if (val.length > 0) {
-                                let day = val.substring(0, 2);
-                                if (day.length === 2 && parseInt(day) > 31) day = '31';
-                                if (day.length === 2 && parseInt(day) === 0) day = '01';
-                                masked += day;
+                                let d = val.substring(0, 2);
+                                if (d.length === 2 && (parseInt(d) > 31 || parseInt(d) === 0)) isInvalid = true;
+                                masked += d;
                             }
                             if (val.length > 2) {
-                                let month = val.substring(2, 4);
-                                if (month.length === 2 && parseInt(month) > 12) month = '12';
-                                if (month.length === 2 && parseInt(month) === 0) month = '01';
-                                masked += '-' + month;
+                                let m = val.substring(2, 4);
+                                if (m.length === 2 && (parseInt(m) > 12 || parseInt(m) === 0)) isInvalid = true;
+                                masked += '-' + m;
                             }
                             if (val.length > 4) {
                                 masked += '-' + val.substring(4, 8);
                             }
                             e.target.value = masked;
                             
-                            // Важно: уведомляем React об изменениях
+                            // Информируем пользователя цветом
+                            if (isInvalid) {
+                                e.target.style.borderColor = "#ff4b4b";
+                                e.target.style.boxShadow = "0 0 0 0.2rem rgba(255, 75, 75, 0.25)";
+                            } else {
+                                e.target.style.borderColor = "";
+                                e.target.style.boxShadow = "";
+                            }
+                            
                             const event = new Event('input', { bubbles: true });
                             e.target.dispatchEvent(event);
                         });
                     });
                 };
-                // Повторяем поиск, так как Streamlit перерисовывает DOM
                 setInterval(maskDate, 500);
                 </script>
             """, height=0)
@@ -483,20 +489,34 @@ def render_profile_page():
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
             if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
-                # Валидация даты при сохранении
+                # Глубокая валидация даты при сохранении
                 new_birthday = None
                 from datetime import date
                 if birthday_str:
                     try:
-                        new_birthday = datetime.strptime(birthday_str, "%d-%m-%Y").date()
+                        parts = birthday_str.split('-')
+                        if len(parts) != 3: raise ValueError
+                        
+                        d_str, m_str, y_str = parts
+                        d, m, y = int(d_str), int(m_str), int(y_str)
+                        
+                        # Проверка диапазонов
+                        if d < 1 or d > 31:
+                            st.error(f"❌ {t('error_day', user_lang)}")
+                            st.stop()
+                        if m < 1 or m > 12:
+                            st.error(f"❌ {t('error_month', user_lang)}")
+                            st.stop()
+                        if y < 1900 or y > date.today().year:
+                            st.error(f"❌ {t('error_year', user_lang).format(date.today().year)}")
+                            st.stop()
+
+                        new_birthday = date(y, m, d)
                         # ОГРАНИЧЕНИЕ: Не позже сегодня
                         if new_birthday > date.today():
-                            st.error(f"❌ {t('child_birthday_label', user_lang)}: {t('no_future_dates', user_lang)}")
+                            st.error(f"❌ {t('no_future_dates', user_lang)}")
                             st.stop()
-                        if new_birthday < date(1900, 1, 1):
-                            st.error(f"❌ {t('child_birthday_label', user_lang)}: 1900 - {date.today().year}")
-                            st.stop()
-                    except:
+                    except ValueError:
                         st.error(f"❌ {t('child_birthday_label', user_lang)}: {date_placeholder}")
                         st.stop()
 
