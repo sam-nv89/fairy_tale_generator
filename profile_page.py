@@ -175,11 +175,18 @@ def render_profile_page():
         /* Специфические фиксы для Streamlit компонентов */
         div[data-testid="stTextInput"] input, 
         div[data-testid="stDateInput"] input,
-        div[data-testid="stTextArea"] textarea {
+        div[data-testid="stTextArea"] textarea,
+        .stTextArea textarea {
             background-color: #ffffff !important;
             color: #000000 !important;
             border: 1px solid #cccccc !important;
             height: 42px !important;
+        }
+        
+        /* У textarea высота должна быть чуть больше или адаптироваться */
+        div[data-testid="stTextArea"] textarea, .stTextArea textarea {
+            height: auto !important;
+            min-height: 80px !important;
         }
 
         /* Фокус на полях */
@@ -188,22 +195,29 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        /* Кнопка дискеты в контейнере */
-        .save-nick-container button {
-            background-color: rgba(255, 255, 255, 0.05) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            color: #a8edea !important;
-            border-radius: 8px !important;
-            width: 100% !important;
-            height: 42px !important;
+        /* Кнопка дискеты в контейнере (Выравнивание и цвет) */
+        .save-nick-container {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            height: 42px !important; /* Фиксированная высота как у инпута */
+        }
+        .save-nick-container button {
+            background-color: #ffffff !important;
+            color: #262730 !important;
+            border: 1px solid #cccccc !important;
+            border-radius: 8px !important;
+            width: 100% !important;
+            height: 42px !important;
+            font-size: 1.2rem !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            transition: all 0.2s ease;
         }
         .save-nick-container button:hover {
-            background-color: rgba(255,255,255,0.1) !important;
+            background-color: #f0f0f0 !important;
             border-color: #a8edea !important;
-            color: #ffffff !important;
+            transform: scale(1.02);
         }
 
         /* Исправление фона раскрывающегося списка и формы */
