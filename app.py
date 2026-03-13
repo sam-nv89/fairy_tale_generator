@@ -755,8 +755,7 @@ with st.sidebar:
 
     # TITLE
     margin_top = "0rem" if auth.is_authenticated() else "-2rem"
-    title_text = auth.get_user_display_name() if auth.is_authenticated() else t('settings_title', user_lang)
-    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{title_text}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<h1 style='text-align: center; margin-bottom: 0.5rem; margin-top: {margin_top};'>{t('settings_title', user_lang)}</h1>", unsafe_allow_html=True)
     if auth.is_authenticated():
         st.divider()
 
