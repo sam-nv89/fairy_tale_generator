@@ -118,6 +118,12 @@ if 'current_page' not in st.session_state:
 
 # Если параметры обработаны - очищаем URL для красоты и делаем один rerun
 # УБРАНА ОЧИСТКА ЗДЕСЬ, чтобы не сбросить access_token от Supabase
+# ВАЖНО: Всегда сохраняем auth_cid в параметрах для стабильности F5
+if 'client_id' in st.session_state:
+    cid = st.session_state['client_id']
+    if st.query_params.get('auth_cid') != cid:
+        st.query_params['auth_cid'] = cid
+
 if needs_rerun:
     st.rerun()
 

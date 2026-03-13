@@ -98,19 +98,24 @@ class IsolatedDiskStorage(SyncSupportedStorage):
 #  UTILITIES & URLS
 # ============================================================================
 def get_client_id() -> str:
-    """Получает стабильный ID клиента."""
+    """Получает стабильный ID клиента (Query Params > Session > Cookies)."""
+    # 0. Сначала проверяем URL. Это самый надежный способ при F5 в Streamlit.
+    try:
+        qp_cid = st.query_params.get('auth_cid')
+        if isinstance(qp_cid, list): qp_cid = qp_cid[0]
+        if qp_cid:
+            st.session_state["client_id"] = qp_cid
+            return qp_cid
+    except: pass
+
+    # 1. Session State
     if "client_id" in st.session_state:
         return st.session_state["client_id"]
     
+    # 2. Cookies (через st.context)
     cid = None
     try:
-        # Пытаемся взять из URL (если это callback)
-        qp = st.query_params
-        cid = qp.get('auth_cid')
-        if isinstance(cid, list): cid = cid[0] if cid else None
-        
-        # Если нет в URL - пробуем Cookies
-        if not cid and hasattr(st, "context") and hasattr(st.context, "cookies"):
+        if hasattr(st, "context") and hasattr(st.context, "cookies"):
             cid = st.context.cookies.get("client_id")
     except: pass
     
@@ -143,7 +148,20 @@ def render_auth_scripts():
     cid = get_client_id()
     try:
         import streamlit.components.v1 as components
-        js = f"<script>document.cookie='client_id={cid};path=/;max-age=31536000;SameSite=Lax';</script>"
+        # Двойная установка: в куки и попытка прокинуть в родительское окно
+        js = f"""
+        <script>
+            function setCookie(name, value) {{
+                document.cookie = name + "=" + value + ";path=/;max-age=31536000;SameSite=Lax";
+                try {{
+                    if (window.parent && window.parent !== window) {{
+                        window.parent.postMessage({{type: 'setCookie', name: name, value: value}}, '*');
+                    }}
+                }} catch(e) {{}}
+            }}
+            setCookie('client_id', '{cid}');
+        </script>
+        """
         components.html(js, height=0)
     except: pass
 
