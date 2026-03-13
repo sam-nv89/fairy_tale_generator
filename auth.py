@@ -231,6 +231,16 @@ def handle_oauth_callback():
 # ============================================================================
 #  STATE & AUTH
 # ============================================================================
+def get_current_user():
+    """Возвращает текущего пользователя из session_state."""
+    return st.session_state.get('user')
+
+def validate_email(email: str) -> bool:
+    """Простейшая проверка формата email."""
+    if not email: return False
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email.strip()))
+
 def is_authenticated() -> bool:
     client = get_supabase_client()
     if not client: return False

@@ -20,6 +20,7 @@ import urllib.request
 import math
 import streamlit.components.v1 as components
 from pathlib import Path
+import auth
 from auth import sign_up, sign_in, sign_in_with_google, init_auth_state, is_authenticated, get_auth_diagnostics
 from config import SUPPORTED_LANGUAGES
 from i18n import get_genre_list
