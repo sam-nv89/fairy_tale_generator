@@ -192,12 +192,29 @@ def validate_email(email: str) -> bool:
 #  SUPABASE CLIENT (SessionBounded)
 # ============================================================================
 def get_site_url() -> str:
-    """Возвращает базовый URL сайта для редиректов OAuth."""
-    # Приоритет: 1) SITE_URL из secrets 2) Дефолт
+    """Возвращает базовый URL сайта для редиректов OAuth.
+    Динамически определяет URL в облаке, если SITE_URL не задан в secrets.
+    """
+    # 1. Приоритет: SITE_URL из secrets (вручную заданный пользователем)
     try:
-        return st.secrets.get("SITE_URL", "http://localhost:8501").rstrip('/')
+        url = st.secrets.get("SITE_URL")
+        if url: return url.rstrip('/')
     except Exception:
-        return "http://localhost:8501"
+        pass
+    
+    # 2. Попытка определить Host динамически (для Streamlit Cloud / Docker)
+    try:
+        if hasattr(st, "context") and hasattr(st.context, "headers"):
+            host = st.context.headers.get("Host")
+            if host:
+                # В облаке Streamlit обычно используется https
+                proto = st.context.headers.get("X-Forwarded-Proto", "https")
+                return f"{proto}://{host}"
+    except Exception:
+        pass
+
+    # 3. Фолбэк для локальной разработки
+    return "http://localhost:8501"
 
 def _get_credentials() -> tuple[str, str] | None:
     """Безопасно читает учётные данные Supabase из st.secrets.
