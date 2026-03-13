@@ -125,7 +125,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         
         # Ребенок (прочее)
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
-        'child_id_label': "Выберите ребенка"
+        'child_id_label': "Выберите ребенка",
+        'reg_days': "({0} дн.)"
     },
     
     'en': {

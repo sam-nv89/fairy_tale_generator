@@ -424,21 +424,41 @@ def render_profile_page():
         with st.form("add_child_form", clear_on_submit=True):
             new_name = st.text_input(t('child_name', user_lang))
             
-            from datetime import date
-            new_birthday = st.date_input(
-                t('child_birthday_label', user_lang), 
-                value=date(date.today().year - 5, 1, 1),
-                min_value=date(1900, 1, 1),
-                max_value=date.today(),
-                format="DD-MM-YYYY",
-                help="ДД-ММ-ГГГГ"
+            # Умное поле ввода даты вместо проблемного календаря
+            date_placeholder = {
+                'ru': 'ДД-ММ-ГГГГ', 'en': 'DD-MM-YYYY', 'es': 'DD-MM-AAAA',
+                'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
+            }.get(user_lang, 'DD-MM-YYYY')
+            
+            # По умолчанию ставим дату 5 лет назад в нужном формате
+            default_bday = (date.today().replace(year=date.today().year - 5)).strftime("%d-%m-%Y")
+            
+            birthday_str = st.text_input(
+                t('child_birthday_label', user_lang),
+                value=default_bday,
+                placeholder=date_placeholder,
+                help=f"{t('child_birthday_label', user_lang)} ({date_placeholder})"
             )
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
             if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
+                # Валидация даты при сохранении
+                new_birthday = None
+                if birthday_str:
+                    try:
+                        new_birthday = datetime.strptime(birthday_str, "%d-%m-%Y").date()
+                        if new_birthday > date.today() or new_birthday < date(1900, 1, 1):
+                            st.error(f"❌ {t('child_birthday_label', user_lang)}: 1900 - {date.today().year}")
+                            st.stop()
+                    except:
+                        st.error(f"❌ {t('child_birthday_label', user_lang)}: {date_placeholder}")
+                        st.stop()
+
                 if not new_name.strip():
                     st.error(t('name_warning', user_lang))
+                elif not new_birthday:
+                    st.error(f"❌ {t('child_birthday_label', user_lang)}")
                 else:
                     # Группа возраста для совместимости
                     calc_age = calculate_age(new_birthday.isoformat())
