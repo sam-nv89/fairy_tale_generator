@@ -430,11 +430,20 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # Скрываем мигающий курсор в выпадающих списках, чтобы они выглядели чище
+            # Скрываем мигающий курсор и технические разделители в выпадающих списках
             st.markdown("""
                 <style>
+                /* Скрываем курсор */
                 [data-testid="stSelectbox"] input {
                     caret-color: transparent !important;
+                }
+                /* Скрываем вертикальную палочку-разделитель перед стрелочкой */
+                [data-testid="stSelectbox"] div[role="button"] + div {
+                    display: none !important;
+                }
+                /* Убираем дополнительные линии в новых версиях Streamlit (BaseWeb) */
+                div[data-baseweb="select"] > div:nth-child(2) {
+                    display: none !important;
                 }
                 </style>
             """, unsafe_allow_html=True)
