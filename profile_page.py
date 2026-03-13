@@ -437,7 +437,11 @@ def render_profile_page():
             with col_d:
                 day = st.selectbox(t('day_label', user_lang), options=list(range(1, 32)), index=0)
             with col_m:
+                # Получаем список месяцев из i18n
                 months_list = t('months', user_lang)
+                if not isinstance(months_list, list): # Fallback если перевод потерялся
+                    months_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                
                 month_name = st.selectbox(t('month_label', user_lang), options=months_list, index=0)
                 month = months_list.index(month_name) + 1
             with col_y:

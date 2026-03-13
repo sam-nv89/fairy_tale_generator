@@ -270,7 +270,11 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
 
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
-        'child_id_label': "Select a child"
+        'child_id_label': "Select a child",
+        'day_label': "Day",
+        'month_label': "Month",
+        'year_label': "Year",
+        'months': ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     },
     
     # === ESPAÑOL (Spanish) - ~500 million speakers ===
@@ -393,7 +397,11 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Aún no tienes perfiles de niños guardados. ¡Añade el primero!",
         'child_delete_confirm': "¿Eliminar el perfil del niño? Los cuentos permanecerán, pero el perfil desaparecerá.",
         'child_limit_reached': "Se ha alcanzado el límite de perfiles para tu plan.",
-        'child_id_label': "Selecciona un niño"
+        'child_id_label': "Selecciona un niño",
+        'day_label': "Día",
+        'month_label': "Mes",
+        'year_label': "Año",
+        'months': ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
     },
     
     # === FRANÇAIS (French) - ~300 million speakers ===
