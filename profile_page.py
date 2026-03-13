@@ -430,57 +430,30 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # Глобальное скрытие курсора и лишних линий
-            st.markdown("""
-                <style>
-                /* Скрываем курсор в месяцах и делаем поле ввода некликабельным (только выбор) */
-                [data-testid="stSelectbox"] input {
-                    caret-color: transparent !important;
-                    pointer-events: none !important;
-                }
-                /* Убираем разделитель перед стрелочкой */
-                div[data-baseweb="select"] [class*="StyledSeparator"] {
-                    display: none !important;
-                }
-                /* Стили для чисел, чтобы они выглядели аккуратно */
-                [data-testid="stNumberInput"] input {
-                    text-align: center;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # Гибридный и премиальный ввод даты (Вариант 2)
-            st.write(f"**{t('child_birthday_label', user_lang)}**")
-            col_d, col_m, col_y = st.columns([1, 1.5, 1.2])
+            # Нативный и надежный календарь Streamlit
+            from datetime import date
             
-            with col_d:
-                day = st.number_input(t('day_label', user_lang), min_value=1, max_value=31, value=1, step=1, format="%d")
-            with col_m:
-                months_list = t('months', user_lang)
-                if not isinstance(months_list, list):
-                    months_list = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                month_name = st.selectbox(t('month_label', user_lang), options=months_list, index=0)
-                month = months_list.index(month_name) + 1
-            with col_y:
-                current_year = datetime.now().year
-                year = st.number_input(t('year_label', user_lang), min_value=1900, max_value=current_year, value=current_year-5, step=1, format="%d")
+            # Настройка диапазона дат
+            min_date = date(1900, 1, 1)
+            max_date = date.today()
+            # Предлагаем по умолчанию дату 5 лет назад для удобства
+            default_date = date(max_date.year - 5, 1, 1)
+
+            new_birthday = st.date_input(
+                t('child_birthday_label', user_lang),
+                value=default_date,
+                min_value=min_date,
+                max_value=max_date,
+                format="DD-MM-YYYY",
+                help=f"{t('child_birthday_label', user_lang)} (DD-MM-YYYY)"
+            )
             
             new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
             
             if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
-                # Глубокая валидация даты при сохранении
-                new_birthday = None
-                from datetime import date
-                try:
-                    # Проверка на существование даты (например, 31 февраля)
-                    new_birthday = date(year, month, day)
-                    
-                    # ОГРАНИЧЕНИЕ: Не позже сегодня
-                    if new_birthday > date.today():
-                        st.error(f"❌ {t('no_future_dates', user_lang)}")
-                        st.stop()
-                except ValueError:
-                    st.error(f"❌ {t('error_day', user_lang)} ({month_name})")
+                # Валидация уже встроена в date_input (min/max), но проверим на всякий случай
+                if not new_birthday:
+                    st.error(t('child_birthday_label', user_lang))
                     st.stop()
 
                 if not new_name.strip():
