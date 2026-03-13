@@ -14,9 +14,9 @@ def render_profile_page():
         st.rerun()
         return
 
-    # Уведомления об успехе (выживают после rerun)
+    # Уведомления об успехе (затухающие)
     if 'profile_success' in st.session_state:
-        st.success(st.session_state.pop('profile_success'))
+        st.toast(st.session_state.pop('profile_success'), icon="✅")
 
     # Полная локализация — все 8 поддерживаемых языков
     L = {
@@ -152,23 +152,87 @@ def render_profile_page():
         except Exception:
             pass
 
-    st.markdown(f"""
+    st.markdown("""
         <style>
-        .profile-header {{
-            font-size: 2.5rem;
+        /* Общий стиль страницы */
+        .profile-header {
+            font-size: 2rem;
             font-weight: 700;
+            color: #ffffff;
+            margin-top: -3rem;
+        }
+        
+        /* КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ ЧИТАЕМОСТИ ПОЛЕЙ (ЦВЕТ: БЕЛЫЙ) */
+        /* Нацеливаемся на все типы инпутов */
+        input, select, textarea {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #d1d1d1 !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Специфические фиксы для Streamlit компонентов */
+        div[data-testid="stTextInput"] input, 
+        div[data-testid="stDateInput"] input,
+        div[data-testid="stTextArea"] textarea {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #cccccc !important;
+        }
+
+        /* Фокус на полях */
+        textarea:focus, input:focus {
+            border-color: #6a11cb !important;
+            box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
+        }
+        
+        button[key="save_nick_prof_page"], .save-nick-container button {
+            background-color: transparent !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #a8edea !important;
+            border-radius: 8px !important;
+            width: 100% !important;
+            height: 42px !important;
+        }
+        button[key="save_nick_prof_page"]:hover, .save-nick-container button:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            border-color: #a8edea !important;
+            color: #ffffff !important;
+        }
+
+        /* Исправление фона раскрывающегося списка и формы */
+        .stExpander, div[data-testid="stForm"] {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Кастомизация карточек детей */
+        .child-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }}
-        .danger-header {{
-            color: #ff4b4b;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .child-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(168, 237, 234, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .child-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #a8edea;
             margin-bottom: 0.5rem;
-        }}
+        }
+        .child-hobbies-text {
+            font-style: italic;
+            color: #fed6e3;
+            margin-top: 0.5rem;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -191,11 +255,13 @@ def render_profile_page():
         with c_name_col:
             new_nick = st.text_input("nickname_input", value=current_name, label_visibility="collapsed", key="prof_page_nick")
         with c_btn_col:
+            st.markdown('<div class="save-nick-container">', unsafe_allow_html=True)
             if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang)):
                 res = auth.update_user_profile(new_nick)
                 if res.get("success"):
                     st.session_state.profile_success = t('profile_updated', user_lang)
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         
         st.markdown(f"**✉️ Email:** {user.email}")
         created_at = profile_data.get('created_at', user.created_at)
@@ -232,73 +298,6 @@ def render_profile_page():
 
     # --- СЕКЦИЯ: ПРОФИЛИ ДЕТЕЙ ---
     st.markdown(f"### {t('children_title', user_lang)}")
-    
-    # CSS для карточек детей и улучшения читаемости полей
-    st.markdown("""
-        <style>
-        .child-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        .child-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(168, 237, 234, 0.3);
-            transform: translateY(-2px);
-        }
-        .child-name {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #a8edea;
-            margin-bottom: 0.5rem;
-        }
-        .child-hobbies-text {
-            font-style: italic;
-            color: #fed6e3;
-            margin-top: 0.5rem;
-        }
-        
-        /* КАРДИНАЛЬНОЕ ИСПРАВЛЕНИЕ ЧИТАЕМОСТИ ПОЛЕЙ */
-        /* Нацеливаемся на все типы инпутов */
-        input, select, textarea {
-            background-color: #262730 !important; /* Стандартный темный фон Streamlit, но принудительный */
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        }
-        
-        /* Текстовая область (хобби) - делаем её светлее и четче */
-        div[data-testid="stTextArea"] textarea {
-            background-color: #31333f !important;
-            color: #ffffff !important;
-            border: 1px solid #4a4d5e !important;
-            font-size: 1rem !important;
-        }
-
-        /* Инпуты (Имя, Дата) */
-        div[data-testid="stTextInput"] input, 
-        div[data-testid="stDateInput"] input {
-            background-color: #31333f !important;
-            color: #ffffff !important;
-            border: 1px solid #4a4d5e !important;
-        }
-
-        /* Фокус на полях */
-        textarea:focus, input:focus {
-            border-color: #a8edea !important;
-            box-shadow: 0 0 5px rgba(168, 237, 234, 0.3) !important;
-            background-color: #3b3e4d !important;
-        }
-        
-        /* Стилизация плейсхолдеров */
-        ::placeholder {
-            color: rgba(255, 255, 255, 0.5) !important;
-            opacity: 1;
-        }
-        </style>
-    """, unsafe_allow_html=True)
     
     # Загружаем профили
     child_profiles = storage.get_child_profiles()
