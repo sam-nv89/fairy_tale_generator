@@ -428,6 +428,8 @@ def render_profile_page():
             new_birthday = st.date_input(
                 t('child_birthday_label', user_lang), 
                 value=date(date.today().year - 5, 1, 1),
+                min_value=date(1900, 1, 1),
+                max_value=date.today(),
                 format="DD-MM-YYYY",
                 help="ДД-ММ-ГГГГ"
             )
