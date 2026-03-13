@@ -125,6 +125,14 @@ if needs_rerun:
 user_lang = st.session_state.user_lang
 
 # --- 2. Глобальная диагностика и стили (МГНОВЕННОЕ ПРИМЕНЕНИЕ) ---
+# DEBUG: Отображение диагностики авторизации (через ?debug_auth=1)
+if st.query_params.get("debug_auth") == "1":
+    with st.expander("🔍 Auth Diagnostics", expanded=True):
+        st.write(auth.get_auth_diagnostics())
+        if st.button("Reset Session State"):
+            st.session_state.clear()
+            st.rerun()
+
 # Сначала загрузим стили, чтобы скрыть лишние элементы сразу при загрузке
 from styles import get_app_styles, get_dropdown_fix_js, get_rtl_styles
 
