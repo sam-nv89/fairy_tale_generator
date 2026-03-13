@@ -430,7 +430,7 @@ def render_profile_page():
                 'fr': 'JJ-MM-AAAA', 'de': 'TT-MM-JJJJ', 'pt': 'DD-MM-AAAA'
             }.get(user_lang, 'DD-MM-YYYY')
             
-            # JS-инъекция для ЖЕСТКОЙ маски, авто-нолей и видимых подсказок
+            # JS-инъекция для АГРЕССИВНОЙ маски и видимых подсказок
             import streamlit.components.v1 as components
             
             js_tips = {
@@ -443,7 +443,7 @@ def render_profile_page():
                 <script>
                 const doc = window.parent.document;
                 
-                // Внедряем стили в главный документ
+                // Внедряем стили
                 if (!doc.getElementById('date-tip-styles')) {{
                     const style = doc.createElement('style');
                     style.id = 'date-tip-styles';
@@ -452,25 +452,25 @@ def render_profile_page():
                             position: fixed;
                             background: #ff4b4b;
                             color: white;
-                            padding: 6px 12px;
-                            border-radius: 8px;
-                            font-size: 13px;
+                            padding: 8px 14px;
+                            border-radius: 10px;
+                            font-size: 14px;
                             font-weight: bold;
-                            z-index: 999999;
+                            z-index: 2000000;
                             pointer-events: none;
                             opacity: 0;
-                            transition: opacity 0.3s, transform 0.3s;
+                            transition: opacity 0.2s, transform 0.2s;
                             transform: translateY(10px);
-                            box-shadow: 0 4px 15px rgba(255, 75, 75, 0.4);
-                            font-family: sans-serif;
+                            box-shadow: 0 5px 20px rgba(255, 75, 75, 0.5);
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                         }}
                         .date-tip.show {{ opacity: 1; transform: translateY(-5px); }}
                         .date-tip::after {{
                             content: '';
                             position: absolute;
                             top: 100%; left: 50%;
-                            margin-left: -5px;
-                            border-width: 5px;
+                            margin-left: -6px;
+                            border-width: 6px;
                             border-style: solid;
                             border-color: #ff4b4b transparent transparent transparent;
                         }}
@@ -478,7 +478,6 @@ def render_profile_page():
                     doc.head.appendChild(style);
                 }}
 
-                // Внедряем сам элемент подсказки
                 let tip = doc.getElementById('date-input-tip');
                 if (!tip) {{
                     tip = doc.createElement('div');
@@ -490,10 +489,12 @@ def render_profile_page():
                 const showTip = (el, text) => {{
                     const rect = el.getBoundingClientRect();
                     tip.innerText = text;
-                    tip.style.left = (rect.left + (rect.width/2) - (tip.offsetWidth/2)) + 'px';
-                    tip.style.top = (rect.top - 40) + 'px';
+                    tip.style.display = 'block';
+                    const tipWidth = tip.offsetWidth;
+                    tip.style.left = (rect.left + (rect.width/2) - (tipWidth/2)) + 'px';
+                    tip.style.top = (rect.top - 48) + 'px';
                     tip.classList.add('show');
-                    setTimeout(() => tip.classList.remove('show'), 2000);
+                    setTimeout(() => tip.classList.remove('show'), 2500);
                 }};
 
                 const applyMask = () => {{
@@ -503,53 +504,51 @@ def render_profile_page():
                         input.dataset.masked = "true";
                         
                         input.addEventListener('keydown', (e) => {{
-                            // Разрешаем служебные клавиши
                             if (['Backspace', 'Tab', 'ArrowLeft', 'ArrowRight', 'Delete', 'Enter'].includes(e.key)) return;
                             
-                            // Обработка разделителей (., / и -)
+                            // Обработка ручного разделителя
                             if (['.', '/', '-'].includes(e.key)) {{
                                 e.preventDefault();
-                                let parts = e.target.value.split('-');
-                                let current = parts[parts.length - 1];
-                                
-                                if (current.length === 1) {{
-                                    // Подставляем ноль: 6 -> 06
-                                    parts[parts.length - 1] = '0' + current;
-                                    e.target.value = parts.join('-');
-                                    if (parts.length < 3) e.target.value += '-';
-                                }} else if (current.length === 2 && parts.length < 3) {{
-                                    e.target.value += '-';
+                                let val = e.target.value.replace(/\\D/g, '');
+                                if (val.length === 1) {{
+                                    e.target.value = '0' + val + '-';
+                                }} else if (val.length === 2) {{
+                                    e.target.value = val + '-';
+                                }} else if (val.length === 3) {{
+                                    let d = val.substring(0,2);
+                                    let m = val.substring(2,3);
+                                    e.target.value = d + '-0' + m + '-';
                                 }}
                                 const event = new Event('input', {{ bubbles: true }});
                                 e.target.dispatchEvent(event);
                                 return;
                             }}
-
-                            // Блокируем всё кроме цифр
                             if (/\\D/.test(e.key)) e.preventDefault();
                         }});
 
                         input.addEventListener('input', (e) => {{
                             let val = e.target.value.replace(/\\D/g, '');
-                            let masked = '';
                             
-                            // Проверка Дней
-                            if (val.length >= 2) {{
-                                let d = parseInt(val.substring(0, 2));
-                                if (d > 31 || d === 0) {{
-                                    val = val.substring(0, 1);
-                                    showTip(e.target, "{js_tips['day']}");
-                                }}
+                            // АГРЕССИВНЫЙ АВТО-НОЛЬ
+                            // Для дня (первая цифра 4-9 или вторая делает > 31)
+                            if (val.length === 1 && parseInt(val) > 3) {{
+                                val = '0' + val;
+                                showTip(e.target, "{js_tips['day']}");
+                            }} else if (val.length === 2 && parseInt(val) > 31) {{
+                                val = '0' + val[0] + val[1];
+                                showTip(e.target, "{js_tips['day']}");
                             }}
-                            // Проверка Месяцев
-                            if (val.length >= 4) {{
-                                let m = parseInt(val.substring(2, 4));
-                                if (m > 12 || m === 0) {{
-                                    val = val.substring(0, 3);
-                                    showTip(e.target, "{js_tips['month']}");
-                                }}
+                            
+                            // Для месяца (первая цифра месяца 2-9 или вторая делает > 12)
+                            if (val.length === 3 && parseInt(val.substring(2,3)) > 1) {{
+                                val = val.substring(0,2) + '0' + val.substring(2,3);
+                                showTip(e.target, "{js_tips['month']}");
+                            }} else if (val.length === 4 && parseInt(val.substring(2,4)) > 12) {{
+                                val = val.substring(0,2) + '0' + val.substring(2,3) + val.substring(3,4);
+                                showTip(e.target, "{js_tips['month']}");
                             }}
 
+                            let masked = '';
                             if (val.length > 0) masked += val.substring(0, 2);
                             if (val.length > 2) masked += '-' + val.substring(2, 4);
                             if (val.length > 4) masked += '-' + val.substring(4, 8);
