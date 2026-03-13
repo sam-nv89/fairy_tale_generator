@@ -155,11 +155,15 @@ def render_profile_page():
     st.markdown("""
         <style>
         /* Общий стиль страницы */
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-bottom: 0rem !important;
+        }
         .profile-header {
             font-size: 2rem;
             font-weight: 700;
             color: #ffffff;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
             margin-bottom: 1rem;
         }
         
