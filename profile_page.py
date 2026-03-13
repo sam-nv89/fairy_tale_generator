@@ -14,6 +14,10 @@ def render_profile_page():
         st.rerun()
         return
 
+    # Уведомления об успехе (выживают после rerun)
+    if 'profile_success' in st.session_state:
+        st.success(st.session_state.pop('profile_success'))
+
     # Полная локализация — все 8 поддерживаемых языков
     L = {
         'back': {
@@ -190,7 +194,7 @@ def render_profile_page():
             if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang)):
                 res = auth.update_user_profile(new_nick)
                 if res.get("success"):
-                    st.toast(t('profile_updated', user_lang))
+                    st.session_state.profile_success = t('profile_updated', user_lang)
                     st.rerun()
         
         st.markdown(f"**✉️ Email:** {user.email}")
@@ -229,52 +233,104 @@ def render_profile_page():
     # --- СЕКЦИЯ: ПРОФИЛИ ДЕТЕЙ ---
     st.markdown(f"### {t('children_title', user_lang)}")
     
+    # CSS для карточек детей и улучшения читаемости полей
+    st.markdown("""
+        <style>
+        .child-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .child-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #a8edea;
+            margin-bottom: 0.5rem;
+        }
+        .child-hobbies {
+            font-style: italic;
+            color: #fed6e3;
+            margin-top: 0.5rem;
+        }
+        /* Исправление читаемости текстовых полей */
+        .stTextArea textarea {
+            background-color: #1e1e1e !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
     # Загружаем профили
     child_profiles = storage.get_child_profiles()
     
+    def calculate_age(birthday_str):
+        if not birthday_str: return None
+        try:
+            from datetime import date
+            bday = date.fromisoformat(str(birthday_str))
+            today = date.today()
+            return today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day))
+        except: return None
+
     if not child_profiles:
         st.info(t('child_profiles_empty', user_lang))
     else:
         for child in child_profiles:
-            with st.container(border=True):
-                c_col1, c_col2, c_col3 = st.columns([3, 2, 1])
-                with c_col1:
-                    st.markdown(f"**👦 {child.get('name')}**")
-                    if child.get('hobbies'):
-                        st.caption(f"🎨 {child.get('hobbies')}")
-                with c_col2:
-                    st.markdown(f"🎂 {child.get('age')}")
-                with c_col3:
-                    # Кнопка удаления
-                    if st.button("🗑️", key=f"del_child_{child.get('id')}", help=t('delete_help', user_lang)):
+            with st.container():
+                st.markdown(f"""
+                    <div class='child-card'>
+                        <div style='display: flex; justify-content: space-between;'>
+                            <div class='child-name'>👦 {child.get('name')}</div>
+                            <div style='color: rgba(255,255,255,0.4);'>{child.get('birthday') or ''}</div>
+                        </div>
+                        <div style='color: rgba(255,255,255,0.8);'>🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or child.get('age', '?'))}</div>
+                        <div class='child-hobbies'>🎨 {child.get('hobbies') or '...'}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+                
+                c_del_col1, c_del_col2 = st.columns([10, 1])
+                with c_del_col2:
+                    if st.button("🗑️", key=f"del_child_{child.get('id')}"):
                         if storage.delete_child_profile(child.get('id')):
-                            st.toast(f"✅ {child.get('name')} удален")
+                            st.session_state.profile_success = t('child_del_success', user_lang)
                             st.rerun()
 
-    # Форма добавления/редактирования ребенка
+    # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):
         with st.form("add_child_form", clear_on_submit=True):
             new_name = st.text_input(t('child_name', user_lang))
-            # Используем тот же селектор возрастов, что и в основном приложении
-            from i18n import get_age_ranges
-            age_ranges = get_age_ranges(user_lang)
-            new_age = st.select_slider(t('child_age', user_lang), options=list(age_ranges.keys()), value=list(age_ranges.keys())[2])
-            new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder="Любит космос, динозавров...")
             
-            submit_child = st.form_submit_button(t('save_child_btn', user_lang), type="primary")
+            from datetime import date
+            new_birthday = st.date_input(t('child_birthday_label', user_lang), value=date(date.today().year - 5, 1, 1))
             
-            if submit_child:
+            new_hobbies = st.text_area(t('child_hobbies', user_lang), placeholder=t('hobbies_placeholder', user_lang))
+            
+            if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
                 if not new_name.strip():
                     st.error(t('name_warning', user_lang))
                 else:
-                    new_profile = {
+                    # Группа возраста для совместимости
+                    calc_age = calculate_age(new_birthday.isoformat())
+                    age_group = "4-7 лет"
+                    if calc_age is not None:
+                        if calc_age < 1: age_group = "0-12 мес"
+                        elif calc_age < 4: age_group = "1-3 года"
+                        elif calc_age < 8: age_group = "4-7 лет"
+                        elif calc_age < 13: age_group = "8-12 лет"
+                        elif calc_age < 18: age_group = "13-17 лет"
+                        else: age_group = "18+"
+
+                    res = storage.save_child_profile({
                         "name": new_name.strip(),
-                        "age": new_age,
+                        "age": age_group,
+                        "birthday": new_birthday.isoformat(),
                         "hobbies": new_hobbies.strip()
-                    }
-                    res = storage.save_child_profile(new_profile)
+                    })
                     if res.get('success'):
-                        st.toast(f"✅ {new_name} сохранен!")
+                        st.session_state.profile_success = t('child_save_success', user_lang)
                         st.rerun()
                     else:
                         st.error(f"Error: {res.get('error')}")

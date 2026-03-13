@@ -114,9 +114,13 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_child_btn': "💾 Сохранить",
         'child_name': "Имя",
         'child_age': "Возраст",
-        'child_hobbies': "Интересы / Хобби",
-        'child_delete_confirm': "Удалить профиль ребенка? Сказки останутся, но профиль исчезнет.",
-        'child_profiles_empty': "У вас пока нет сохраненных профилей детей. Добавьте первый!",
+        'profile_updated': "✅ Никнейм обновлен!",
+        'child_birthday_label': "Дата рождения",
+        'child_age_years': "{0} лет/года",
+        'child_save_success': "✅ Профиль сохранен!",
+        'child_del_success': "✅ Профиль удален",
+        
+        # Ребенок (прочее)
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
         'child_id_label': "Выберите ребенка"
     },
@@ -228,9 +232,13 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'save_child_btn': "💾 Save",
         'child_name': "Name",
         'child_age': "Age",
-        'child_hobbies': "Interests / Hobbies",
-        'child_delete_confirm': "Delete child profile? Stories will remain, but the profile will be gone.",
-        'child_profiles_empty': "No child profiles saved yet. Add the first one!",
+        'profile_updated': "✅ Nickname updated!",
+        'child_birthday_label': "Date of Birth",
+        'child_age_years': "{0} years old",
+        'child_save_success': "✅ Profile saved!",
+        'child_del_success': "✅ Profile deleted",
+
+        # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
         'child_id_label': "Select a child"
     },
