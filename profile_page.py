@@ -16,7 +16,7 @@ def render_profile_page():
 
     # Уведомления об успехе (затухающие)
     if 'profile_success' in st.session_state:
-        st.toast(st.session_state.pop('profile_success'), icon="✅")
+        st.toast(st.session_state.pop('profile_success'))
 
     # Полная локализация — все 8 поддерживаемых языков
     L = {
