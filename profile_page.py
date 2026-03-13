@@ -195,19 +195,33 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        /* Фикс для кнопки сохранения никнейма (делаем как первичную кнопку) */
-        button[key="save_nick_prof_page"] {
+        /* Фикс для кнопки сохранения никнейма - Полная идентичность с кнопкой профиля ребенка */
+        div[data-testid="stColumn"] button[key="save_nick_prof_page"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+            background-size: 200% 200% !important;
+            color: white !important;
+            border: none !important;
             height: 42px !important;
+            min-height: 42px !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
             margin-top: 0 !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            transition: all 0.3s ease !important;
         }
         
-        /* Убираем черные рамки и принудительные цвета, чтобы кнопка была как в профиле ребенка */
-        div[data-testid="stColumn"] button[key="save_nick_prof_page"] {
-            background-color: var(--primary-color, #ff4b4b) !important;
-            color: white !important;
+        div[data-testid="stColumn"] button[key="save_nick_prof_page"]:hover {
+            transform: translateY(-2px) scale(1.02) !important;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+        }
+
+        /* Убираем любые черные обертки */
+        div[data-testid="stColumn"] {
+            display: flex;
+            align-items: center;
         }
         
         /* Исправление для всех кнопок в Streamlit, чтобы не было черных рамок */
