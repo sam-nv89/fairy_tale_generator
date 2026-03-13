@@ -251,11 +251,41 @@ def render_profile_page():
             border-radius: 8px !important;
         }
 
-        /* Исправление фона раскрывающегося списка и формы */
-        .stExpander, div[data-testid="stForm"] {
+        /* ИСПРАВЛЕНИЕ: Премиальный стиль для st.expander (раскрывающие списки) */
+        .stExpander {
             background-color: rgba(255, 255, 255, 0.03) !important;
             border-radius: 12px !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            overflow: hidden !important;
+        }
+
+        /* Шапка экспандера (Header) */
+        div[data-testid="stExpanderHeader"], 
+        .stExpander summary {
+            background-color: rgba(106, 17, 203, 0.15) !important; /* Полупрозрачный фиолетовый */
+            color: #ffffff !important;
+            font-weight: 500 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            transition: all 0.3s ease !important;
+        }
+
+        div[data-testid="stExpanderHeader"]:hover, 
+        .stExpander summary:hover {
+            background-color: rgba(106, 17, 203, 0.25) !important;
+            color: #a8edea !important;
+        }
+
+        /* Внутреннее содержимое экспандера */
+        div[data-testid="stExpanderDetails"] {
+            background-color: transparent !important;
+            padding: 1.5rem !important;
+        }
+
+        /* Стиль для форм внутри экспандеров */
+        div[data-testid="stForm"] {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
         }
 
         /* Кастомизация карточек детей */
