@@ -195,22 +195,19 @@ def render_profile_page():
             box-shadow: 0 0 5px rgba(106, 17, 203, 0.3) !important;
         }
         
-        /* Фикс для кнопки сохранения никнейма */
+        /* Фикс для кнопки сохранения никнейма (делаем как первичную кнопку) */
         button[key="save_nick_prof_page"] {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-            border: 1px solid #cccccc !important;
             height: 42px !important;
-            min-height: 42px !important;
             margin-top: 0 !important;
-            padding: 0 10px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
         }
-        button[key="save_nick_prof_page"]:hover {
-            border-color: #6a11cb !important;
-            background-color: #f8f9fa !important;
+        
+        /* Убираем черные рамки и принудительные цвета, чтобы кнопка была как в профиле ребенка */
+        div[data-testid="stColumn"] button[key="save_nick_prof_page"] {
+            background-color: var(--primary-color, #ff4b4b) !important;
+            color: white !important;
         }
         
         /* Исправление для всех кнопок в Streamlit, чтобы не было черных рамок */
@@ -278,7 +275,8 @@ def render_profile_page():
         with c_name_col:
             new_nick = st.text_input("nickname_input", value=current_name, label_visibility="collapsed", key="prof_page_nick")
         with c_btn_col:
-            if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang), use_container_width=True):
+            # Используем type="primary", чтобы она была такой же, как в профиле ребенка
+            if st.button("💾", key="save_nick_prof_page", help=t('profile_save_btn', user_lang), use_container_width=True, type="primary"):
                 res = auth.update_user_profile(new_nick)
                 if res.get("success"):
                     st.session_state.profile_success = t('profile_updated', user_lang)
