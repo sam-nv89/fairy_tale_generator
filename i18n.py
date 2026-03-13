@@ -15,6 +15,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Хедер
         'app_title': "🧚 Генератор Сказок",
         'app_subtitle': "Умный помощник, который создает <span style='animation: magic-glow 3s infinite alternate; color: #FFD700;'>волшебные истории</span> для Вас и Ваших детей ✨",
+        'app_welcome': "Добро пожаловать, {0}!",
         
         # Сайдбар
         'settings_title': "⚙️ Настройки",
@@ -41,6 +42,9 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'donate_btn': "☕ Поддержать проект",
         'language_label': "Язык",
         'version_label': "Версия",
+        'profile_nickname': "Ваш никнейм",
+        'profile_save_btn': "Сохранить имя",
+        'profile_updated': "Никнейм обновлен!",
         
         # Форма
         'name_label': "Имя ребенка",
@@ -125,6 +129,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         # Header
         'app_title': "🧚 Fairy Tale Generator",
         'app_subtitle': "A smart assistant that creates <span style='animation: magic-glow 3s infinite alternate; color: #FFD700;'>magical stories</span> for you and your children ✨",
+        'app_welcome': "Welcome, {0}!",
         
         # Sidebar
         'settings_title': "⚙️ Settings",

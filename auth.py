@@ -10,6 +10,7 @@ import os
 import json
 import uuid
 import time
+import random
 
 logger = logging.getLogger("auth")
 
@@ -99,7 +100,7 @@ class IsolatedDiskStorage(SyncSupportedStorage):
 # ============================================================================
 def get_client_id() -> str:
     """Получает стабильный ID клиента (Query Params > Session > Cookies)."""
-    # 0. Сначала проверяем URL. Это самый надежный способ при F5 в Streamlit.
+    # 0. Сначала проверяем URL.
     try:
         qp_cid = st.query_params.get('auth_cid')
         if isinstance(qp_cid, list): qp_cid = qp_cid[0]
@@ -112,7 +113,7 @@ def get_client_id() -> str:
     if "client_id" in st.session_state:
         return st.session_state["client_id"]
     
-    # 2. Cookies (через st.context)
+    # 2. Cookies
     cid = None
     try:
         if hasattr(st, "context") and hasattr(st.context, "cookies"):
@@ -120,10 +121,39 @@ def get_client_id() -> str:
     except: pass
     
     if not cid:
-        cid = uuid.uuid4().hex
+        # Генерируем короткий технический ID (10 символов) вместо длинного UUID
+        import string
+        chars = string.ascii_letters + string.digits
+        cid = ''.join(random.choice(chars) for _ in range(10))
         
     st.session_state["client_id"] = cid
     return cid
+
+def update_user_profile(display_name: str) -> dict:
+    """Обновляет никнейм пользователя в метаданных Supabase."""
+    client = get_supabase_client()
+    if not client: return {"success": False, "error": "Auth client not available"}
+    try:
+        res = client.auth.update_user({"data": {"display_name": display_name}})
+        if res.user:
+            st.session_state.user = res.user
+            return {"success": True, "user": res.user}
+        return {"success": False, "error": "Update failed"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def get_user_display_name() -> str:
+    """Возвращает никнейм или email пользователя."""
+    user = get_current_user()
+    if not user: return "Гость"
+    
+    # Пытаемся взять из метаданных (Supabase Auth)
+    meta = getattr(user, 'user_metadata', {}) or {}
+    name = meta.get('display_name')
+    if name: return name
+    
+    # Fallback на часть email до @
+    return user.email.split('@')[0] if user.email else "Пользователь"
 
 def get_site_url() -> str:
     # 1. Manual check

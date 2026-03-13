@@ -999,7 +999,7 @@ html_header = f"""
         margin: 0 auto;
         line-height: 1.6;
     ">
-        {t('app_subtitle', user_lang)}
+        {'✨ ' + t('app_welcome', user_lang).format(auth.get_user_display_name()) + ' ✨' if auth.is_authenticated() else t('app_subtitle', user_lang)}
     </p>
 </div>
 """
