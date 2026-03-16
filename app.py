@@ -13,6 +13,7 @@ import uuid
 import json
 import base64
 import logging
+from datetime import datetime
 from typing import Union, Tuple
 
 # Logging setup must come BEFORE any logger usage below.
@@ -1013,6 +1014,51 @@ html_header = f"""
 
 st.markdown(html_header, unsafe_allow_html=True)
 
+# --- 3. Инициализация состояния генератора ---
+if 'gen_name' not in st.session_state: st.session_state.gen_name = ""
+if 'gen_gender' not in st.session_state: st.session_state.gen_gender = t('gender_auto', user_lang)
+if 'gen_age' not in st.session_state: 
+    age_keys = list(get_age_ranges(user_lang).keys())
+    st.session_state.gen_age = age_keys[DEFAULT_AGE_INDEX] if len(age_keys) > DEFAULT_AGE_INDEX else age_keys[0]
+if 'gen_genre' not in st.session_state: st.session_state.gen_genre = t('genres.fairytale', user_lang)
+if 'gen_hobbies' not in st.session_state: st.session_state.gen_hobbies = ""
+
+def on_child_selected():
+    """Заполняет поля данными из выбранного профиля."""
+    cid = st.session_state.get('child_selector')
+    if cid:
+        profiles = storage.get_child_profiles()
+        child = next((c for c in profiles if c['id'] == cid), None)
+        if child:
+            st.session_state.gen_name = child.get('name', "")
+            # Маппинг пола
+            gender_val = child.get('gender')
+            if gender_val == 'boy': st.session_state.gen_gender = t('gender_boy', user_lang)
+            elif gender_val == 'girl': st.session_state.gen_gender = t('gender_girl', user_lang)
+            else: st.session_state.gen_gender = t('gender_auto', user_lang)
+            
+            # Маппинг возраста
+            c_age = child.get('age')
+            ranges = get_age_ranges(user_lang)
+            for label, val in ranges.items():
+                if val == c_age:
+                    st.session_state.gen_age = label
+                    break
+            
+            st.session_state.gen_hobbies = child.get('hobbies', "")
+    else: # If "--- Select Child ---" is chosen, reset fields
+        reset_generator()
+
+def reset_generator():
+    """Полностью очищает все поля ввода."""
+    st.session_state.gen_name = ""
+    st.session_state.gen_gender = t('gender_auto', user_lang)
+    age_keys = list(get_age_ranges(user_lang).keys())
+    st.session_state.gen_age = age_keys[DEFAULT_AGE_INDEX] if len(age_keys) > DEFAULT_AGE_INDEX else age_keys[0]
+    st.session_state.gen_genre = t('genres.fairytale', user_lang)
+    st.session_state.gen_hobbies = ""
+    st.session_state.child_selector = None
+
 # Скрытая загрузка ключа (без UI)
 if "GOOGLE_API_KEY" in st.secrets:
     api_key = st.secrets["GOOGLE_API_KEY"]
@@ -1021,110 +1067,85 @@ else:
     st.warning(t('api_key_warning', user_lang))
     api_key = st.text_input(t('api_key_input', user_lang), type="password")
 
-# Основная форма
-with st.form("story_form"):
-    # Селектор ребенка для авторизованных пользователей
-    selected_child_id = None
-    if auth.is_authenticated():
-        child_profiles = storage.get_child_profiles()
-        if child_profiles:
-            # Маппинг имен для селектора
+# --- 4. Селектор профиля и кнопка сброса (Вне формы для реактивности) ---
+if auth.is_authenticated():
+    child_profiles = storage.get_child_profiles()
+    if child_profiles:
+        sel_col, res_col = st.columns([4, 1.2], vertical_alignment="bottom")
+        
+        with sel_col:
             child_names = {c['id']: c['name'] for c in child_profiles}
-            # Добавляем опцию "Другой ребенок / Ручной ввод"
             child_options = [None] + list(child_names.keys())
             
             def format_child(cid):
                 if cid is None: return "--- " + t('child_id_label', user_lang) + " ---"
                 return f"👶 {child_names[cid]}"
             
-            selected_child_id = st.selectbox(
+            st.selectbox(
                 t('child_id_label', user_lang),
                 options=child_options,
                 format_func=format_child,
-                key="child_selector"
+                key="child_selector",
+                on_change=on_child_selected
             )
-            
-            # Если ребенок выбран, подтягиваем его данные
-            if selected_child_id:
-                sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
-                # Важно: мы не можем менять значения text_input напрямую через параметры value, 
-                # если они зависят от состояния другого виджета ВНУТРИ формы без rerun.
-                # Но мы можем использовать их как значения по умолчанию.
-    
+        
+        with res_col:
+            clear_label = "🧹 " + ("Очистить" if user_lang == 'ru' else "Clear All")
+            st.button(clear_label, on_click=reset_generator, use_container_width=True, help="Сбросить все поля")
+    else:
+        # Если профилей нет, все равно даем кнопку сброса
+        st.button("🧹 " + ("Очистить поля" if user_lang == 'ru' else "Clear Fields"), on_click=reset_generator)
+else:
+    # Для гостей просто кнопка сброса
+    st.button("🧹 " + ("Очистить поля" if user_lang == 'ru' else "Clear Fields"), on_click=reset_generator)
+
+
+# Основная форма
+with st.form("story_form"):
     # Верхний ряд: Имя, Пол, Возраст
-    # Используем соотношение: [2, 1, 3] для Имени, Пола, Возраста
     c1, c2, c3 = st.columns([2, 1, 3])
     
     with c1:
-        default_name = ""
-        if selected_child_id:
-            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
-            default_name = sel_child.get('name', '')
-        name = st.text_input(t('name_label', user_lang), value=default_name, placeholder=t('name_placeholder', user_lang))
+        name = st.text_input(t('name_label', user_lang), key="gen_name", placeholder=t('name_placeholder', user_lang))
     
     with c2:
         gender = st.selectbox(
             t('gender_label', user_lang),
             options=[t('gender_auto', user_lang), t('gender_boy', user_lang), t('gender_girl', user_lang)],
-            index=0,
+            key="gen_gender",
             help=t('gender_help', user_lang)
         )
 
     with c3:
-        # Вариант 3: Горизонтальные кнопки (Pills) with ranges
         age_ranges = get_age_ranges(user_lang)
-        
-        # Определяем дефолтный индекс для возраста
-        default_age_idx = 2 # 4-7 лет
-        if selected_child_id:
-            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
-            c_age = sel_child.get('age')
-            if c_age in age_ranges:
-                default_age_idx = list(age_ranges.keys()).index(c_age)
-
         age_selection = st.radio(
             t('age_label', user_lang),
             options=list(age_ranges.keys()),
             horizontal=True,
-            index=default_age_idx,
-            key="age_radio",
+            key="gen_age",
             label_visibility="visible"
         )
         age = age_ranges[age_selection]
 
-    # Разделитель для визуальной группировки
     st.markdown("---")
 
-    # Новый ряд: Жанр и Хобби (50/50)
     col_genre, col_hobbies = st.columns(2)
     
     with col_genre:
-        # Выбор Жанра
         genre_options = get_genre_list(user_lang)
-        
-        # Находим индекс для "Сказка"/"Fairy Tale" как жанра по умолчанию
-        default_genre = t('genres.fairytale', user_lang)
-        try:
-             default_genre_index = genre_options.index(default_genre)
-        except ValueError:
-             default_genre_index = 0
-              
-        genre = st.selectbox(t('genre_label', user_lang), options=genre_options, index=default_genre_index)
+        genre = st.selectbox(t('genre_label', user_lang), options=genre_options, key="gen_genre")
 
     with col_hobbies:
-        default_hobbies = ""
-        if selected_child_id:
-            sel_child = next(c for c in child_profiles if c['id'] == selected_child_id)
-            default_hobbies = sel_child.get('hobbies', '')
         hobbies = st.text_input(
             t('hobbies_label', user_lang), 
-            value=default_hobbies,
+            key="gen_hobbies",
             placeholder=t('hobbies_placeholder', user_lang),
             help=t('hobbies_help', user_lang)
         )
 
     st.markdown("---")
     submit_btn = st.form_submit_button(t('submit_btn', user_lang), type="primary", use_container_width=True)
+
 
 # Логика обработки
 logger.info(f"Submit button state: {submit_btn}")
@@ -1279,7 +1300,7 @@ if submit_btn:
                 'body': story_body,
                 'audio': None,
                 'language': user_lang,
-                'child_id': selected_child_id # Привязываем к ребенку
+                'child_id': st.session_state.get('child_selector') # Привязываем к ребенку
             }
             # Сбрасываем кэш экспорта — новая сказка требует новых файлов
             for fmt_key in EXPORT_FORMATS:
