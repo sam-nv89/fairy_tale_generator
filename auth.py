@@ -237,8 +237,14 @@ def sign_in_with_google(force_refresh: bool = False) -> dict:
             }
         })
         url = getattr(res, 'url', None)
-        logger.info(f"[Google OAuth] Generated URL: {url[:50] if url else 'NONE'}...")
-        if not url: return {'success': False, 'error': 'Не удалось получить ссылку от Supabase'}
+        logger.info(f"[Google OAuth] Attempt generate URL. Result: {url[:60] if url else 'EMPTY'}")
+        
+        if not url:
+            # Попробуем логгировать детали ошибки от Supabase если они есть
+            error_msg = "Supabase не вернул URL для авторизации"
+            if hasattr(res, 'error') and res.error:
+                error_msg = f"Supabase Error: {res.error}"
+            return {'success': False, 'error': error_msg}
         
         st.session_state['google_auth_url'] = url
         return {'success': True, 'url': url}
