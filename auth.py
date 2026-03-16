@@ -233,6 +233,7 @@ def sign_in_with_google(force_refresh: bool = False) -> dict:
             }
         })
         url = getattr(res, 'url', None)
+        logger.info(f"[Google OAuth] Generated URL: {url[:50] if url else 'NONE'}...")
         if not url: return {'success': False, 'error': 'Не удалось получить ссылку от Supabase'}
         
         st.session_state['google_auth_url'] = url
