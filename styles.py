@@ -723,6 +723,27 @@ def get_app_styles(dark_mode: bool = True) -> str:
         color: white !important;
     }}
 
+    /* ========== RESET BUTTONS (Generator) ========== */
+    div[class*="st-key-gen_reset_btn"] button {{
+        background: {'linear-gradient(135deg, #374151 0%, #4b5563 100%)' if dark_mode else 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)'} !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.6rem 1.2rem !important;
+        font-weight: 600 !important;
+        box-shadow: {'0 4px 12px rgba(0, 0, 0, 0.2)' if dark_mode else '0 4px 10px rgba(0, 0, 0, 0.1)'} !important;
+        transition: all 0.2s ease !important;
+    }}
+    div[class*="st-key-gen_reset_btn"] button p,
+    div[class*="st-key-gen_reset_btn"] button span {{
+        color: white !important;
+    }}
+    div[class*="st-key-gen_reset_btn"] button:hover {{
+        background: {'linear-gradient(135deg, #4b5563 0%, #374151 100%)' if dark_mode else 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'} !important;
+        transform: translateY(-2px) !important;
+        box-shadow: {'0 6px 15px rgba(0, 0, 0, 0.3)' if dark_mode else '0 5px 12px rgba(0, 0, 0, 0.15)'} !important;
+    }}
+
     /* ========== TOOLBAR BUTTONS — Unified style for all 3 buttons ========== */
     /* Covers: toolbar_save (st.button), toolbar_voice (st.empty→button), toolbar_download (st.popover) */
     div[class*="st-key-toolbar_"] div.stButton > button,
