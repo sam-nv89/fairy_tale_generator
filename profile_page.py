@@ -339,6 +339,57 @@ def render_profile_page():
             font-style: italic;
             color: #fed6e3;
             margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* СТИЛЬ ДЛЯ ИКОНОК ГЕЙТВЕЯ (Action Icons) */
+        .child-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        /* Делаем кнопки-иконки прозрачными */
+        div.child-actions div.stButton > button {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 4px !important;
+            width: auto !important;
+            min-width: unset !important;
+            height: auto !important;
+            font-size: 1.2rem !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            transition: transform 0.2s ease, color 0.2s ease !important;
+        }
+        div.child-actions div.stButton > button:hover {
+            transform: scale(1.2) !important;
+            color: #ffffff !important;
+            background: transparent !important;
+        }
+
+        /* Кнопка-карточка (для клика по всей области) */
+        div.child-clickable-card div.stButton > button {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-radius: 15px !important;
+            padding: 1.5rem !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            width: 100% !important;
+            height: auto !important;
+            text-align: left !important;
+            display: block !important;
+            transition: all 0.3s ease !important;
+            box-shadow: none !important;
+            color: inherit !important;
+        }
+        div.child-clickable-card div.stButton > button:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(168, 237, 234, 0.3) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -422,48 +473,78 @@ def render_profile_page():
     if 'edit_child_id' not in st.session_state: st.session_state.edit_child_id = None
 
     if not child_profiles:
+        # Если нет профилей и мы пришли за созданием — разворачиваем форму
         st.info(t('child_profiles_empty', user_lang))
     else:
         for child in child_profiles:
             is_editing = st.session_state.edit_child_id == child.get('id')
             
+            # Уникальный ключ для контейнера карточки
             with st.container():
                 if not is_editing:
-                    # ОБЫЧНЫЙВИД КАРТОЧКИ
-                    st.markdown(f"""
-                        <div class='child-card'>
-                            <div style='display: flex; justify-content: space-between;'>
-                                <div class='child-name'>{"👦" if child.get('gender') != 'girl' else "👧"} {child.get('name')}</div>
-                                <div style='color: rgba(255,255,255,0.4);'>
-                                    {datetime.fromisoformat(str(child.get('birthday'))).strftime('%d-%m-%Y') if child.get('birthday') else ''}
-                                </div>
-                            </div>
-                            <div style='color: rgba(255,255,255,0.8);'>
-                                🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
-                                | {t('gender_boy' if child.get('gender') == 'boy' else 'gender_girl' if child.get('gender') == 'girl' else 'gender_auto', user_lang)}
-                            </div>
-                            <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
-                        </div>
-                    """, unsafe_allow_html=True)
+                    # Контейнер для иконок действий (абсолютное позиционирование)
+                    # Используем пустые колонки или просто контейнеры для размещения кнопок снаружи основного потока визуально
                     
-                    c_act_col1, c_act_col2, c_act_col3 = st.columns([8, 1, 1])
-                    with c_act_col1:
-                        if st.button(t('child_gen_btn', user_lang), key=f"gen_child_{child.get('id')}", type="primary", use_container_width=False):
-                            st.session_state.child_selector = child.get('id')
-                            st.session_state.current_page = 'generator'
-                            st.rerun()
-                    with c_act_col2:
-                        if st.button("✏️", key=f"edit_child_btn_{child.get('id')}", help=t('edit_child_btn', user_lang)):
+                    # Сама карточка
+                    st.markdown(f"<div class='child-clickable-card' style='position: relative;'>", unsafe_allow_html=True)
+                    
+                    # Иконки действий в углу
+                    # Мы создаем оверлей с кнопками
+                    act_btn_html = f"""
+                        <div class='child-actions'>
+                        </div>
+                    """
+                    st.markdown(act_btn_html, unsafe_allow_html=True)
+                    
+                    # Колонки для кнопок в углу ( Streamlit способ имитации CSS разметки)
+                    # Но лучше использовать CSS-классы. 
+                    # Чтобы кнопки попали в div.child-actions, нужно использовать st.components или хак с разметкой
+                    # Хак: используем st.columns внутри позиционированного div'а не сработает надежно.
+                    # Сделаем кнопки в обычном потоке, но стилизуем их.
+                    
+                    # Верхний ряд с кнопками (визуально в углу)
+                    # На самом деле просто выводим их компактно
+                    btn_col_main, btn_col_act = st.columns([0.9, 0.1])
+                    
+                    with btn_col_act:
+                        st.markdown("<div class='child-actions'>", unsafe_allow_html=True)
+                        if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang)):
                             st.session_state.edit_child_id = child.get('id')
                             st.rerun()
-                    with c_act_col3:
-                        if st.button("🗑️", key=f"del_child_{child.get('id')}"):
+                        if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang)):
                             if storage.delete_child_profile(child.get('id')):
                                 st.session_state.profile_success = t('child_del_success', user_lang)
                                 st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
+
+                    # Содержимое карточки как кнопка
+                    card_content = f"""
+                        <div style='pointer-events: none;'>
+                            <div class='child-name'>{"👦" if child.get('gender') != 'girl' else "👧"} {child.get('name')}</div>
+                            <div style='color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-top: 5px;'>
+                                🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
+                            </div>
+                            <div style='color: rgba(255,255,255,0.6); font-size: 0.9rem;'>
+                                ⚧ {t('gender_boy' if child.get('gender') == 'boy' else 'gender_girl' if child.get('gender') == 'girl' else 'gender_auto', user_lang)}
+                            </div>
+                            <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
+                            <div style='margin-top: 15px;'>
+                                <span style='background: rgba(106, 17, 203, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; color: #a8edea;'>
+                                    {t('child_gen_btn', user_lang)}
+                                </span>
+                            </div>
+                        </div>
+                    """
+                    
+                    if st.button(card_content, key=f"card_btn_{child.get('id')}", use_container_width=True):
+                        st.session_state.edit_child_id = child.get('id')
+                        st.rerun()
+                        
+                    st.markdown("</div>", unsafe_allow_html=True)
+                    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
                 else:
                     # ФОРМА РЕДАКТИРОВАНИЯ (ВМЕСТО КАРТОЧКИ)
-                    st.markdown(f"#### ✏️ {t('edit_child_btn', user_lang)}: {child.get('name')}")
+                    st.markdown(f"#### {t('edit_child_btn', user_lang)}: {child.get('name')}")
                     with st.form(f"edit_child_form_{child.get('id')}"):
                         e_name = st.text_input(t('child_name', user_lang), value=child.get('name', ""))
                         
@@ -515,7 +596,8 @@ def render_profile_page():
                                 st.rerun()
 
     # Форма добавления ребенка
-    with st.expander(t('add_child_btn', user_lang)):
+    expand_add = st.session_state.pop('child_expand_add', False)
+    with st.expander(t('add_child_btn', user_lang), expanded=expand_add):
         # Сбрасываем редактирование при открытии формы добавления (для чистоты)
         st.markdown("<div class='narrow-form-container'>", unsafe_allow_html=True)
         with st.form("add_child_form", clear_on_submit=True):
