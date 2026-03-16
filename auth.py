@@ -126,7 +126,11 @@ def get_client_id() -> str:
         chars = string.ascii_letters + string.digits
         cid = ''.join(random.choice(chars) for _ in range(10))
         
-    st.session_state["client_id"] = cid
+    if st.session_state.get("client_id") != cid:
+        st.session_state["client_id"] = cid
+        # Если ID изменился, старый URL авторизации больше не валиден (PKCE привязан к ID)
+        st.session_state.pop('google_auth_url', None)
+        
     return cid
 
 def update_user_profile(display_name: str) -> dict:

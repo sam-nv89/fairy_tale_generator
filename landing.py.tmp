@@ -1,0 +1,72 @@
+"""
+Современный премиальный лендинг для Fairy Tale Generator.
+Использует Streamlit-компоненты с кастомными CSS-инъекциями для достижения "Wow-эффекта",
+Glassmorphism и плавных анимаций.
+"""
+
+import streamlit as st
+import base64
+import json
+import random
+import urllib.request
+import math
+import streamlit.components.v1 as components
+from pathlib import Path
+import auth
+from auth import sign_up, sign_in, sign_in_with_google, init_auth_state, is_authenticated, get_auth_diagnostics
+from config import SUPPORTED_LANGUAGES
+from i18n import get_genre_list
+from landing_i18n import LANDING_TRANSLATIONS
+
+def t(key):
+    """Функция локализации для лендинга."""
+    user_lang = st.session_state.get('user_lang', 'ru')
+    return LANDING_TRANSLATIONS.get(key, {}).get(user_lang, LANDING_TRANSLATIONS.get(key, {}).get('ru', key))
+
+def inject_landing_styles():
+    """Инъекция глобальных стилей для лендинга."""
+    st.html("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+.landing-wrapper {
+    font-family: 'Inter', sans-serif;
+    color: #f8fafc;
+}
+.landing-wrapper h1, .landing-wrapper h2, .landing-wrapper h3 {
+    font-family: 'Comfortaa', cursive;
+}
+div.block-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+}
+header, section[data-testid="stSidebar"] {
+    display: none !important;
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+}
+.oauth-btn, a.oauth-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    z-index: 1000 !important;
+    position: relative !important;
+}
+</style>
+""")
+
+# ... (Остальной код лендинга слишком велик для полной перезаписи за раз, поэтому я использую replace_file_content для исправления конкретных блоков)

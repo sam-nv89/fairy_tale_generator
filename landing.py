@@ -2026,11 +2026,18 @@ def render_auth():
             if not google_res.get("success"): st.error(f"❌ {google_res.get('error', 'Auth Error')}")
 
             with tab1:
-                # ВАЖНО: Мы рендерим ссылку через markdown, но с классом oauth-btn.
-                # Стили теперь перенесены в основной блок.
-                # Используем onclick с экранированием URL для гарантированного перехода
-                safe_url = google_url.replace("'", "\\'")
-                st.markdown(f'<a href="{google_url}" onclick="window.top.location.href=\'{safe_url}\'; return false;" target="_top" class="oauth-btn" id="google-login-btn"><svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> {t("auth_google_login")}</a>', unsafe_allow_html=True)
+                # ВАЖНО: Мы рендерим ссылку через st.html для обхода ограничений markdown
+                st.html(f'''
+                    <a href="{google_url}" 
+                       data-oauth-url="{google_url}"
+                       target="_top" 
+                       class="oauth-btn google-auth-trigger" 
+                       style="text-decoration: none; display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; width: 100% !important; background: rgba(255, 255, 255, 0.05) !important; color: #f8fafc !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 12px !important; padding: 0.75rem !important; font-family: 'Inter', sans-serif !important; font-weight: 500 !important; font-size: 0.95rem !important; cursor: pointer !important; transition: all 0.2s !important; margin-bottom: 1.5rem !important; pointer-events: auto !important; z-index: 1000 !important; position: relative !important;"
+                       id="google-login-btn">
+                       <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> 
+                       {t("auth_google_login")}
+                    </a>
+                ''')
                 st.markdown(f'<div class="auth-divider"><span>{t("auth_or_email")}</span></div>', unsafe_allow_html=True)
                 with st.form("signin_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com", autocomplete="username")
@@ -2051,7 +2058,17 @@ def render_auth():
                                 else: st.error(res['error'])
             
             with tab2:
-                st.markdown(f'<a href="{google_url}" onclick="window.top.location.href=\'{safe_url}\'; return false;" target="_top" class="oauth-btn" id="google-signup-btn"><svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> {t("auth_google_signup")}</a>', unsafe_allow_html=True)
+                st.html(f'''
+                    <a href="{google_url}" 
+                       data-oauth-url="{google_url}"
+                       target="_top" 
+                       class="oauth-btn google-auth-trigger" 
+                       style="text-decoration: none; display: flex !important; align-items: center !important; justify-content: center !important; gap: 10px !important; width: 100% !important; background: rgba(255, 255, 255, 0.05) !important; color: #f8fafc !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 12px !important; padding: 0.75rem !important; font-family: 'Inter', sans-serif !important; font-weight: 500 !important; font-size: 0.95rem !important; cursor: pointer !important; transition: all 0.2s !important; margin-bottom: 1.5rem !important; pointer-events: auto !important; z-index: 1000 !important; position: relative !important;"
+                       id="google-signup-btn">
+                       <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> 
+                       {t("auth_google_signup")}
+                    </a>
+                ''')
                 st.markdown(f'<div class="auth-divider"><span>{t("auth_or_email")}</span></div>', unsafe_allow_html=True)
                 with st.form("signup_form", clear_on_submit=True):
                     email = st.text_input("Email", placeholder="user@example.com")
@@ -2067,46 +2084,54 @@ def render_auth():
                         const t_mismatch = '{t("auth_pass_mismatch")}';
                         
                         function init() {{
+                            // 1. Проверка паролей
                             const passInputs = doc.querySelectorAll('input[type="password"]');
-                            if (passInputs.length < 2) return; 
-                            
-                            // Последние два поля пароля на странице (отвечают за регистрацию)
-                            const pass1 = passInputs[passInputs.length - 2];
-                            const pass2 = passInputs[passInputs.length - 1];
-                            const msg = document.getElementById('pass-match-msg');
-                            
-                            function update() {{
-                                const v1 = pass1.value;
-                                const v2 = pass2.value;
-                                if (!v1 && !v2) {{
-                                    msg.innerHTML = '';
-                                }} else if (v1.length < 6) {{
-                                    msg.innerHTML = '<span style="color: #ffb74d; font-size: 0.85rem;">⚠️ ' + t_short + '</span>';
-                                }} else if (v1 === v2) {{
-                                    msg.innerHTML = '<span style="color: #66bb6a; font-size: 0.85rem;">✅ ' + t_match + '</span>';
-                                }} else {{
-                                    msg.innerHTML = '<span style="color: #ef5350; font-size: 0.85rem;">❌ ' + t_mismatch + '</span>';
+                            if (passInputs.length >= 2) {{
+                                const pass1 = passInputs[passInputs.length - 2];
+                                const pass2 = passInputs[passInputs.length - 1];
+                                const msg = document.getElementById('pass-match-msg');
+                                
+                                function update() {{
+                                    const v1 = pass1.value;
+                                    const v2 = pass2.value;
+                                    if (!v1 && !v2) {{
+                                        msg.innerHTML = '';
+                                    }} else if (v1.length < 6) {{
+                                        msg.innerHTML = '<span style="color: #ffb74d; font-size: 0.85rem;">⚠️ ' + t_short + '</span>';
+                                    }} else if (v1 === v2) {{
+                                        msg.innerHTML = '<span style="color: #66bb6a; font-size: 0.85rem;">✅ ' + t_match + '</span>';
+                                    }} else {{
+                                        msg.innerHTML = '<span style="color: #ef5350; font-size: 0.85rem;">❌ ' + t_mismatch + '</span>';
+                                    }}
                                 }}
+                                
+                                if (pass1.getAttribute('data-hooked') !== 'true') {{
+                                    pass1.addEventListener('input', update);
+                                    pass2.addEventListener('input', update);
+                                    pass1.setAttribute('data-hooked', 'true');
+                                    pass2.setAttribute('data-hooked', 'true');
+                                }}
+                                update();
                             }}
-                            
-                            if (pass1.getAttribute('data-hooked') !== 'true') {{
-                                pass1.addEventListener('input', update);
-                                pass2.addEventListener('input', update);
-                                pass1.setAttribute('data-hooked', 'true');
-                                pass2.setAttribute('data-hooked', 'true');
-                            }}
-                            
-                            // Важно: в React элементе нужно иногда насильно обновлять
-                            update();
+
+                            // 2. Глобальный слушатель для Google Auth кнопок (решает проблему блокировки target="_top")
+                            doc.addEventListener('click', function(e) {{
+                                const btn = e.target.closest('.google-auth-trigger');
+                                if (btn) {{
+                                    const url = btn.getAttribute('data-oauth-url');
+                                    if (url && url !== '#') {{
+                                        e.preventDefault();
+                                        window.top.location.href = url;
+                                    }}
+                                }}
+                            }}, true);
                         }}
                         
-                        // Используем постоянный интервал без clearInterval, так как Streamlit может перерендерить элементы
-                        setInterval(() => {{
-                            init();
-                        }}, 500);
+                        setInterval(init, 500);
                     </script>
                     """
                     components.html(js_code, height=35)
+
                     
                     submit = st.form_submit_button(t("auth_signup_btn"), use_container_width=True, type="primary")
                     
