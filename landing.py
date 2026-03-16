@@ -2030,7 +2030,7 @@ def render_auth():
                 # Добавляем скрипт ПРЯМО К КНОПКЕ для надежности.
                 btn_id = "google-login-main"
                 st.html(f'''
-                    <div style="margin-bottom: 2rem;">
+                    <div style="margin-bottom: 0.5rem;">
                         <a href="{google_url}" 
                            target="_top" 
                            class="oauth-btn" 
@@ -2066,7 +2066,7 @@ def render_auth():
                 # ВАЖНО: Дублируем логику со скриптом и fallback-ссылкой для вкладки регистрации
                 btn_id_signup = "google-signup-main"
                 st.html(f'''
-                    <div style="margin-bottom: 2rem;">
+                    <div style="margin-bottom: 0.5rem;">
                         <a href="{google_url}" 
                            target="_top" 
                            class="oauth-btn" 
