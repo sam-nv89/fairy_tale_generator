@@ -125,7 +125,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         
         # Ребенок (прочее)
         'child_limit_reached': "Достигнут лимит профилей для вашего плана.",
-        'child_id_label': "Выберите ребенка",
+        'child_id_label': "Выберите профиль ребенка",
         'reg_days': "({0} дн.)",
         'no_future_dates': "Не может быть в будущем",
         'error_day': "День должен быть 01-31",
@@ -271,7 +271,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
 
         # Child Profiles
         'child_limit_reached': "Profile limit reached for your plan.",
-        'child_id_label': "Select a child",
+        'child_id_label': "Select child profile",
         'day_label': "Day",
         'month_label': "Month",
         'year_label': "Year",
@@ -399,7 +399,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Aún no tienes perfiles de niños guardados. ¡Añade el primero!",
         'child_delete_confirm': "¿Eliminar el perfil del niño? Los cuentos permanecerán, pero el perfil desaparecerá.",
         'child_limit_reached': "Se ha alcanzado el límite de perfiles para tu plan.",
-        'child_id_label': "Selecciona un niño",
+        'child_id_label': "Selecciona el perfil del niño",
         'day_label': "Día",
         'month_label': "Mes",
         'year_label': "Año",
@@ -523,7 +523,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "Supprimer le profil de l'enfant ? Les histoires resteront, mais le profil disparaîtra.",
         'child_profiles_empty': "Aucun profil d'enfant enregistré. Ajoutez le premier !",
         'child_limit_reached': "Limite de profils atteinte pour votre plan.",
-        'child_id_label': "Sélectionnez un enfant",
+        'child_id_label': "Sélectionnez le profil de l'enfant",
         'child_gen_btn': "✨ Histoire"
     },
     
@@ -643,7 +643,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Você ainda não tem perfis de crianças salvos. Adicione o primeiro!",
         'child_delete_confirm': "Excluir o perfil da criança? As histórias permanecerão, mas o perfil desaparecerá.",
         'child_limit_reached': "Limite de perfis atingido para o seu plano.",
-        'child_id_label': "Selecione uma criança",
+        'child_id_label': "Selecione o perfil da criança",
         'child_gen_btn': "✨ História"
     },
     
@@ -763,7 +763,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "删除孩子资料？故事将保留，但资料将消失。",
         'child_profiles_empty': "还没有保存过孩子资料。添加第一个吧！",
         'child_limit_reached': "您的套餐已达到资料限制。",
-        'child_id_label': "选择一个孩子",
+        'child_id_label': "选择孩子资料",
         'child_gen_btn': "✨ 故事"
     },
     
@@ -883,7 +883,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "बच्चे का प्रोफाइल हटाएं? कहानियाँ बनी रहेंगी, लेकिन प्रोफाइल हट जाएगा।",
         'child_profiles_empty': "अभी तक कोई बच्चे का प्रोफाइल सेव नहीं किया गया है। पहला जोड़ें!",
         'child_limit_reached': "आपकी योजना के लिए प्रोफाइल सीमा समाप्त हो गई है।",
-        'child_id_label': "एक बच्चा चुनें",
+        'child_id_label': "बच्चे की प्रोफ़ाइल चुनें",
         'child_gen_btn': "✨ कहानी"
     },
     
@@ -1003,7 +1003,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "Kindprofil löschen? Die Geschichten bleiben erhalten, aber das Profil wird gelöscht.",
         'child_profiles_empty': "Noch keine Kinderprofile gespeichert. Füge das erste hinzu!",
         'child_limit_reached': "Profilbegrenzung für deinen Plan erreicht.",
-        'child_id_label': "Wähle ein Kind",
+        'child_id_label': "Kinderprofil auswählen",
         'child_gen_btn': "✨ Geschichte"
     },
 }

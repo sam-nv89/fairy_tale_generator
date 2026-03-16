@@ -1022,11 +1022,12 @@ if 'gen_age' not in st.session_state:
     st.session_state.gen_age = age_keys[DEFAULT_AGE_INDEX] if len(age_keys) > DEFAULT_AGE_INDEX else age_keys[0]
 if 'gen_genre' not in st.session_state: st.session_state.gen_genre = t('genres.fairytale', user_lang)
 if 'gen_hobbies' not in st.session_state: st.session_state.gen_hobbies = ""
+if 'child_selector' not in st.session_state: st.session_state.child_selector = "none"
 
 def on_child_selected():
     """Заполняет поля данными из выбранного профиля."""
     cid = st.session_state.get('child_selector')
-    if cid:
+    if cid and cid != "none":
         profiles = storage.get_child_profiles()
         child = next((c for c in profiles if c['id'] == cid), None)
         if child:
@@ -1054,7 +1055,7 @@ def reset_generator():
     st.session_state.gen_age = age_keys[DEFAULT_AGE_INDEX] if len(age_keys) > DEFAULT_AGE_INDEX else age_keys[0]
     st.session_state.gen_genre = t('genres.fairytale', user_lang)
     st.session_state.gen_hobbies = ""
-    st.session_state.child_selector = None
+    st.session_state.child_selector = "none"
 
 # Скрытая загрузка ключа (без UI)
 if "GOOGLE_API_KEY" in st.secrets:
@@ -1072,10 +1073,10 @@ if auth.is_authenticated():
         
         with sel_col:
             child_names = {c['id']: c['name'] for c in child_profiles}
-            child_options = [None] + list(child_names.keys())
+            child_options = ["none"] + list(child_names.keys())
             
             def format_child(cid):
-                if cid is None: return "--- " + t('child_id_label', user_lang) + " ---"
+                if cid == "none": return "--- " + t('child_id_label', user_lang) + " ---"
                 return f"👶 {child_names[cid]}"
             
             st.selectbox(
@@ -1083,7 +1084,8 @@ if auth.is_authenticated():
                 options=child_options,
                 format_func=format_child,
                 key="child_selector",
-                on_change=on_child_selected
+                on_change=on_child_selected,
+                index=0
             )
         
         with res_col:
