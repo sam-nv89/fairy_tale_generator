@@ -1044,6 +1044,9 @@ def on_child_selected():
                 st.session_state.gen_age = t(f"age_ranges.{c_age}", user_lang)
             
             st.session_state.gen_hobbies = child.get('hobbies', "")
+    elif cid == "add_new":
+        st.session_state.current_page = 'profile'
+        st.rerun()
     else: # If "--- Select Child ---" is chosen, reset fields
         reset_generator()
 
@@ -1073,10 +1076,11 @@ if auth.is_authenticated():
         
         with sel_col:
             child_names = {c['id']: c['name'] for c in child_profiles}
-            child_options = ["none"] + list(child_names.keys())
+            child_options = ["none"] + list(child_names.keys()) + ["add_new"]
             
             def format_child(cid):
                 if cid == "none": return "--- " + t('child_id_label', user_lang) + " ---"
+                if cid == "add_new": return "➕ " + t('add_child_btn', user_lang)
                 return f"👶 {child_names[cid]}"
             
             st.selectbox(

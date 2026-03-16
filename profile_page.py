@@ -418,45 +418,113 @@ def render_profile_page():
             return today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day))
         except: return None
 
+    # Инициализация стейта для редактирования
+    if 'edit_child_id' not in st.session_state: st.session_state.edit_child_id = None
+
     if not child_profiles:
         st.info(t('child_profiles_empty', user_lang))
     else:
         for child in child_profiles:
+            is_editing = st.session_state.edit_child_id == child.get('id')
+            
             with st.container():
-                st.markdown(f"""
-                    <div class='child-card'>
-                        <div style='display: flex; justify-content: space-between;'>
-                            <div class='child-name'>👦 {child.get('name')}</div>
-                            <div style='color: rgba(255,255,255,0.4);'>
-                                {datetime.fromisoformat(str(child.get('birthday'))).strftime('%d-%m-%Y') if child.get('birthday') else ''}
+                if not is_editing:
+                    # ОБЫЧНЫЙВИД КАРТОЧКИ
+                    st.markdown(f"""
+                        <div class='child-card'>
+                            <div style='display: flex; justify-content: space-between;'>
+                                <div class='child-name'>{"👦" if child.get('gender') != 'girl' else "👧"} {child.get('name')}</div>
+                                <div style='color: rgba(255,255,255,0.4);'>
+                                    {datetime.fromisoformat(str(child.get('birthday'))).strftime('%d-%m-%Y') if child.get('birthday') else ''}
+                                </div>
                             </div>
+                            <div style='color: rgba(255,255,255,0.8);'>
+                                🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
+                                | {t('gender_boy' if child.get('gender') == 'boy' else 'gender_girl' if child.get('gender') == 'girl' else 'gender_auto', user_lang)}
+                            </div>
+                            <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
                         </div>
-                        <div style='color: rgba(255,255,255,0.8);'>
-                            🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
-                        </div>
-                        <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-                
-                c_del_col1, c_del_col2 = st.columns([10, 1])
-                with c_del_col2:
-                    if st.button("🗑️", key=f"del_child_{child.get('id')}"):
-                        if storage.delete_child_profile(child.get('id')):
-                            st.session_state.profile_success = t('child_del_success', user_lang)
+                    """, unsafe_allow_html=True)
+                    
+                    c_act_col1, c_act_col2, c_act_col3 = st.columns([8, 1, 1])
+                    with c_act_col1:
+                        if st.button(t('child_gen_btn', user_lang), key=f"gen_child_{child.get('id')}", type="primary", use_container_width=False):
+                            st.session_state.child_selector = child.get('id')
+                            st.session_state.current_page = 'generator'
                             st.rerun()
-                with c_del_col1:
-                    if st.button(t('child_gen_btn', user_lang), key=f"gen_child_{child.get('id')}", type="primary", use_container_width=False):
-                        st.session_state.child_selector = child.get('id')
-                        st.session_state.current_page = 'generator'
-                        st.rerun()
+                    with c_act_col2:
+                        if st.button("✏️", key=f"edit_child_btn_{child.get('id')}", help=t('edit_child_btn', user_lang)):
+                            st.session_state.edit_child_id = child.get('id')
+                            st.rerun()
+                    with c_act_col3:
+                        if st.button("🗑️", key=f"del_child_{child.get('id')}"):
+                            if storage.delete_child_profile(child.get('id')):
+                                st.session_state.profile_success = t('child_del_success', user_lang)
+                                st.rerun()
+                else:
+                    # ФОРМА РЕДАКТИРОВАНИЯ (ВМЕСТО КАРТОЧКИ)
+                    st.markdown(f"#### ✏️ {t('edit_child_btn', user_lang)}: {child.get('name')}")
+                    with st.form(f"edit_child_form_{child.get('id')}"):
+                        e_name = st.text_input(t('child_name', user_lang), value=child.get('name', ""))
+                        
+                        g_options = [t('gender_auto', user_lang), t('gender_boy', user_lang), t('gender_girl', user_lang)]
+                        curr_g = child.get('gender')
+                        g_idx = 1 if curr_g == 'boy' else 2 if curr_g == 'girl' else 0
+                        e_gender = st.selectbox(t('gender_label', user_lang), options=g_options, index=g_idx)
+                        
+                        from datetime import date
+                        try: e_default_date = date.fromisoformat(child.get('birthday'))
+                        except: e_default_date = date.today()
+                        
+                        e_birthday = st.date_input(t('child_birthday_label', user_lang), value=e_default_date, format="DD-MM-YYYY")
+                        e_hobbies = st.text_area(t('child_hobbies', user_lang), value=child.get('hobbies', ""))
+                        
+                        e_col1, e_col2 = st.columns(2)
+                        with e_col1:
+                            if st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True):
+                                # Сохранение изменений
+                                gender_map = {t('gender_boy', user_lang): 'boy', t('gender_girl', user_lang): 'girl', t('gender_auto', user_lang): 'auto'}
+                                
+                                # Группа возраста
+                                calc_age = calculate_age(e_birthday.isoformat())
+                                age_group = "4-7 лет"
+                                if calc_age is not None:
+                                    if calc_age < 1: age_group = "0-12 мес"
+                                    elif calc_age < 4: age_group = "1-3 года"
+                                    elif calc_age < 8: age_group = "4-7 лет"
+                                    elif calc_age < 13: age_group = "8-12 лет"
+                                    elif calc_age < 18: age_group = "13-17 лет"
+                                    else: age_group = "18+"
+
+                                updated_data = {
+                                    "id": child.get('id'),
+                                    "name": e_name.strip(),
+                                    "gender": gender_map.get(e_gender, 'auto'),
+                                    "birthday": e_birthday.isoformat(),
+                                    "age": age_group,
+                                    "hobbies": e_hobbies.strip()
+                                }
+                                res = storage.save_child_profile(updated_data)
+                                if res.get('success'):
+                                    st.session_state.edit_child_id = None
+                                    st.session_state.profile_success = t('child_save_success', user_lang)
+                                    st.rerun()
+                        with e_col2:
+                            if st.form_submit_button("❌", use_container_width=True):
+                                st.session_state.edit_child_id = None
+                                st.rerun()
 
     # Форма добавления ребенка
     with st.expander(t('add_child_btn', user_lang)):
+        # Сбрасываем редактирование при открытии формы добавления (для чистоты)
         st.markdown("<div class='narrow-form-container'>", unsafe_allow_html=True)
         with st.form("add_child_form", clear_on_submit=True):
             new_name = st.text_input(t('child_name', user_lang), placeholder=t('name_placeholder', user_lang))
             
-            # Настройка диапазона дат родительской валидацией
+            # Добавляем выбор пола в форму добавления
+            new_gender = st.selectbox(t('gender_label', user_lang), 
+                                     options=[t('gender_auto', user_lang), t('gender_boy', user_lang), t('gender_girl', user_lang)])
+            
             from datetime import date
             min_date = date(1900, 1, 1)
             max_date = date.today()
@@ -467,8 +535,7 @@ def render_profile_page():
                 value=default_date,
                 min_value=min_date,
                 max_value=max_date,
-                format="DD-MM-YYYY",
-                help=f"{t('child_birthday_label', user_lang)} (DD-MM-YYYY)"
+                format="DD-MM-YYYY"
             )
             
             new_hobbies = st.text_area(
@@ -480,15 +547,10 @@ def render_profile_page():
             save_btn = st.form_submit_button(t('save_child_btn', user_lang), type="primary", use_container_width=True)
             
             if save_btn:
-                # Валидация
-                if not new_birthday:
-                    st.error(t('child_birthday_label', user_lang))
-                    st.stop()
-
                 if not new_name.strip():
                     st.error(t('name_warning', user_lang))
                 else:
-                    # Группа возраста для совместимости
+                    gender_map = {t('gender_boy', user_lang): 'boy', t('gender_girl', user_lang): 'girl', t('gender_auto', user_lang): 'auto'}
                     calc_age = calculate_age(new_birthday.isoformat())
                     age_group = "4-7 лет"
                     if calc_age is not None:
@@ -501,6 +563,7 @@ def render_profile_page():
 
                     res = storage.save_child_profile({
                         "name": new_name.strip(),
+                        "gender": gender_map.get(new_gender, 'auto'),
                         "age": age_group,
                         "birthday": new_birthday.isoformat(),
                         "hobbies": new_hobbies.strip()
