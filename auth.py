@@ -257,12 +257,13 @@ def handle_oauth_callback():
     if not client: return
 
     try:
+        logger.info(f"[Google OAuth] Attempting code exchange with cid={get_client_id()}")
         # Обмен кода на полноценную сессию
         res = client.auth.exchange_code_for_session({"auth_code": code})
         st.session_state['processed_code'] = code
         
         if res and res.user:
-            logger.info(f"Login success: {res.user.email}")
+            logger.info(f"[Google OAuth] Login success: {res.user.email}")
             st.session_state.user = res.user
             st.session_state.user_email = res.user.email
             st.session_state.authenticated = True

@@ -119,10 +119,15 @@ if 'current_page' not in st.session_state:
 # Если параметры обработаны - очищаем URL для красоты и делаем один rerun
 # УБРАНА ОЧИСТКА ЗДЕСЬ, чтобы не сбросить access_token от Supabase
 # ВАЖНО: Всегда сохраняем auth_cid в параметрах для стабильности F5
+# 3. Синхронизация client_id в URL для надежности PKCE
 if 'client_id' in st.session_state:
     cid = st.session_state['client_id']
-    if st.query_params.get('auth_cid') != cid:
+    cur_cid = qp.get("auth_cid")
+    if isinstance(cur_cid, list): cur_cid = cur_cid[0] if cur_cid else None
+    
+    if cur_cid != cid:
         st.query_params['auth_cid'] = cid
+        logger.debug(f"APP: Syncing auth_cid in URL: {cur_cid} -> {cid}")
 
 if needs_rerun:
     st.rerun()
