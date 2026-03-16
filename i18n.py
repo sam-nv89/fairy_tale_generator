@@ -135,7 +135,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'month_label': "Месяц",
         'year_label': "Год",
         'months': ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-        'child_gen_btn': "✨ Сказка"
+        'child_gen_btn': "✨ Сказка",
+        'clear_btn': "🧹 Очистить"
     },
     
     'en': {
@@ -276,7 +277,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'month_label': "Month",
         'year_label': "Year",
         'months': ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-        'child_gen_btn': "✨ Story"
+        'child_gen_btn': "✨ Story",
+        'clear_btn': "🧹 Clear Fields"
     },
     
     # === ESPAÑOL (Spanish) - ~500 million speakers ===
@@ -404,7 +406,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'month_label': "Mes",
         'year_label': "Año",
         'months': ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
-        'child_gen_btn': "✨ Cuento"
+        'child_gen_btn': "✨ Cuento",
+        'clear_btn': "🧹 Limpiar"
     },
     
     # === FRANÇAIS (French) - ~300 million speakers ===
@@ -524,7 +527,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Aucun profil d'enfant enregistré. Ajoutez le premier !",
         'child_limit_reached': "Limite de profils atteinte pour votre plan.",
         'child_id_label': "Sélectionnez le profil de l'enfant",
-        'child_gen_btn': "✨ Histoire"
+        'child_gen_btn': "✨ Histoire",
+        'clear_btn': "🧹 Effacer"
     },
     
     # === PORTUGUÊS (Portuguese) - ~260 million speakers ===
@@ -644,7 +648,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_delete_confirm': "Excluir o perfil da criança? As histórias permanecerão, mas o perfil desaparecerá.",
         'child_limit_reached': "Limite de perfis atingido para o seu plano.",
         'child_id_label': "Selecione o perfil da criança",
-        'child_gen_btn': "✨ História"
+        'child_gen_btn': "✨ História",
+        'clear_btn': "🧹 Limpar"
     },
     
     # === SIMPLIFIED CHINESE (zh-CN) - ~1.3 billion speakers ===
@@ -764,7 +769,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "还没有保存过孩子资料。添加第一个吧！",
         'child_limit_reached': "您的套餐已达到资料限制。",
         'child_id_label': "选择孩子资料",
-        'child_gen_btn': "✨ 故事"
+        'child_gen_btn': "✨ 故事",
+        'clear_btn': "🧹 清除"
     },
     
     # === HINDI (hi) - ~600 million speakers ===
@@ -884,7 +890,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "अभी तक कोई बच्चे का प्रोफाइल सेव नहीं किया गया है। पहला जोड़ें!",
         'child_limit_reached': "आपकी योजना के लिए प्रोफाइल सीमा समाप्त हो गई है।",
         'child_id_label': "बच्चे की प्रोफ़ाइल चुनें",
-        'child_gen_btn': "✨ कहानी"
+        'child_gen_btn': "✨ कहानी",
+        'clear_btn': "🧹 साफ़ करें"
     },
     
     # === GERMAN (de) - ~130 million speakers ===
@@ -1004,7 +1011,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'child_profiles_empty': "Noch keine Kinderprofile gespeichert. Füge das erste hinzu!",
         'child_limit_reached': "Profilbegrenzung für deinen Plan erreicht.",
         'child_id_label': "Kinderprofil auswählen",
-        'child_gen_btn': "✨ Geschichte"
+        'child_gen_btn': "✨ Geschichte",
+        'clear_btn': "🧹 Löschen"
     },
 }
 

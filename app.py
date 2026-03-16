@@ -1090,14 +1090,13 @@ if auth.is_authenticated():
             )
         
         with res_col:
-            clear_label = "🧹 " + ("Очистить" if user_lang == 'ru' else "Clear All")
-            st.button(clear_label, on_click=reset_generator, use_container_width=True, help="Сбросить все поля", key="gen_reset_btn")
+            st.button(t('clear_btn', user_lang), on_click=reset_generator, use_container_width=True, help="Сбросить все поля", key="gen_reset_btn")
     else:
         # Если профилей нет, все равно даем кнопку сброса
-        st.button("🧹 " + ("Очистить поля" if user_lang == 'ru' else "Clear Fields"), on_click=reset_generator, key="gen_reset_btn_no_profiles")
+        st.button(t('clear_btn', user_lang), on_click=reset_generator, key="gen_reset_btn_no_profiles")
 else:
     # Для гостей просто кнопка сброса
-    st.button("🧹 " + ("Очистить поля" if user_lang == 'ru' else "Clear Fields"), on_click=reset_generator, key="gen_reset_btn_guest")
+    st.button(t('clear_btn', user_lang), on_click=reset_generator, key="gen_reset_btn_guest")
 
 
 # Основная форма
