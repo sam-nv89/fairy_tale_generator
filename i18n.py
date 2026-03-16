@@ -1118,15 +1118,15 @@ def get_age_ranges(lang: str = 'ru') -> Dict[str, float]:
     translated_ranges = TRANSLATIONS.get(lang, {}).get('age_ranges', {})
     
     if isinstance(translated_ranges, dict) and translated_ranges:
-        # Маппинг ключей к значениям
-        keys = list(translated_ranges.keys())
+        # Маппинг меток (переведенных значений) к числовым значениям
+        labels = list(translated_ranges.values())
         key_mapping = {
-            "0-12 мес": keys[0],
-            "1-3 года": keys[1],
-            "4-7 лет": keys[2],
-            "8-12 лет": keys[3],
-            "13-17 лет": keys[4],
-            "18+": keys[5]
+            "0-12 мес": labels[0] if len(labels) > 0 else "0-12 мес",
+            "1-3 года": labels[1] if len(labels) > 1 else "1-3 года",
+            "4-7 лет": labels[2] if len(labels) > 2 else "4-7 лет",
+            "8-12 лет": labels[3] if len(labels) > 3 else "8-12 лет",
+            "13-17 лет": labels[4] if len(labels) > 4 else "13-17 лет",
+            "18+": labels[5] if len(labels) > 5 else "18+"
         }
         return {key_mapping[k]: v for k, v in age_values.items()}
     

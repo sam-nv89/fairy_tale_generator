@@ -1037,13 +1037,10 @@ def on_child_selected():
             elif gender_val == 'girl': st.session_state.gen_gender = t('gender_girl', user_lang)
             else: st.session_state.gen_gender = t('gender_auto', user_lang)
             
-            # Маппинг возраста
+            # Маппинг возраста (в БД хранится RU-ключ группы, например "4-7 лет")
             c_age = child.get('age')
-            ranges = get_age_ranges(user_lang)
-            for label, val in ranges.items():
-                if val == c_age:
-                    st.session_state.gen_age = label
-                    break
+            if c_age:
+                st.session_state.gen_age = t(f"age_ranges.{c_age}", user_lang)
             
             st.session_state.gen_hobbies = child.get('hobbies', "")
     else: # If "--- Select Child ---" is chosen, reset fields
