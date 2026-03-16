@@ -469,6 +469,22 @@ def render_profile_page():
             return today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day))
         except: return None
 
+    def format_age_ru(age):
+        if age is None: return ""
+        if age % 10 == 1 and age % 100 != 11: return f"{age} год"
+        if 2 <= age % 10 <= 4 and (age % 100 < 10 or age % 100 >= 20): return f"{age} года"
+        return f"{age} лет"
+
+    def get_child_age_text(child):
+        age = calculate_age(child.get('birthday'))
+        if age is None:
+            # Fallback to group
+            return t(f"age_ranges.{child.get('age', '')}", user_lang)
+        
+        if user_lang == 'ru':
+            return format_age_ru(age)
+        return t('child_age_years', user_lang).format(age)
+
     # Инициализация стейта для редактирования
     if 'edit_child_id' not in st.session_state: st.session_state.edit_child_id = None
 
@@ -518,19 +534,22 @@ def render_profile_page():
                         st.markdown("</div>", unsafe_allow_html=True)
 
                     # Содержимое карточки как кнопка
+                    g_val = child.get('gender', 'auto')
+                    g_emoji = "👦" if g_val == 'boy' else "👧" if g_val == 'girl' else "👶"
+                    
                     card_content = f"""
                         <div style='pointer-events: none;'>
-                            <div class='child-name'>{"👦" if child.get('gender') != 'girl' else "👧"} {child.get('name')}</div>
+                            <div class='child-name'>{g_emoji} {child.get('name')}</div>
                             <div style='color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-top: 5px;'>
-                                🎂 {t('child_age_years', user_lang).format(calculate_age(child.get('birthday')) or t(f"age_ranges.{child.get('age', '')}", user_lang))}
+                                🎂 {get_child_age_text(child)}
                             </div>
                             <div style='color: rgba(255,255,255,0.6); font-size: 0.9rem;'>
-                                ⚧ {t('gender_boy' if child.get('gender') == 'boy' else 'gender_girl' if child.get('gender') == 'girl' else 'gender_auto', user_lang)}
+                                ⚧ {t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)}
                             </div>
                             <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
                             <div style='margin-top: 15px;'>
                                 <span style='background: rgba(106, 17, 203, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; color: #a8edea;'>
-                                    {t('child_gen_btn', user_lang)}
+                                    ✨ {t('child_gen_btn', user_lang)}
                                 </span>
                             </div>
                         </div>
