@@ -202,17 +202,27 @@ def render_auth_scripts():
 # ============================================================================
 #  SUPABASE ACTIONS
 # ============================================================================
-def get_supabase_client():
-    if not _SUPABASE_AVAILABLE or not create_client: return None
+@st.cache_resource(show_spinner=False)
+def _get_cached_supabase_client(cid: str):
+    """Кашированный клиент Supabase (один на client_id)."""
     try:
         url = st.secrets.get("SUPABASE_URL")
         key = st.secrets.get("SUPABASE_KEY")
         if not url or not key: return None
         
-        cid = get_client_id()
-        options = ClientOptions(flow_type='pkce', storage=IsolatedDiskStorage(cid))
+        options = ClientOptions(
+            flow_type='pkce', 
+            storage=IsolatedDiskStorage(cid)
+        )
         return create_client(url, key, options=options)
-    except: return None
+    except Exception as e:
+        logger.error(f"Failed to create Supabase client for {cid}: {e}")
+        return None
+
+def get_supabase_client():
+    if not _SUPABASE_AVAILABLE or not create_client: return None
+    cid = get_client_id()
+    return _get_cached_supabase_client(cid)
 
 def sign_in_with_google(force_refresh: bool = False) -> dict:
     """Инициация входа."""
@@ -253,40 +263,57 @@ def sign_in_with_google(force_refresh: bool = False) -> dict:
         return {'success': False, 'error': str(e)}
 
 def handle_oauth_callback():
-    """Обработчик возврата."""
+    """Обработчик возврата от Google OAuth (PKCE)."""
     qp = st.query_params
     code = qp.get('code')
     if isinstance(code, list): code = code[0]
     if not code: return
 
-    # Защита от двойной обработки
+    # Защита от двойной обработки в одном цикле
     if st.session_state.get('processed_code') == code:
-        st.query_params.clear()
         return
 
     client = get_supabase_client()
     if not client: return
 
     try:
-        logger.info(f"[Google OAuth] Attempting code exchange with cid={get_client_id()}")
-        # Обмен кода на полноценную сессию
+        cid = get_client_id()
+        logger.info(f"[Google OAuth] Start code exchange. cid={cid}")
+        
+        # Обмен кода на сессию
         res = client.auth.exchange_code_for_session({"auth_code": code})
         st.session_state['processed_code'] = code
         
         if res and res.user:
-            logger.info(f"[Google OAuth] Login success: {res.user.email}")
+            logger.info(f"[Google OAuth] Login Success: {res.user.email}")
             st.session_state.user = res.user
             st.session_state.user_email = res.user.email
             st.session_state.authenticated = True
             st.session_state.current_page = 'generator'
             st.session_state.pop('google_auth_url', None)
-            st.query_params.clear()
+            
+            # Чистим только секреты, оставляем cid для стабильности
+            new_params = dict(st.query_params)
+            for k in ['code', 'state']:
+                if k in new_params: del new_params[k]
+            new_params['auth_cid'] = str(cid)
+            st.query_params.from_dict(new_params) 
+            
             st.rerun()
     except Exception as e:
-        logger.error(f"Callback error: {e}")
-        st.query_params.clear()
+        logger.error(f"[Google OAuth] Callback fail: {e}")
         st.session_state.pop('google_auth_url', None)
-        st.session_state['auth_error'] = f"Ошибка авторизации (PKCE): {str(e)[:100]}"
+        st.session_state['auth_error'] = f"Ошибка входа (PKCE): {str(e)[:100]}"
+        
+        # Убираем только code, чтобы не плодить ошибки при реране
+        try:
+            params = dict(st.query_params)
+            params.pop('code', None)
+            params.pop('state', None)
+            st.query_params.from_dict(params)
+        except: pass
+        
+        st.rerun()
 
 # ============================================================================
 #  STATE & AUTH
