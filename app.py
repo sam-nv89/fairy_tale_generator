@@ -67,10 +67,12 @@ st.set_page_config(
 # --- 1.5. Инициализация State и Auth (Критично для рефреша страницы) ---
 import auth
 auth.init_auth_state()
-# СИНХРОНИЗАЦИЯ: Восстанавливаем сессию сразу, чтобы routing внизу видел 'user'.
-# Это предотвращает редирект на лендинг при обновлении страниц (F5).
-auth.handle_oauth_callback()  # PKCE: обрабатывает ?code= от Google OAuth
-auth.is_authenticated()       # Восстанавливаем сессию после возможного callback
+
+# ПРИОРИТЕТ 1: Обработка callback (если есть ?code=, это приводит к rerun внутри)
+auth.handle_oauth_callback() 
+
+# ПРИОРИТЕТ 2: Проверка сессии (если callback не сработал или уже обработан)
+auth.is_authenticated()
 
 # Проверка параметров URL (?lang=en&page=privacy)
 if "page" in st.query_params:
@@ -117,18 +119,15 @@ if 'current_page' not in st.session_state:
     else:
         st.session_state.current_page = 'landing'
 
-# Если параметры обработаны - очищаем URL для красоты и делаем один rerun
-# УБРАНА ОЧИСТКА ЗДЕСЬ, чтобы не сбросить access_token от Supabase
-# ВАЖНО: Всегда сохраняем auth_cid в параметрах для стабильности F5
-# 3. Синхронизация client_id в URL для надежности PKCE
-if 'client_id' in st.session_state:
+# 3. Синхронизация client_id в URL (только если не планируется другой rerun)
+if not needs_rerun and 'client_id' in st.session_state:
     cid = st.session_state['client_id']
     cur_cid = qp.get("auth_cid")
     if isinstance(cur_cid, list): cur_cid = cur_cid[0] if cur_cid else None
     
     if cur_cid != cid:
         st.query_params['auth_cid'] = cid
-        logger.debug(f"APP: Syncing auth_cid in URL: {cur_cid} -> {cid}")
+        needs_rerun = True # Перезагружаем один раз для фиксации CID в URL
 
 if needs_rerun:
     st.rerun()

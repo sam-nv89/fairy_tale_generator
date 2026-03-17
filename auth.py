@@ -101,19 +101,22 @@ class IsolatedDiskStorage(SyncSupportedStorage):
 def get_client_id() -> str:
     """Получает стабильный ID клиента (Query Params > Session > Cookies)."""
     # 0. Сначала проверяем URL.
-    try:
-        qp_cid = st.query_params.get('auth_cid')
-        if isinstance(qp_cid, list): qp_cid = qp_cid[0]
-        if qp_cid:
+    qp = st.query_params
+    qp_cid = qp.get('auth_cid')
+    if isinstance(qp_cid, list): qp_cid = qp_cid[0]
+    
+    # 1. Если в URL есть CID, это приоритет (особенно при возврате от OAuth)
+    if qp_cid:
+        if st.session_state.get("client_id") != qp_cid:
             st.session_state["client_id"] = qp_cid
-            return qp_cid
-    except: pass
+            logger.debug(f"[Auth] Client ID set from URL: {qp_cid}")
+        return qp_cid
 
-    # 1. Session State
+    # 2. Session State
     if "client_id" in st.session_state:
         return st.session_state["client_id"]
     
-    # 2. Cookies
+    # 3. Cookies (через st.context)
     cid = None
     try:
         if hasattr(st, "context") and hasattr(st.context, "cookies"):
@@ -121,16 +124,13 @@ def get_client_id() -> str:
     except: pass
     
     if not cid:
-        # Генерируем короткий технический ID (10 символов) вместо длинного UUID
+        # Генерируем стабильный ID
         import string
         chars = string.ascii_letters + string.digits
         cid = ''.join(random.choice(chars) for _ in range(10))
+        logger.debug(f"[Auth] Generated new random Client ID: {cid}")
         
-    if st.session_state.get("client_id") != cid:
-        st.session_state["client_id"] = cid
-        # Если ID изменился, старый URL авторизации больше не валиден (PKCE привязан к ID)
-        st.session_state.pop('google_auth_url', None)
-        
+    st.session_state["client_id"] = cid
     return cid
 
 def update_user_profile(display_name: str) -> dict:
@@ -269,7 +269,7 @@ def handle_oauth_callback():
     if isinstance(code, list): code = code[0]
     if not code: return
 
-    # Защита от двойной обработки в одном цикле
+    # Защита от двойной обработки
     if st.session_state.get('processed_code') == code:
         return
 
@@ -292,27 +292,19 @@ def handle_oauth_callback():
             st.session_state.current_page = 'generator'
             st.session_state.pop('google_auth_url', None)
             
-            # Чистим только секреты, оставляем cid для стабильности
-            new_params = dict(st.query_params)
-            for k in ['code', 'state']:
-                if k in new_params: del new_params[k]
-            new_params['auth_cid'] = str(cid)
-            st.query_params.from_dict(new_params) 
-            
+            # Очищаем параметры и ПЕРЕЗАГРУЖАЕМСЯ через query_params напрямую (это чище в 1.54)
+            # Мы оставляем auth_cid для стабильности сессии
+            st.query_params.clear()
+            st.query_params['auth_cid'] = cid
             st.rerun()
     except Exception as e:
         logger.error(f"[Google OAuth] Callback fail: {e}")
         st.session_state.pop('google_auth_url', None)
-        st.session_state['auth_error'] = f"Ошибка входа (PKCE): {str(e)[:100]}"
+        st.session_state['auth_error'] = f"Ошибка входа: {str(e)[:100]}"
         
-        # Убираем только code, чтобы не плодить ошибки при реране
-        try:
-            params = dict(st.query_params)
-            params.pop('code', None)
-            params.pop('state', None)
-            st.query_params.from_dict(params)
-        except: pass
-        
+        # Очищаем параметры ошибки
+        st.query_params.clear()
+        st.query_params['auth_cid'] = get_client_id()
         st.rerun()
 
 # ============================================================================
@@ -338,8 +330,23 @@ def is_authenticated() -> bool:
             st.session_state.user_email = session.user.email
             st.session_state.authenticated = True
             return True
+        else:
+            # Если сессии нет, убеждаемся что стейт сброшен
+            st.session_state.authenticated = False
+            return False
+    except Exception as e:
+        # Если ошибка токена (например, 400 Bad Request при обновлении),
+        # пробуем очистить локальное хранилище, чтобы не мешать новому входу.
+        if "token" in str(e).lower() or "400" in str(e):
+            logger.warning(f"Auth session stale, clearing: {e}")
+            try:
+                client.auth.sign_out()
+                cid = get_client_id()
+                p = os.path.join(_STORAGE_DIR, f'session_{cid}.json')
+                if os.path.exists(p): os.remove(p)
+            except: pass
+        st.session_state.authenticated = False
         return False
-    except: return False
 
 def sign_out():
     client = get_supabase_client()
