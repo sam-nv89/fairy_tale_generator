@@ -50,7 +50,7 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'name_label': "Имя ребенка",
         'name_placeholder': "Например: Аня",
         'gender_label': "Пол героя",
-        'gender_auto': "Авто",
+        'gender_auto': "Не указан",
         'gender_boy': "Мальчик",
         'gender_girl': "Девочка",
         'gender_help': "Помогает ИИ правильно склонять имя",
@@ -136,7 +136,8 @@ TRANSLATIONS: Dict[str, Dict[str, Any]] = {
         'year_label': "Год",
         'months': ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
         'child_gen_btn': "✨ Сказка",
-        'clear_btn': "🧹 Очистить"
+        'clear_btn': "🧹 Очистить",
+        'gender_auto': "Не указан"
     },
     
     'en': {

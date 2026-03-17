@@ -549,7 +549,7 @@ def render_profile_page():
                             <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
                             <div style='margin-top: 15px;'>
                                 <span style='background: rgba(106, 17, 203, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; color: #a8edea;'>
-                                    ✨ {t('child_gen_btn', user_lang)}
+                                    {t('child_gen_btn', user_lang)}
                                 </span>
                             </div>
                         </div>
