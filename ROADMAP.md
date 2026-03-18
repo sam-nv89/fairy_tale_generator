@@ -119,3 +119,10 @@
 
 ## Технический долг / Backlog
 - [ ] **Auth UI**: Добиться стабильного вызова Chrome Password Generator (или штатного генератора iOS/Safari) на вкладке регистрации (сейчас Streamlit перехватывает/блокирует нативные `<form>`-инжекты).
+- [ ] **SEC-001 (Priority: Critical)**: Внедрить rate limiting для генерации сказок и авторизации для защиты от спама и перерасхода API квот.
+- [ ] **SEC-002 (Priority: Critical)**: Добавить `sanitize_input()` для защиты от XSS во всех пользовательских формах (имя, хобби).
+- [ ] **PLAN-001 (Priority: High)**: Рефакторинг `app.py` (God Object 1400+ строк) — разделить на логические модули (`routing`, `generator`, `ui_components`).
+- [ ] **PLAN-002 (Priority: High)**: Объединить разрозненные модули i18n в единый пакет `translations/`.
+- [ ] **QW-004 (Priority: Quick Win)**: Кэшировать поиск шрифтов для PDF-экспорта (`@st.cache_resource`).
+- [ ] **QW-001 (Priority: Quick Win)**: Вынести дублирующуюся логику расчета возрастной группы из `profile_page.py` в `utils.py`.
+- [ ] **QW-003**: Создать шаблон `.streamlit/secrets.toml.example` для новых разработчиков.
