@@ -452,10 +452,25 @@ def render_profile_page():
     else:
         for child in child_profiles:
             is_editing = st.session_state.edit_child_id == child.get('id')
+            is_deleting = st.session_state.get('delete_child_confirm') == child.get('id')
             
             # Уникальный ключ для контейнера карточки
             with st.container():
-                if not is_editing:
+                if is_deleting:
+                    with st.container(border=True):
+                        st.warning(f"Удалить профиль {child.get('name')}?")
+                        d_col1, d_col2 = st.columns(2)
+                        with d_col1:
+                            if st.button("✔️ Да", key=f"confirm_del_{child.get('id')}", use_container_width=True, type="primary"):
+                                if storage.delete_child_profile(child.get('id')):
+                                    st.session_state.profile_success = t('child_del_success', user_lang)
+                                    st.session_state.delete_child_confirm = None
+                                    st.rerun()
+                        with d_col2:
+                            if st.button("✖️ Отмена", key=f"cancel_del_{child.get('id')}", use_container_width=True, type="tertiary"):
+                                st.session_state.delete_child_confirm = None
+                                st.rerun()
+                elif not is_editing:
                     # Контейнер для иконок действий (абсолютное позиционирование)
                     # Надежная архитектура карточки с использованием нативного контейнера Streamlit
                     with st.container(border=True):
@@ -467,13 +482,12 @@ def render_profile_page():
                         gender_text = t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)
                         
                         with col_acts:
-                            if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang), use_container_width=True):
+                            if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang), type="tertiary"):
                                 st.session_state.edit_child_id = child.get('id')
                                 st.rerun()
-                            if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang), use_container_width=True):
-                                if storage.delete_child_profile(child.get('id')):
-                                    st.session_state.profile_success = t('child_del_success', user_lang)
-                                    st.rerun()
+                            if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang), type="tertiary"):
+                                st.session_state.delete_child_confirm = child.get('id')
+                                st.rerun()
                                     
                         with col_card:
                             # Отрисовка текстового содержимого (работает без артефактов)
@@ -483,7 +497,7 @@ def render_profile_page():
                                 st.markdown(f"<div style='color:#fed6e3; font-size: 0.95rem; font-style: italic; margin-bottom: 1rem;'>🎨 {child.get('hobbies')}</div>", unsafe_allow_html=True)
                             
                             # Нативная работающая кнопка генерации
-                            if st.button("✨ " + t('child_gen_btn', user_lang), key=f"gen_{child.get('id')}", type="primary"):
+                            if st.button(t('child_gen_btn', user_lang), key=f"gen_{child.get('id')}", type="primary"):
                                 st.session_state.selected_child_id = child.get('id')
                                 st.session_state.current_page = 'generator'
                                 st.rerun()
