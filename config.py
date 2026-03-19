@@ -54,7 +54,7 @@ MIN_NAME_LENGTH = 1
 NAME_PATTERN = r'^[\w\s\-а-яА-ЯёЁ]+$'
 
 # === ВЕРСИЯ ===
-APP_VERSION = "v4.9"
+APP_VERSION = "v5.0"
 APP_YEAR = "2026"
 
 # === ЯЗЫКИ (i18n) ===

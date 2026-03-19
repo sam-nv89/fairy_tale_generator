@@ -330,24 +330,42 @@ def render_profile_page():
             transform: translateY(-2px) !important;
         }
 
-        /* Делаем вторичные кнопки действий (удаление/редактирование) прозрачными */
-        div[data-testid="stVerticalBlockBorderWrapper"] button[kind="secondary"] {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 4px !important;
-            font-size: 1.2rem !important;
+        /* Стилизация заголовка-кнопки (Имя ребенка как кнопка редактирования) */
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(1) button[kind="tertiary"] p {
+            font-size: 1.4rem !important;
+            font-weight: 700 !important;
+            color: #a8edea !important;
+            margin: 0 !important;
+            font-style: normal !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(1) button[kind="tertiary"] {
+            padding: 0 !important;
+            margin-bottom: 0.5rem !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(1) button[kind="tertiary"]:hover p {
+            color: #ffffff !important;
+        }
+        
+        /* Кнопка Delete остается маленькой и в правом углу */
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(2) button[kind="tertiary"] {
             color: rgba(255, 255, 255, 0.6) !important;
-            transition: transform 0.2s ease, color 0.2s ease !important;
+            padding: 0 !important;
+            margin: 0 !important;
             min-height: auto !important;
             height: auto !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
         }
-        div[data-testid="stVerticalBlockBorderWrapper"] button[kind="secondary"]:hover {
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(2) button[kind="tertiary"]:hover {
+            color: #ff4b4b !important;
             transform: scale(1.15) !important;
-            color: #ffffff !important;
+        }
+        
+        /* Прижимаем колонку Delete к верху и правому краю */
+        div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stColumn"]:nth-child(2) {
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -474,25 +492,23 @@ def render_profile_page():
                     # Контейнер для иконок действий (абсолютное позиционирование)
                     # Надежная архитектура карточки с использованием нативного контейнера Streamlit
                     with st.container(border=True):
-                        # Колонки: слева основной текст, справа две иконки "редактировать" и "удалить" в ряд
-                        col_card, act1, act2 = st.columns([0.8, 0.1, 0.1])
+                        # Колонки: слева редактируемое Имя и Текст, справа кнопка удаления
+                        col_card, col_del = st.columns([0.9, 0.1])
                         
                         g_val = child.get('gender', 'auto')
                         g_emoji = "👦" if g_val == 'boy' else "👧" if g_val == 'girl' else "👶"
                         gender_text = t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)
                         
-                        with act1:
-                            if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang), type="tertiary"):
-                                st.session_state.edit_child_id = child.get('id')
-                                st.rerun()
-                        with act2:
+                        with col_del:
                             if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang), type="tertiary"):
                                 st.session_state.delete_child_confirm = child.get('id')
                                 st.rerun()
                                     
                         with col_card:
-                            # Отрисовка текстового содержимого (работает без артефактов)
-                            st.markdown(f"<h3 style='margin:0 0 0.5rem 0; color:#a8edea;'>{g_emoji} {child.get('name')}</h3>", unsafe_allow_html=True)
+                            # Имя ребенка является кнопкой для входа в режим редактирования
+                            if st.button(f"{g_emoji} {child.get('name')} ✏️", key=f"edit_name_btn_{child.get('id')}", help=t('edit_child_btn', user_lang), type="tertiary"):
+                                st.session_state.edit_child_id = child.get('id')
+                                st.rerun()
                             st.markdown(f"<div style='color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 0.5rem;'>🎂 {get_child_age_text(child)} &nbsp;|&nbsp; ⚧ {gender_text}</div>", unsafe_allow_html=True)
                             if child.get('hobbies'):
                                 st.markdown(f"<div style='color:#fed6e3; font-size: 0.95rem; font-style: italic; margin-bottom: 1rem;'>🎨 {child.get('hobbies')}</div>", unsafe_allow_html=True)
