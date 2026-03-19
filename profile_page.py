@@ -314,82 +314,40 @@ def render_profile_page():
             justify-content: center;
         }
 
-        /* Кастомизация карточек детей */
-        .child-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+        /* Кастомизация нативных карточек детей (контейнеров) */
+        div[data-testid="stVerticalBlockBorderWrapper"] {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border-radius: 15px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: all 0.3s ease !important;
+            padding: 1.2rem !important;
+            margin-bottom: 0.5rem !important;
         }
-        .child-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(168, 237, 234, 0.3);
-            transform: translateY(-3px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .child-name {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #a8edea;
-            margin-bottom: 0.5rem;
-        }
-        .child-hobbies-text {
-            font-style: italic;
-            color: #fed6e3;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-        }
-        
-        /* СТИЛЬ ДЛЯ ИКОНОК ГЕЙТВЕЯ (Action Icons) */
-        .child-actions {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 8px;
-            z-index: 10;
+        div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
+            border-color: rgba(168, 237, 234, 0.3) !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+            transform: translateY(-2px) !important;
         }
 
-        /* Делаем кнопки-иконки прозрачными */
-        div.child-actions div.stButton > button {
+        /* Делаем вторичные кнопки действий (удаление/редактирование) прозрачными */
+        div[data-testid="stVerticalBlockBorderWrapper"] button[kind="secondary"] {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             padding: 4px !important;
-            width: auto !important;
-            min-width: unset !important;
-            height: auto !important;
             font-size: 1.2rem !important;
             color: rgba(255, 255, 255, 0.6) !important;
             transition: transform 0.2s ease, color 0.2s ease !important;
-        }
-        div.child-actions div.stButton > button:hover {
-            transform: scale(1.2) !important;
-            color: #ffffff !important;
-            background: transparent !important;
-        }
-
-        /* Кнопка-карточка (для клика по всей области) */
-        div.child-clickable-card div.stButton > button {
-            background: rgba(255, 255, 255, 0.05) !important;
-            border-radius: 15px !important;
-            padding: 1.5rem !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            width: 100% !important;
+            min-height: auto !important;
             height: auto !important;
-            text-align: left !important;
-            display: block !important;
-            transition: all 0.3s ease !important;
-            box-shadow: none !important;
-            color: inherit !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
-        div.child-clickable-card div.stButton > button:hover {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border-color: rgba(168, 237, 234, 0.3) !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+        div[data-testid="stVerticalBlockBorderWrapper"] button[kind="secondary"]:hover {
+            transform: scale(1.15) !important;
+            color: #ffffff !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -499,68 +457,36 @@ def render_profile_page():
             with st.container():
                 if not is_editing:
                     # Контейнер для иконок действий (абсолютное позиционирование)
-                    # Используем пустые колонки или просто контейнеры для размещения кнопок снаружи основного потока визуально
-                    
-                    # Сама карточка
-                    st.markdown(f"<div class='child-clickable-card' style='position: relative;'>", unsafe_allow_html=True)
-                    
-                    # Иконки действий в углу
-                    # Мы создаем оверлей с кнопками
-                    act_btn_html = f"""
-                        <div class='child-actions'>
-                        </div>
-                    """
-                    st.markdown(act_btn_html, unsafe_allow_html=True)
-                    
-                    # Колонки для кнопок в углу ( Streamlit способ имитации CSS разметки)
-                    # Но лучше использовать CSS-классы. 
-                    # Чтобы кнопки попали в div.child-actions, нужно использовать st.components или хак с разметкой
-                    # Хак: используем st.columns внутри позиционированного div'а не сработает надежно.
-                    # Сделаем кнопки в обычном потоке, но стилизуем их.
-                    
-                    # Верхний ряд с кнопками (визуально в углу)
-                    # На самом деле просто выводим их компактно
-                    btn_col_main, btn_col_act = st.columns([0.9, 0.1])
-                    
-                    with btn_col_act:
-                        st.markdown("<div class='child-actions'>", unsafe_allow_html=True)
-                        if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang)):
-                            st.session_state.edit_child_id = child.get('id')
-                            st.rerun()
-                        if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang)):
-                            if storage.delete_child_profile(child.get('id')):
-                                st.session_state.profile_success = t('child_del_success', user_lang)
-                                st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-
-                    # Содержимое карточки как кнопка
-                    g_val = child.get('gender', 'auto')
-                    g_emoji = "👦" if g_val == 'boy' else "👧" if g_val == 'girl' else "👶"
-                    
-                    card_content = f"""
-                        <div style='pointer-events: none;'>
-                            <div class='child-name'>{g_emoji} {child.get('name')}</div>
-                            <div style='color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-top: 5px;'>
-                                🎂 {get_child_age_text(child)}
-                            </div>
-                            <div style='color: rgba(255,255,255,0.6); font-size: 0.9rem;'>
-                                ⚧ {t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)}
-                            </div>
-                            <div class='child-hobbies-text'>🎨 {child.get('hobbies') or '...'}</div>
-                            <div style='margin-top: 15px;'>
-                                <span style='background: rgba(106, 17, 203, 0.3); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; color: #a8edea;'>
-                                    {t('child_gen_btn', user_lang)}
-                                </span>
-                            </div>
-                        </div>
-                    """
-                    
-                    if st.button(card_content, key=f"card_btn_{child.get('id')}", use_container_width=True):
-                        st.session_state.edit_child_id = child.get('id')
-                        st.rerun()
+                    # Надежная архитектура карточки с использованием нативного контейнера Streamlit
+                    with st.container(border=True):
+                        # Колонки: слева основной текст, справа кнопки "редактировать/удалить"
+                        col_card, col_acts = st.columns([0.85, 0.15])
                         
-                    st.markdown("</div>", unsafe_allow_html=True)
-                    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
+                        g_val = child.get('gender', 'auto')
+                        g_emoji = "👦" if g_val == 'boy' else "👧" if g_val == 'girl' else "👶"
+                        gender_text = t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)
+                        
+                        with col_acts:
+                            if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang), use_container_width=True):
+                                st.session_state.edit_child_id = child.get('id')
+                                st.rerun()
+                            if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang), use_container_width=True):
+                                if storage.delete_child_profile(child.get('id')):
+                                    st.session_state.profile_success = t('child_del_success', user_lang)
+                                    st.rerun()
+                                    
+                        with col_card:
+                            # Отрисовка текстового содержимого (работает без артефактов)
+                            st.markdown(f"<h3 style='margin:0 0 0.5rem 0; color:#a8edea;'>{g_emoji} {child.get('name')}</h3>", unsafe_allow_html=True)
+                            st.markdown(f"<div style='color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 0.5rem;'>🎂 {get_child_age_text(child)} &nbsp;|&nbsp; ⚧ {gender_text}</div>", unsafe_allow_html=True)
+                            if child.get('hobbies'):
+                                st.markdown(f"<div style='color:#fed6e3; font-size: 0.95rem; font-style: italic; margin-bottom: 1rem;'>🎨 {child.get('hobbies')}</div>", unsafe_allow_html=True)
+                            
+                            # Нативная работающая кнопка генерации
+                            if st.button("✨ " + t('child_gen_btn', user_lang), key=f"gen_{child.get('id')}", type="primary"):
+                                st.session_state.selected_child_id = child.get('id')
+                                st.session_state.current_page = 'generator'
+                                st.rerun()
                 else:
                     # ФОРМА РЕДАКТИРОВАНИЯ (ВМЕСТО КАРТОЧКИ)
                     st.markdown(f"#### {t('edit_child_btn', user_lang)}: {child.get('name')}")
