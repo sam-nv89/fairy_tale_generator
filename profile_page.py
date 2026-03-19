@@ -474,17 +474,18 @@ def render_profile_page():
                     # Контейнер для иконок действий (абсолютное позиционирование)
                     # Надежная архитектура карточки с использованием нативного контейнера Streamlit
                     with st.container(border=True):
-                        # Колонки: слева основной текст, справа кнопки "редактировать/удалить"
-                        col_card, col_acts = st.columns([0.85, 0.15])
+                        # Колонки: слева основной текст, справа две иконки "редактировать" и "удалить" в ряд
+                        col_card, act1, act2 = st.columns([0.8, 0.1, 0.1])
                         
                         g_val = child.get('gender', 'auto')
                         g_emoji = "👦" if g_val == 'boy' else "👧" if g_val == 'girl' else "👶"
                         gender_text = t('gender_boy' if g_val == 'boy' else 'gender_girl' if g_val == 'girl' else 'gender_auto', user_lang)
                         
-                        with col_acts:
+                        with act1:
                             if st.button("✏️", key=f"edit_icon_{child.get('id')}", help=t('edit_child_btn', user_lang), type="tertiary"):
                                 st.session_state.edit_child_id = child.get('id')
                                 st.rerun()
+                        with act2:
                             if st.button("❌", key=f"del_icon_{child.get('id')}", help=t('child_delete_confirm', user_lang), type="tertiary"):
                                 st.session_state.delete_child_confirm = child.get('id')
                                 st.rerun()
